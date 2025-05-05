@@ -94,23 +94,74 @@ const texts = {
     'select_option': {'en': "Select...", 'fa': "انتخاب کنید..."},
     'data_option_format': {'en': "Data {index} ({value}%)", 'fa': "داده {index} ({value}%)"}, // Simplified format
     // Tooltips
-    'mean_tooltip': {'en': "Arithmetic Mean: Simple average of returns.", 'fa': "میانگین حسابی: میانگین ساده بازده‌ها."},
-    'geo_mean_tooltip': {'en': "Geometric Mean (CAGR): Compound average rate of return.\nMore accurate for long-term performance.", 'fa': "میانگین هندسی (CAGR): نرخ بازده متوسط ترکیبی.\nمناسب برای عملکرد بلندمدت."},
-    'std_dev_tooltip': {'en': "Standard Deviation: Dispersion of returns around the mean (Total Risk).\nHigher value = more volatility/risk.", 'fa': "انحراف معیار: پراکندگی بازده‌ها حول میانگین (ریسک کل).\nمقدار بالاتر = نوسان و ریسک بیشتر."},
-    'downside_dev_tooltip': {'en': "Downside Deviation (Target=0): Dispersion of returns below zero.\nMeasures unfavorable volatility (Loss Risk).", 'fa': "انحراف معیار نزولی (هدف=۰): پراکندگی بازده‌های زیر صفر.\nمعیاری از ریسک نامطلوب (ریسک زیان)."},
-    'variance_tooltip': {'en': "Variance: Average squared deviation from the mean.\nPrimary unit of dispersion. Variance = Std Dev^2.", 'fa': "واریانس: میانگین مجذور انحرافات از میانگین.\nواحد اصلی پراکندگی."},
-    'cv_tooltip': {'en': "Coefficient of Variation (CV): Risk per unit of return (StdDev / Mean).\nUseful for comparing risk of assets with different returns. Lower is better.", 'fa': "ضریب تغییرات (CV): ریسک به ازای واحد بازده.\nبرای مقایسه ریسک دارایی‌ها با بازده متفاوت. پایین‌تر بهتر است."},
-    'mdd_tooltip': {'en': "Maximum Drawdown: Largest peak-to-trough percentage decline\nin cumulative returns. Measures downside risk.", 'fa': "حداکثر افت سرمایه: بزرگترین افت درصدی از قله قبلی\nدر بازده تجمعی. ریسک افت شدید را می‌سنجد."},
-    'mdd_period_tooltip': {'en': "MDD Period: Duration (in number of data points/periods)\nof the maximum drawdown, from peak to recovery (or end).", 'fa': "دوره MDD: طول دوره (تعداد نقاط داده)\nحداکثر افت سرمایه، از قله تا بازیابی (یا انتها)."},
-    'skewness_tooltip': {'en': "Skewness: Asymmetry of the distribution.\nNegative: Longer left tail (large losses more likely).\nPositive: Longer right tail (large gains more likely).\nZero: Symmetric (like Normal).", 'fa': "چولگی: عدم تقارن توزیع.\nمنفی: دم بلندتر چپ (زیان‌های بزرگ محتمل‌تر).\nمثبت: دم بلندتر راست (سودهای بزرگ محتمل‌تر).\nصفر: متقارن."},
-    'kurtosis_tooltip': {'en': "Excess Kurtosis: Fatness of the distribution's tails relative to Normal (Kurtosis - 3).\nPositive: Fatter tails, higher probability of extreme values (Tail Risk).", 'fa': "کشیدگی اضافی: چاقی دم‌های توزیع نسبت به نرمال.\nمثبت: دم‌های چاق‌تر، احتمال مقادیر حدی بیشتر (ریسک دم)."},
-    'normality_tooltip': {'en': "Shapiro-Wilk Normality Test: (Calculation removed)\nTests if data significantly deviates from a normal distribution.", 'fa': "(محاسبه حذف شد)\nآزمون نرمال بودن شاپیرو-ویلک: آزمون می‌کند آیا داده‌ها به طور معناداری از توزیع نرمال انحراف دارند یا خیر."},
-    'var_tooltip': {'en': "Historical Value at Risk (VaR) 5%: Maximum loss expected to be exceeded only 5% of the time\n(based on the 5th percentile of historical data).", 'fa': "ارزش در معرض خطر (VaR) ۵٪ تاریخی: حداکثر زیانی که انتظار می‌رود\nدر ۹۵٪ مواقع از آن کمتر باشد (بر اساس صدک پنجم داده‌های گذشته)."},
-    'var_95_tooltip': {'en': "Historical Gain 95%: Minimum gain achieved in the best 5% of periods\n(based on the 95th percentile of historical data).", 'fa': "سود تاریخی ۹۵٪: حداقل سودی که در ۵٪ بهترین دوره‌ها بدست آمده\n(بر اساس صدک ۹۵ام داده‌های گذشته)."},
-    'max_gain_tooltip': {'en': "Maximum Gain: The highest single period return observed in the data.", 'fa': "حداکثر سود: بیشترین بازده مشاهده شده در یک دوره در داده‌ها."},
-    'sharpe_tooltip': {'en': "Sharpe Ratio: Excess return over risk-free rate per unit of total risk.\nSharpe = (Mean Return - Rf) / Std Dev.\nHigher is better risk-adjusted performance.", 'fa': "نسبت شارپ: بازده مازاد بر نرخ بدون ریسک به ازای هر واحد ریسک کل.\nبالاتر = عملکرد تعدیل‌شده بر اساس ریسک بهتر."},
-    'sortino_tooltip': {'en': "Sortino Ratio: Excess return over risk-free rate per unit of downside risk.\nSortino = (Mean Return - Rf) / Downside Deviation.\nPenalizes only bad risk. Higher is better.", 'fa': "نسبت سورتینو: بازده مازاد بر نرخ بدون ریسک به ازای هر واحد ریسک نزولی.\nریسک بد را مجازات می‌کند. بالاتر بهتر است."},
-    'rf_tooltip': {'en': "Risk-Free Rate: Expected return on a zero-risk investment (e.g., government bonds).\nUsed to calculate excess return for Sharpe/Sortino ratios.\nEnter as annual percentage (e.g., 3.5 for 3.5%).", 'fa': "نرخ بازده بدون ریسک: نرخ بازده مورد انتظار از سرمایه‌گذاری بدون ریسک (مانند اوراق خزانه).\nبرای محاسبه بازده مازاد در نسبت‌های شارپ و سورتینو. به صورت درصد سالانه وارد کنید (مثلا 3.5)."},
+    'mean_tooltip': {
+        'en': "**Arithmetic Mean:** The simple average of all data points (returns).\n\n*   **Calculation:** Sum of returns / Number of returns.\n*   **Use:** Represents the expected return for a single period. Can be misleading if returns are volatile or compounded over time.",
+        'fa': "**میانگین حسابی:** میانگین ساده تمام نقاط داده (بازده‌ها).\n\n*   **محاسبه:** مجموع بازده‌ها / تعداد بازده‌ها.\n*   **کاربرد:** بازده مورد انتظار برای یک دوره را نشان می‌دهد. اگر بازده‌ها نوسان زیادی داشته باشند یا در طول زمان مرکب شوند، ممکن است گمراه‌کننده باشد."
+    },
+    'geo_mean_tooltip': {
+        'en': "**Geometric Mean (CAGR):** The average compound rate of return over multiple periods.\n\n*   **Calculation:** [(1+r1) * (1+r2) * ... * (1+rn)]^(1/n) - 1\n*   **Use:** More accurate than arithmetic mean for evaluating long-term investment performance as it accounts for compounding. Represents the constant rate of return that would yield the same final wealth.",
+        'fa': "**میانگین هندسی (CAGR):** نرخ بازده متوسط ترکیبی در طول چند دوره.\n\n*   **محاسبه:** [(۱+ر۱) * (۱+ر۲) * ... * (۱+رن)]^(۱/ن) - ۱\n*   **کاربرد:** برای ارزیابی عملکرد سرمایه‌گذاری بلندمدت دقیق‌تر از میانگین حسابی است، زیرا اثر مرکب شدن را در نظر می‌گیرد. نشان‌دهنده نرخ بازده ثابتی است که به همان ثروت نهایی منجر می‌شود."
+    },
+    'std_dev_tooltip': {
+        'en': "**Standard Deviation (Total Risk):** Measures the dispersion or volatility of returns around the arithmetic mean.\n\n*   **Calculation:** Square root of the variance.\n*   **Interpretation:** A higher value indicates greater volatility and uncertainty (higher total risk). A lower value suggests returns are clustered closer to the mean.",
+        'fa': "**انحراف معیار (ریسک کل):** پراکندگی یا نوسان بازده‌ها حول میانگین حسابی را اندازه‌گیری می‌کند.\n\n*   **محاسبه:** جذر واریانس.\n*   **تفسیر:** مقدار بالاتر نشان‌دهنده نوسان و عدم قطعیت بیشتر (ریسک کل بالاتر) است. مقدار پایین‌تر نشان می‌دهد که بازده‌ها به میانگین نزدیک‌تر هستند."
+    },
+    'downside_dev_tooltip': {
+        'en': "**Downside Deviation (Target=0):** Measures the volatility of returns *below* a specified target (here, 0%). It only considers negative or unfavorable volatility.\n\n*   **Calculation:** Similar to standard deviation, but only using returns less than the target.\n*   **Use:** Focuses on the risk of loss or underperformance. Used in calculating the Sortino ratio.",
+        'fa': "**انحراف معیار نزولی (هدف=۰):** نوسان بازده‌های *زیر* یک هدف مشخص (در اینجا، ۰٪) را اندازه‌گیری می‌کند. فقط نوسانات منفی یا نامطلوب را در نظر می‌گیرد.\n\n*   **محاسبه:** شبیه به انحراف معیار است، اما فقط از بازده‌های کمتر از هدف استفاده می‌کند.\n*   **کاربرد:** بر ریسک زیان یا عملکرد ضعیف‌تر از هدف تمرکز دارد. در محاسبه نسبت سورتینو استفاده می‌شود."
+    },
+    'variance_tooltip': {
+        'en': "**Variance:** The average of the squared differences from the Mean. It represents the degree of spread in the data set.\n\n*   **Calculation:** Sum of squared deviations from mean / (n-1).\n*   **Unit:** The unit is the square of the data's unit (e.g., % squared), making standard deviation (its square root) often easier to interpret.",
+        'fa': "**واریانس:** میانگین مجذور تفاوت‌ها از میانگین. درجه پراکندگی در مجموعه داده را نشان می‌دهد.\n\n*   **محاسبه:** مجموع مجذور انحرافات از میانگین / (تعداد - ۱).\n*   **واحد:** واحد آن مجذور واحد داده‌ها است (مثلاً درصد مربع)، که باعث می‌شود انحراف معیار (جذر آن) اغلب برای تفسیر آسان‌تر باشد."
+    },
+    'cv_tooltip': {
+        'en': "**Coefficient of Variation (CV):** A standardized measure of dispersion, representing risk per unit of return.\n\n*   **Calculation:** Standard Deviation / |Arithmetic Mean|.\n*   **Use:** Useful for comparing the relative risk (volatility) of assets with different expected returns. A lower CV indicates better risk-adjusted performance (less risk per unit of return).",
+        'fa': "**ضریب تغییرات (CV):** یک معیار استاندارد شده از پراکندگی، که ریسک به ازای واحد بازده را نشان می‌دهد.\n\n*   **محاسبه:** انحراف معیار / |میانگین حسابی|.\n*   **کاربرد:** برای مقایسه ریسک نسبی (نوسان) دارایی‌ها با بازده‌های مورد انتظار متفاوت مفید است. CV پایین‌تر نشان‌دهنده عملکرد تعدیل‌شده بر اساس ریسک بهتر است (ریسک کمتر به ازای واحد بازده)."
+    },
+    'mdd_tooltip': {
+        'en': "**Maximum Drawdown (MDD):** The largest percentage decline from a previous peak value in the cumulative return series.\n\n*   **Interpretation:** Represents the worst-case loss experienced during the period. A key measure of downside risk and potential capital erosion.",
+        'fa': "**حداکثر افت سرمایه (MDD):** بزرگترین افت درصدی از یک قله قبلی در سری بازده تجمعی.\n\n*   **تفسیر:** بدترین زیان تجربه شده در طول دوره را نشان می‌دهد. یک معیار کلیدی برای ریسک نزولی و فرسایش احتمالی سرمایه است."
+    },
+    'mdd_period_tooltip': {
+        'en': "**MDD Period:** The duration (number of data points/periods) of the maximum drawdown event, from the peak just before the drop to the lowest point (trough).\n\n*   **Interpretation:** Shows how long the worst drawdown lasted. Longer periods can be psychologically difficult for investors.",
+        'fa': "**دوره MDD:** طول دوره (تعداد نقاط داده/دوره‌ها) رویداد حداکثر افت سرمایه، از قله درست قبل از افت تا پایین‌ترین نقطه (دره).\n\n*   **تفسیر:** نشان می‌دهد که بدترین افت چقدر طول کشیده است. دوره‌های طولانی‌تر می‌تواند از نظر روانی برای سرمایه‌گذاران دشوار باشد."
+    },
+    'skewness_tooltip': {
+        'en': "**Skewness:** Measures the asymmetry of the probability distribution of returns.\n\n*   **Interpretation:**\n    *   **Negative Skew (< 0):** Longer left tail. Indicates frequent small gains and a few large losses. Mean < Median.\n    *   **Positive Skew (> 0):** Longer right tail. Indicates frequent small losses and a few large gains. Mean > Median.\n    *   **Zero Skew (≈ 0):** Distribution is roughly symmetrical (like a Normal distribution). Mean ≈ Median.",
+        'fa': "**چولگی:** عدم تقارن توزیع احتمال بازده‌ها را اندازه‌گیری می‌کند.\n\n*   **تفسیر:**\n    *   **چولگی منفی (< ۰):** دم بلندتر در سمت چپ. نشان‌دهنده سودهای کوچک مکرر و چند زیان بزرگ است. میانگین < میانه.\n    *   **چولگی مثبت (> ۰):** دم بلندتر در سمت راست. نشان‌دهنده زیان‌های کوچک مکرر و چند سود بزرگ است. میانگین > میانه.\n    *   **چولگی صفر (≈ ۰):** توزیع تقریباً متقارن است (مانند توزیع نرمال). میانگین ≈ میانه."
+    },
+    'kurtosis_tooltip': {
+        'en': "**Excess Kurtosis:** Measures the 'tailedness' or 'peakdness' of the distribution relative to a Normal distribution (which has an excess kurtosis of 0).\n\n*   **Interpretation:**\n    *   **Positive (Leptokurtic > 0):** Fatter tails and a sharper peak than Normal. Higher probability of extreme outcomes (both positive and negative). Indicates higher 'tail risk'.\n    *   **Negative (Platykurtic < 0):** Thinner tails and a flatter peak than Normal. Lower probability of extreme outcomes.",
+        'fa': "**کشیدگی اضافی:** میزان 'دم‌داری' یا 'قله‌داری' توزیع را نسبت به توزیع نرمال (که کشیدگی اضافی آن ۰ است) اندازه‌گیری می‌کند.\n\n*   **تفسیر:**\n    *   **مثبت (لپتوکورتیک > ۰):** دم‌های چاق‌تر و قله تیزتر از نرمال. احتمال بیشتر نتایج حدی (هم مثبت و هم منفی). نشان‌دهنده 'ریسک دم' بالاتر است.\n    *   **منفی (پلاتیکورتیک < ۰):** دم‌های لاغرتر و قله صاف‌تر از نرمال. احتمال کمتر نتایج حدی."
+    },
+    'normality_tooltip': {
+        'en': "**Normality (Shapiro-Wilk Test):** (Calculation Removed from this version)\n\n*   **Purpose:** This statistical test assesses whether the data likely comes from a normally distributed population. Many financial models assume normality, making this test relevant.",
+        'fa': "**نرمال بودن (آزمون شاپیرو-ویلک):** (محاسبه از این نسخه حذف شده است)\n\n*   **هدف:** این آزمون آماری بررسی می‌کند که آیا داده‌ها احتمالاً از یک جامعه با توزیع نرمال آمده‌اند یا خیر. بسیاری از مدل‌های مالی، نرمال بودن را فرض می‌کنند، که این آزمون را مرتبط می‌سازد."
+    },
+    'var_tooltip': {
+        'en': "**Historical Value at Risk (VaR) 5%:** Estimates the maximum potential loss expected over a given period, at a 5% probability level, based on historical data.\n\n*   **Interpretation:** There is a 5% chance that losses will exceed this value, based on past performance. It represents the 5th percentile of the historical return distribution.",
+        'fa': "**ارزش در معرض خطر (VaR) ۵٪ تاریخی:** حداکثر زیان بالقوه مورد انتظار در یک دوره معین را، در سطح احتمال ۵٪، بر اساس داده‌های تاریخی تخمین می‌زند.\n\n*   **تفسیر:** بر اساس عملکرد گذشته، ۵٪ احتمال وجود دارد که زیان‌ها از این مقدار بیشتر شود. این مقدار نشان‌دهنده صدک پنجم توزیع بازده تاریخی است."
+    },
+    'var_95_tooltip': {
+        'en': "**Historical Gain 95%:** Estimates the minimum potential gain achieved during the best 5% of historical periods.\n\n*   **Interpretation:** Based on past performance, 95% of the returns were below this value. It represents the 95th percentile of the historical return distribution.",
+        'fa': "**سود تاریخی ۹۵٪:** حداقل سود بالقوه بدست آمده در ۵٪ بهترین دوره‌های تاریخی را تخمین می‌زند.\n\n*   **تفسیر:** بر اساس عملکرد گذشته، ۹۵٪ بازده‌ها کمتر از این مقدار بوده‌اند. این مقدار نشان‌دهنده صدک ۹۵ام توزیع بازده تاریخی است."
+    },
+    'max_gain_tooltip': {
+        'en': "**Maximum Gain:** The single highest positive return observed within the dataset for a single period.\n\n*   **Use:** Shows the best-case performance in any single period analyzed.",
+        'fa': "**حداکثر سود:** بالاترین بازده مثبت مشاهده شده در مجموعه داده برای یک دوره واحد.\n\n*   **کاربرد:** بهترین عملکرد در هر دوره واحد تحلیل شده را نشان می‌دهد."
+    },
+    'sharpe_tooltip': {
+        'en': "**Sharpe Ratio:** Measures risk-adjusted return, indicating the excess return (above the risk-free rate) earned per unit of *total* risk (standard deviation).\n\n*   **Calculation:** (Mean Return - RiskFree Rate) / Standard Deviation.\n*   **Interpretation:** Higher is better. A higher Sharpe Ratio suggests better performance for the level of volatility taken.",
+        'fa': "**نسبت شارپ:** بازده تعدیل‌شده بر اساس ریسک را اندازه‌گیری می‌کند، که نشان‌دهنده بازده مازاد (بالاتر از نرخ بدون ریسک) کسب شده به ازای هر واحد ریسک *کل* (انحراف معیار) است.\n\n*   **محاسبه:** (میانگین بازده - نرخ بدون ریسک) / انحراف معیار.\n*   **تفسیر:** بالاتر بهتر است. نسبت شارپ بالاتر نشان‌دهنده عملکرد بهتر برای سطح نوسان پذیری متحمل شده است."
+    },
+    'sortino_tooltip': {
+        'en': "**Sortino Ratio:** Similar to Sharpe Ratio, but measures excess return per unit of *downside* risk (downside deviation) only.\n\n*   **Calculation:** (Mean Return - RiskFree Rate) / Downside Deviation.\n*   **Interpretation:** Higher is better. Penalizes only for volatility below the target return, considered 'bad' volatility. Potentially better than Sharpe for non-normal distributions.",
+        'fa': "**نسبت سورتینو:** شبیه به نسبت شارپ است، اما بازده مازاد را فقط به ازای هر واحد ریسک *نزولی* (انحراف معیار نزولی) اندازه‌گیری می‌کند.\n\n*   **محاسبه:** (میانگین بازده - نرخ بدون ریسک) / انحراف معیار نزولی.\n*   **تفسیر:** بالاتر بهتر است. فقط برای نوسانات زیر بازده هدف، که نوسان 'بد' محسوب می‌شود، جریمه در نظر می‌گیرد. به طور بالقوه برای توزیع‌های غیرنرمال بهتر از شارپ است."
+    },
+    'rf_tooltip': {
+        'en': "**Risk-Free Rate:** The theoretical rate of return of an investment with zero risk (e.g., government bonds). Entered as an *annual percentage*.\n\n*   **Use:** Serves as the benchmark to determine how much excess return an investment has generated. Crucial for calculating Sharpe and Sortino ratios.",
+        'fa': "**نرخ بازده بدون ریسک:** نرخ بازده نظری یک سرمایه‌گذاری با ریسک صفر (مانند اوراق قرضه دولتی). به صورت *درصد سالانه* وارد می‌شود.\n\n*   **کاربرد:** به عنوان معیار برای تعیین میزان بازده مازاد تولید شده توسط یک سرمایه‌گذاری عمل می‌کند. برای محاسبه نسبت‌های شارپ و سورتینو حیاتی است."
+    },
     'file_select_title': {'en': "Select Data File (CSV or Excel)", 'fa': "انتخاب فایل داده (CSV یا Excel)"},
     'save_results_title': {'en': "Save Analysis Results", 'fa': "ذخیره نتایج تحلیل"},
     'save_data_title': {'en': "Save Data to Excel", 'fa': "ذخیره داده‌ها در Excel"},
@@ -146,7 +197,8 @@ const texts = {
     'plotFailed': {'en': 'Plot generation failed.', 'fa': 'رسم نمودار با خطا مواجه شد.'}, // Added generic plot fail message
     'enterValidNumbers': {'en': 'Please enter valid numbers.', 'fa': 'لطفاً اعداد معتبر وارد کنید.'},
     'enterData': {'en': 'Please enter some data first.', 'fa': 'لطفاً ابتدا داده وارد کنید.'},
-    'clear_list_confirm': {'en': 'Clear Entire List?', 'fa': 'پاک کردن کل لیست؟'} // Confirmation text
+    'clear_list_confirm': {'en': 'Clear Entire List?', 'fa': 'پاک کردن کل لیست؟'}, // Confirmation text
+    'ok_button': {'en': 'OK', 'fa': 'باشه'} // Added OK button translation
 };
 
 // --- DOM Element Selectors --- commonly used elements
@@ -172,9 +224,9 @@ const exportDataButton = document.getElementById('export-data-button');
 const statusBar = document.getElementById('status-bar');
 const resultsDisplayDiv = document.getElementById('results-display');
 const plotModal = document.getElementById('plotModal');
-const plotTitle = document.getElementById('plotTitle'); // Changed from plotModalLabel
-const plotContainer = document.getElementById('plotContainer'); // Changed from plot-container
-const plotModalCloseButton = document.getElementById('plotModalCloseButton'); // Added explicit ID for close button
+const plotModalLabel = document.getElementById('plotModalLabel'); // Correct ID for modal title
+const plotContainer = document.getElementById('plot-container'); // *** CORRECTED ID ***
+const plotModalCloseButton = document.getElementById('plotModalCloseButton');
 
 // --- Utility Functions ---
 
@@ -337,7 +389,9 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDataDisplay();
     updateEditControlsState();
     updateActionButtonsState();
-    initializeTooltips(); // *** Initialize tooltips AFTER initial UI setup ***
+
+    // Initialize SweetAlert Tooltips ONCE
+    initializeSweetAlertTooltips();
 
     // --- Event Listeners ---
     langSelect.addEventListener('change', (e) => {
@@ -346,22 +400,22 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Language changed to: ${currentLang}`);
         updateLanguageUI(); // Update all UI texts, etc.
         updateStatus('status_ready');
-        initializeTooltips(); // Re-initialize tooltips for potentially new elements/text
+        // No need to re-initialize SweetAlert listener as it's on the body
     });
 
     // Add data listener (Button Click)
     if (addButton) {
-    addButton.addEventListener('click', addDataPoint);
+        addButton.addEventListener('click', addDataPoint);
     } else { console.error("Add button element not found."); }
 
     // Add data listener (Textarea Enter Key)
     if (valueEntry) {
         valueEntry.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-            addDataPoint();
-        }
-    });
+                addDataPoint();
+            }
+        });
     } else { console.error("Value entry textarea element not found."); }
 
     // Clear list listener
@@ -476,7 +530,6 @@ function addDataPoint() {
             console.warn(_t(statusKey, statusArgs));
         }
         updateStatus(statusKey, statusArgs);
-        initializeTooltips(); // Re-initialize in case new tooltips were added indirectly
     } else if (invalidEntries.length > 0) {
         // Alert or status update about invalid data
         alert(_t('status_no_valid_data'));
@@ -957,7 +1010,13 @@ function plotActionWrapper(plotFunc, titleKey) {
 
         layout.autosize = true; // Ensure responsiveness
 
-        plotTitle.textContent = _t(titleKey); // Use correct ID for title
+        // *** FIX: Get title element by correct ID ***
+        const currentPlotTitleElement = document.getElementById('plotModalLabel');
+        if (currentPlotTitleElement) {
+            currentPlotTitleElement.textContent = _t(titleKey);
+        } else {
+            console.error("Plot modal title element ('plotModalLabel') not found!");
+        }
 
         // Ensure container is clean before plotting
         if (plotContainer) {
@@ -1961,3 +2020,50 @@ function calculateMaxDrawdown(returnsPerc) {
 
 
 console.log("script.js loaded and initialized.");
+
+// --- ADD New Tooltip Handling using SweetAlert2 ---
+
+/**
+ * Attaches a click listener to the document body to handle clicks on tooltip icons.
+ */
+function initializeSweetAlertTooltips() {
+    // Ensure listener is added only once by removing potential previous ones
+    document.body.removeEventListener('click', handleTooltipIconClick);
+    document.body.addEventListener('click', handleTooltipIconClick);
+    console.log("SweetAlert tooltip CLICK listener attached to body.");
+}
+
+/**
+ * Handles clicks on elements with the 'tooltip-icon' class.
+ * @param {Event} event - The click event.
+ */
+function handleTooltipIconClick(event) {
+    const icon = event.target.closest('.tooltip-icon');
+    if (!icon) return; // Exit if click wasn't on an icon
+
+    event.preventDefault(); // Prevent default browser action (like following a link if icon is in <a>)
+
+    const tooltipKey = icon.getAttribute('data-tooltip-key'); // Use the correct attribute
+    if (!tooltipKey) {
+        console.warn("Tooltip icon clicked, missing 'data-tooltip-key' attribute:", icon);
+        return;
+    }
+
+    const tooltipText = _t(tooltipKey); // Get translated text
+    if (!tooltipText) {
+        console.warn(`Tooltip translation key '${tooltipKey}' not found.`);
+        return;
+    }
+
+    // Display using SweetAlert2
+    Swal.fire({
+        title: `<strong class="text-lg font-semibold">${_t('info_title')}</strong>`,
+        html: `<div class="text-sm text-left rtl:text-right leading-relaxed">${tooltipText.replace(/\n/g, '<br>')}</div>`,
+        icon: 'info',
+        confirmButtonText: _t('ok_button'),
+        customClass: { popup: 'swal2-popup', title: 'swal2-title', htmlContainer: 'swal2-html-container', confirmButton: 'swal2-confirm', closeButton: 'swal2-close' },
+        showCloseButton: true
+    });
+
+    console.log(`SweetAlert shown for key: ${tooltipKey}`);
+}
