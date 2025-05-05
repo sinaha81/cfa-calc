@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate="app_title">تحلیلگر پیشرفته ریسک و بازده</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Plotly.js -->
+    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
+    <!-- SheetJS (XLSX) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <!-- Simple Statistics JS -->
+    <script src="https://cdn.jsdelivr.net/npm/simple-statistics@7.8.3/dist/simple-statistics.min.js"></script>
+    <script>
+      // Optional: Configure Tailwind CSS
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#2563eb', // blue-600
+              secondary: '#4b5563', // gray-600
+              accent: '#f59e0b', // amber-500
+              'dark-bg': '#111827', // gray-900
+              'dark-card': '#1f2937', // gray-800
+              'dark-border': '#374151', // gray-700
+              'dark-text': '#d1d5db', // gray-300
+              'dark-text-muted': '#9ca3af', // gray-400
+              'highlight-pos': '#34d399', // emerald-400
+              'highlight-neg': '#f87171', // red-400
+              'highlight-neutral': '#fbbf24' // amber-400
+            },
+            fontFamily: {
+              // Add Vazirmatn if available
+              // sans: ['Vazirmatn', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Apply base font if specified */
+      body {
+         /* font-family: 'Vazirmatn', sans-serif; */
+         /* Ensure font is loaded if used */
+         background-color: #111827; /* Equivalent to dark-bg */
+         color: #d1d5db; /* Equivalent to dark-text */
+      }
+      /* Custom scrollbar (optional but nice) */
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #1f2937; /* dark-card */ }
+      ::-webkit-scrollbar-thumb { background-color: #4b5563; /* secondary */ border-radius: 10px; border: 2px solid #1f2937; }
+      ::-webkit-scrollbar-thumb:hover { background-color: #6b7280; /* gray-500 */ }
+      /* Tooltip styling */
+      #tooltip {
+        position: absolute;
+        display: none;
+        background-color: #1f2937; /* dark-card */
+        color: #d1d5db; /* dark-text */
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #374151; /* dark-border */
+        font-size: 0.875rem; /* text-sm */
+        z-index: 50;
+        max-width: 300px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      #tooltip.show {
+        display: block;
+      }
+      /* Style for Plotly modal background */
+      .modal-backdrop.show {
+            opacity: 0.7;
+            background-color: #000;
+      }
+      /* Make Plotly modal content bg dark */
+      #plotModal .bg-gray-800 {
+          background-color: #1f2937 !important; /* Override potentially conflicting styles */
+      }
+    </style>
+</head>
+<body class="dark"> <!-- Ensure dark mode is active -->
+
+    <div class="container mx-auto p-4 max-w-7xl space-y-6">
+
+        <!-- Header -->
+        <header class="flex flex-wrap justify-between items-center gap-4 border-b border-dark-border pb-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-white" data-translate="app_title">تحلیلگر پیشرفته ریسک و بازده</h1>
+            <div>
+                <label for="lang-select" class="sr-only" data-translate="lang_select_label">زبان:</label>
+                <select id="lang-select" class="bg-dark-card text-dark-text border border-dark-border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="fa">فارسی</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Results Panel -->
+            <aside class="lg:col-span-1 order-last lg:order-first bg-dark-card p-4 rounded-lg shadow-md flex flex-col h-fit space-y-3">
+                <h2 class="text-xl font-semibold mb-2 text-center border-b border-dark-border pb-2" data-translate="results_title">نتایج تحلیل</h2>
+                <div id="results-display" class="space-y-1.5 text-sm flex-grow">
+                    <!-- Results populated by JS. Use Flexbox for layout -->
+                    <div class="flex justify-between items-center"><strong data-translate="data_count"></strong> <span id="result-count" class="font-mono text-dark-text-muted">-</span></div>
+                    <div class="flex justify-between items-center">
+                        <span><strong data-translate="mean_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="mean_tooltip">ⓘ</span></span>
+                        <span id="result-mean" class="font-mono text-dark-text-muted">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span><strong data-translate="geo_mean_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="geo_mean_tooltip">ⓘ</span></span>
+                        <span id="result-gm" class="font-mono text-dark-text-muted">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                         <span><strong data-translate="std_dev_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="std_dev_tooltip">ⓘ</span></span>
+                         <span id="result-std" class="font-mono font-semibold text-highlight-neutral">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                         <span><strong data-translate="downside_dev_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="downside_dev_tooltip">ⓘ</span></span>
+                         <span id="result-dsd" class="font-mono text-dark-text-muted">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                         <span><strong data-translate="variance_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="variance_tooltip">ⓘ</span></span>
+                         <span id="result-var" class="font-mono text-dark-text-muted">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                         <span><strong data-translate="cv_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="cv_tooltip">ⓘ</span></span>
+                         <span id="result-cv" class="font-mono text-dark-text-muted">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                         <span><strong data-translate="mdd_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="mdd_tooltip">ⓘ</span></span>
+                         <span id="result-mdd" class="font-mono font-semibold text-highlight-neg">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                         <span><strong data-translate="mdd_period_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="mdd_period_tooltip">ⓘ</span></span>
+                         <span id="result-mdd-period" class="font-mono text-dark-text-muted">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                         <span><strong data-translate="skewness_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="skewness_tooltip">ⓘ</span></span>
+                         <span id="result-skew" class="font-mono text-dark-text-muted">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                         <span><strong data-translate="kurtosis_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="kurtosis_tooltip">ⓘ</span></span>
+                         <span id="result-kurt" class="font-mono text-dark-text-muted">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                         <span><strong data-translate="var_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="var_tooltip">ⓘ</span></span>
+                         <span id="result-var5" class="font-mono font-semibold text-highlight-neg">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                         <span><strong data-translate="var_95_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="var_95_tooltip">ⓘ</span></span>
+                         <span id="result-var95" class="font-mono font-semibold text-highlight-pos">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                         <span><strong data-translate="max_gain_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="max_gain_tooltip">ⓘ</span></span>
+                         <span id="result-max-gain" class="font-mono font-semibold text-highlight-pos">-</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                         <span><strong data-translate="sharpe_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="sharpe_tooltip">ⓘ</span></span>
+                         <span id="result-sharpe" class="font-mono font-semibold text-highlight-neutral">-</span>
+                    </div>
+                     <div class="flex justify-between items-center">
+                         <span><strong data-translate="sortino_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="sortino_tooltip">ⓘ</span></span>
+                         <span id="result-sortino" class="font-mono font-semibold text-highlight-neutral">-</span>
+                    </div>
+                </div>
+                 <!-- Data Management Buttons -->
+                 <div class="mt-auto pt-4 space-y-2 border-t border-dark-border">
+                    <button id="export-results-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="save_results_button" disabled>ذخیره نتایج</button>
+                    <h3 class="text-base font-semibold pt-2 text-center text-dark-text-muted" data-translate="data_management_title">مدیریت داده‌ها</h3>
+                    <div class="flex flex-col sm:flex-row gap-2 mt-1">
+                        <label for="import-file" class="cursor-pointer flex-1 text-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-150" data-translate="import_button">وارد کردن داده</label>
+                        <input type="file" id="import-file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" class="hidden">
+                        <button id="export-data-button" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="export_data_button" disabled>ذخیره داده‌ها</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="lg:col-span-2 space-y-6">
+
+                <!-- Input Section -->
+                <section class="bg-dark-card p-4 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold mb-3" data-translate="add_data_title">۱. افزودن داده جدید (%)</h2>
+                    <p class="text-sm text-dark-text-muted mb-3" data-translate="add_data_hint">راهنما...</p>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                         <textarea id="value-entry" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="2" data-translate-placeholder="add_data_placeholder" placeholder="مقادیر..."></textarea>
+                         <button id="add-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_button">افزودن</button>
+                    </div>
+                </section>
+
+                <!-- Edit/Delete Section -->
+                <section class="bg-dark-card p-4 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold mb-3" data-translate="edit_delete_title">۲. ویرایش / حذف داده</h2>
+                    <div class="flex flex-col sm:flex-row flex-wrap gap-2 items-center">
+                        <select id="edit-select" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 w-full sm:w-auto mb-2 sm:mb-0" disabled>
+                            <option value="" data-translate="select_option">انتخاب...</option>
+                            <!-- Options populated by JS -->
+                        </select>
+                        <input type="text" id="edit-value-entry" class="w-full sm:w-32 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 mb-2 sm:mb-0" data-translate-placeholder="edit_placeholder" placeholder="مقدار جدید" disabled>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button id="save-edit-button" class="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="save_button" disabled>ذخیره</button>
+                            <button id="delete-button" class="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="delete_button" disabled>حذف</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- RF Rate Section -->
+                <section class="bg-dark-card p-4 rounded-lg shadow-md">
+                     <div class="flex flex-wrap items-center gap-2">
+                        <label for="rf-rate" class="text-base font-semibold whitespace-nowrap" data-translate="rf_title">۳. نرخ بازده بدون ریسک (% سالانه):</label>
+                        <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="rf_tooltip">ⓘ</span>
+                        <input type="text" id="rf-rate" class="w-24 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" value="2.0" data-translate-placeholder="rf_placeholder" placeholder="مثلا 2.5">
+                    </div>
+                </section>
+
+                <!-- Data List Section -->
+                <section class="bg-dark-card p-4 rounded-lg shadow-md flex flex-col" style="min-height: 200px;">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-xl font-semibold" data-translate="data_list_title">۴. لیست داده‌های فعلی</h2>
+                        <button id="clear-list-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="clear_list_button" disabled>پاک کردن</button>
+                    </div>
+                    <div id="data-display" class="flex-grow bg-[#2b2b2b] p-2 rounded border border-dark-border overflow-y-auto h-40 text-sm">
+                        <!-- Data items populated by JS -->
+                         <p class="text-dark-text-muted text-center p-4 data-placeholder" data-translate="list_empty_option">لیست خالی است.</p>
+                    </div>
+                </section>
+
+                <!-- Action Buttons Section -->
+                <section class="bg-dark-card p-4 rounded-lg shadow-md space-y-4">
+                     <button id="calculate-button" class="w-full bg-highlight-neutral hover:bg-amber-600 text-gray-900 font-bold py-3 px-4 rounded text-lg transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="calculate_button">۵. محاسبه معیارها</button>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button id="plot-hist-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_hist_button" disabled>هیستوگرام</button>
+                        <button id="plot-box-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_box_button" disabled>جعبه‌ای</button>
+                        <button id="plot-equity-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_equity_button" disabled>تجمعی</button>
+                        <button id="plot-qq-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_qq_button" disabled>QQ</button>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+
+         <!-- Status Bar -->
+        <footer class="mt-6 py-2 px-4 text-center text-sm text-dark-text-muted border-t border-dark-border">
+            <span id="status-bar" data-translate="status_ready">آماده.</span>
+        </footer>
+
+        <!-- Tooltip Container -->
+        <div id="tooltip" role="tooltip">
+            <!-- Content is set by JS -->
+        </div>
+
+         <!-- Plot Modal -->
+        <div id="plotModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-black/70" aria-labelledby="plotModalLabel" aria-modal="true" role="dialog">
+            <!-- Modal Dialog -->
+            <div class="bg-dark-card text-dark-text rounded-lg shadow-xl max-w-4xl w-full mx-4 p-1 flex flex-col" style="max-height: 90vh;">
+                 <!-- Modal Header -->
+                 <div class="flex justify-between items-center border-b border-dark-border pb-2 mb-1 px-4 pt-2">
+                    <h5 class="text-xl font-semibold" id="plotModalLabel" data-translate="plot_modal_title">نمودار</h5>
+                    <button type="button" class="text-dark-text-muted hover:text-white text-2xl font-bold" data-dismiss-plot-modal aria-label="Close">&times;</button>
+                 </div>
+                 <!-- Modal Body -->
+                 <div class="p-1 flex-grow overflow-hidden">
+                    <!-- Plotly container -->
+                    <div id="plot-container" class="w-full h-full min-h-[450px]"></div> <!-- Ensure w-full h-full and increased min-height -->
+                 </div>
+            </div>
+        </div>
+
+    </div> <!-- End Container -->
+
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+</body>
+</html> 
