@@ -2067,3 +2067,93 @@ function handleTooltipIconClick(event) {
 
     console.log(`SweetAlert shown for key: ${tooltipKey}`);
 }
+
+// --- Modal Closing Logic ---
+function closeModal() {
+    console.log("Closing modal...");
+    if (plotModal) {
+        plotModal.classList.add('hidden');
+        plotModal.classList.remove('flex');
+    }
+    document.body.style.overflow = 'auto'; // Restore scroll
+
+    // Clean up plot data after modal closes to free memory
+    if (plotContainer) {
+        try {
+            Plotly.purge(plotContainer);
+            console.log("Plot purged.");
+        } catch (e) {
+            console.error("Error purging plot on close:", e);
+        }
+    }
+    // Remove body/window level listeners added when modal opened
+    window.removeEventListener('keydown', escapeKeyHandler);
+    if(plotModal) plotModal.removeEventListener('click', backdropClickHandler); // Remove backdrop listener
+}
+
+// Define handlers globally so they can be removed correctly
+function closeModalHandler() {
+    console.log("Close button clicked");
+    closeModal();
+}
+
+function backdropClickHandler(event) {
+    // Only close if the click is directly on the backdrop (the modal element itself)
+    if (event.target === plotModal) {
+        console.log("Backdrop clicked");
+        closeModal();
+    }
+}
+
+function escapeKeyHandler(event) {
+    if (event.key === 'Escape') {
+        console.log("Escape key pressed");
+        closeModal();
+    }
+}
+
+// --- Initialization (Inside DOMContentLoaded) ---
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM fully loaded and parsed");
+
+    // Initial Setup
+    langSelect.value = currentLang;
+    updateLanguageUI();
+    updateStatus('status_ready');
+    resetResultsDisplay();
+    updateDataDisplay();
+    updateEditControlsState();
+    updateActionButtonsState();
+
+    // Initialize SweetAlert Tooltips ONCE
+    initializeSweetAlertTooltips();
+
+    // *** Add Close Button Listener ONCE using the correct variable ***
+    if (plotModalCloseButton) {
+        plotModalCloseButton.addEventListener('click', closeModalHandler);
+        console.log("Close button listener attached to:", plotModalCloseButton);
+    } else {
+        // Log error prominently if button not found with the assumed ID
+        console.error("CRITICAL: Plot modal close button with ID 'plotModalCloseButton' NOT FOUND!");
+    }
+
+    // --- Other Event Listeners ---
+    // ... (Keep existing listeners: langSelect, addButton, etc.) ...
+
+    // Window Resize Listener
+    // ... (Keep existing resize listener) ...
+
+    console.log("Event listeners attached.");
+    // --- REMOVE any duplicate listener attachments or function calls below this line --- 
+});
+
+// --- Core Functions ---
+// ... (Ensure no calls to initializeSweetAlertTooltips or old initializeTooltips inside addDataPoint, setLanguage, etc.) ...
+
+// ... (plotActionWrapper - Keep the version using plotContainer and plotModalLabel correctly)
+
+// ... (Rest of the functions) ...
+
+// --- FINAL CHECK: Ensure no duplicate DOMContentLoaded or function definitions ---
+
+console.log("script.js loaded and initialized.");
