@@ -1117,7 +1117,8 @@ function plotHistogramLogic(data) {
             }
         },
         histnorm: 'probability density', // Use density for overlay comparison
-        autobinx: true, // Ensure Plotly handles binning automatically and responsively
+        autobinx: false, // Disable autobin to use nbinsx
+        nbinsx: 35, // Suggest a higher number of bins
         // hoverinfo: 'x+y' // Show x-range and density - Replaced by hovertemplate
         hovertemplate: `${_t('plot_xlabel')}: %{x:.2f}%<br>${_t('plot_ylabel_hist')}: %{y:.4f}<extra></extra>`
     };
@@ -1157,6 +1158,7 @@ function plotHistogramLogic(data) {
         plotData.push(traceNorm);
     } else {
         traceHist.histnorm = ''; // Plot frequency if no normal fit possible
+        traceHist.nbinsx = 25; // Use a slightly lower number of bins if plotting frequency
         traceHist.hovertemplate = `${_t('plot_xlabel')}: %{x}<br>Frequency: %{y}<extra></extra>`; // Adjust hover for frequency
     }
 
