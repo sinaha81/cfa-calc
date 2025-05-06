@@ -148,6 +148,46 @@
        .swal2-close:focus {
             box-shadow: none !important; /* Remove default focus ring on close */
        }
+       /* Style for drag-over state on drop zone */
+      .drag-over-active {
+        outline: 3px dashed #3b82f6 !important; /* blue-500, Tailwind's primary color */
+        background-color: rgba(59, 130, 246, 0.1) !important; /* semi-transparent blue */
+        transition: background-color 0.2s ease-in-out, outline 0.2s ease-in-out;
+      }
+      #data-input-drop-zone::before, 
+      #data-input-drop-zone.drag-over-active::before, 
+      #data-input-drop-zone.empty-drop-zone::before {
+        display: none; /* Hide the pseudo-element prompt */
+      }
+
+      /* Styling for the new dedicated file drop area */
+      #dedicated-file-drop-area {
+        border: 2px dashed #4b5563; /* secondary/gray-600 */
+        border-radius: 0.375rem; /* rounded-md */
+        padding: 1.5rem; /* p-6 */
+        text-align: center;
+        color: #9ca3af; /* dark-text-muted/gray-400 */
+        transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+        min-height: 100px; /* Ensure it has some height */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      #dedicated-file-drop-area.drag-over-active {
+        border-color: #3b82f6; /* primary/blue-500 */
+        background-color: rgba(59, 130, 246, 0.1); /* semi-transparent blue */
+      }
+      #dedicated-file-drop-area p {
+        font-size: 0.875rem; /* text-sm */
+        margin-top: 0.5rem; /* mt-2 */
+      }
+      #dedicated-file-drop-area .drop-icon {
+        font-size: 2rem; /* text-3xl or similar */
+        color: #6b7280; /* gray-500 */
+        margin-bottom: 0.5rem; /* mb-2 */
+      }
+
     </style>
 </head>
 <body class="dark"> <!-- Ensure dark mode is active -->
@@ -238,25 +278,40 @@
                  <!-- Data Management Buttons -->
                  <div class="mt-auto pt-4 space-y-2 border-t border-dark-border">
                     <button id="export-results-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="save_results_button" disabled>ذخیره نتایج</button>
-                    <h3 class="text-base font-semibold pt-2 text-center text-dark-text-muted" data-translate="data_management_title">مدیریت داده‌ها</h3>
-                    <div class="flex flex-col sm:flex-row gap-2 mt-1">
-                        <label for="import-file" class="cursor-pointer flex-1 text-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-150" data-translate="import_button">وارد کردن داده</label>
-                        <input type="file" id="import-file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" class="hidden">
-                        <button id="export-data-button" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="export_data_button" disabled>ذخیره داده‌ها</button>
-                    </div>
                 </div>
             </aside>
 
             <!-- Main Content Area -->
-            <main class="lg:col-span-2 space-y-6">
+            <main class="lg:col-span-2 order-first lg:order-last space-y-6">
 
-                <!-- Input Section -->
-                <section class="bg-dark-card p-4 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold mb-3" data-translate="add_data_title">۱. افزودن داده جدید (%)</h2>
-                    <p class="text-sm text-dark-text-muted mb-3" data-translate="add_data_hint">راهنما...</p>
-                    <div class="flex flex-col sm:flex-row gap-2">
-                         <textarea id="value-entry" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="2" data-translate-placeholder="add_data_placeholder" placeholder="مقادیر..."></textarea>
-                         <button id="add-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_button">افزودن</button>
+                <!-- Input Section - Renaming ID and removing drop prompt attribute -->
+                <section id="data-input-methods-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
+                    <h2 class="text-lg font-semibold mb-3" data-translate="add_data_title">۲. افزودن داده جدید (%)</h2>
+                    
+                    <!-- Manual Data Input Area -->
+                    <div class="mb-6">
+                        <p class="text-sm text-dark-text-muted mb-3" data-translate="add_data_hint">راهنما...</p>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <textarea id="value-entry" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="2" data-translate-placeholder="add_data_placeholder" placeholder="مقادیر..."></textarea>
+                            <button id="add-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_button">افزودن</button>
+                        </div>
+                    </div>
+
+                    <!-- Divider Text (Optional) -->
+                    <div class="relative my-4">
+                        <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                            <div class="w-full border-t border-dark-border"></div>
+                        </div>
+                        <div class="relative flex justify-center">
+                            <span class="bg-dark-card px-2 text-sm text-dark-text-muted" data-translate="or_divider_text">یا</span>
+                        </div>
+                    </div>
+
+                    <!-- Dedicated File Drop Area -->
+                    <div id="dedicated-file-drop-area" class="cursor-pointer">
+                        <i class="fas fa-file-arrow-down drop-icon"></i>
+                        <p data-translate="drop_zone_prompt_dedicated">فایل CSV/Excel/TXT خود را اینجا بکشید و رها کنید</p>
+                        <input type="file" id="file-importer-input" accept=".csv, .xlsx, .xls, .txt" style="display: none;">
                     </div>
                 </section>
 
