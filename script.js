@@ -1026,61 +1026,31 @@ function plotActionWrapper(plotFunc, titleKey) {
              throw new Error("Plot container missing.");
         }
 
-        Plotly.newPlot(plotContainer, plotData, layout, {responsive: true});
+        const config = {
+            responsive: true,
+            displaylogo: false,
+            modeBarButtonsToRemove: ['sendDataToCloud', 'editInChartStudio', 'lasso2d', 'select2d'],
+            toImageButtonOptions: {
+                filename: (_t(titleKey).replace(/[^a-zA-Z0-9_\.\-]/g, '_') || 'plot_export'),
+                // format: 'png', // default is png
+                // height: plotContainer.offsetHeight || 600, // let plotly decide or use gd.layout.height
+                // width: plotContainer.offsetWidth || 800,   // let plotly decide or use gd.layout.width
+                scale: 1
+            }
+        };
+
+        Plotly.newPlot(plotContainer, plotData, layout, config);
 
         // --- Modal Handling ---
-        function closeModal() {
-            console.log("Closing modal...");
-            if (plotModal) {
-                plotModal.classList.add('hidden');
-                plotModal.classList.remove('flex');
-            }
-            document.body.style.overflow = 'auto'; // Restore scroll
-            // Clean up plot data after modal closes
-            if (plotContainer) {
-                try { Plotly.purge(plotContainer); } catch(e) { console.error("Error purging plot on close:", e); }
-            }
-            // Remove listeners specific to this modal instance
-             if(plotModalCloseButton) plotModalCloseButton.removeEventListener('click', closeModalHandler);
-             if(plotModal) plotModal.removeEventListener('click', backdropClickHandler);
-             window.removeEventListener('keydown', escapeKeyHandler); // Remove Escape key listener
-        }
-
-        function closeModalHandler() {
-            console.log("Close button clicked");
-            closeModal();
-        }
-
-        function backdropClickHandler(event) {
-            if (event.target === plotModal) {
-                console.log("Backdrop clicked");
-                closeModal();
-            }
-        }
-
-         function escapeKeyHandler(event) {
-             if (event.key === 'Escape') {
-                 console.log("Escape key pressed");
-                 closeModal();
-             }
-         }
-
-        // Remove previous listeners before adding new ones
-        if(plotModalCloseButton) plotModalCloseButton.removeEventListener('click', closeModalHandler);
-        if(plotModal) plotModal.removeEventListener('click', backdropClickHandler);
+        // Remove previous listeners before adding new ones for backdrop and escape key
         window.removeEventListener('keydown', escapeKeyHandler);
+        if(plotModal) plotModal.removeEventListener('click', backdropClickHandler);
 
         // Add new listeners
-        if (plotModalCloseButton) {
-            plotModalCloseButton.addEventListener('click', closeModalHandler);
-        } else {
-            console.error("Plot modal close button not found!");
+        if (plotModal) {
+            plotModal.addEventListener('click', backdropClickHandler);
+            window.addEventListener('keydown', escapeKeyHandler);
         }
-         if (plotModal) {
-             plotModal.addEventListener('click', backdropClickHandler);
-             // Add Escape key listener when modal is open
-             window.addEventListener('keydown', escapeKeyHandler);
-         }
 
         // Show the modal
         if (plotModal) {
@@ -1117,6 +1087,7 @@ const ACCENT_COLOR_POS = '#34d399';      // Emerald-400 (e.g., Gain line, positi
 const ACCENT_COLOR_MEAN = '#fbbf24';     // Amber-400 (Mean line)
 const ACCENT_COLOR_MEDIAN = '#60a5fa';   // Blue-400 (Median line)
 const ACCENT_COLOR_FIT = '#a78bfa';      // Violet-400 (Fit lines)
+const ACCENT_COLOR_KDE = '#14b8a6';       // Teal-500 (KDE line)
 const ACCENT_COLOR_EQUITY = '#22c55e';   // Green-500 (Equity curve)
 
 
@@ -1146,11 +1117,14 @@ function plotHistogramLogic(data) {
             }
         },
         histnorm: 'probability density', // Use density for overlay comparison
-        hoverinfo: 'x+y' // Show x-range and density
+        autobinx: true, // Ensure Plotly handles binning automatically and responsively
+        // hoverinfo: 'x+y' // Show x-range and density - Replaced by hovertemplate
+        hovertemplate: `${_t('plot_xlabel')}: %{x:.2f}%<br>${_t('plot_ylabel_hist')}: %{y:.4f}<extra></extra>`
     };
 
+    const plotData = [traceHist];
+
     // --- Normal Distribution Fit Trace ---
-    let traceNorm = null;
     if (n > 1 && !isNaN(mean) && !isNaN(std) && std > 1e-9) {
         const xMin = Math.min(...data);
         const xMax = Math.max(...data);
@@ -1166,7 +1140,7 @@ function plotHistogramLogic(data) {
             const pdf = (1 / (std * Math.sqrt(2 * Math.PI))) * Math.exp(-Math.pow(x - mean, 2) / (2 * Math.pow(std, 2)));
             yNormPDF.push(pdf);
         }
-        traceNorm = {
+        const traceNorm = {
             x: xNorm,
             y: yNormPDF,
             type: 'scatter',
@@ -1177,14 +1151,43 @@ function plotHistogramLogic(data) {
                 dash: 'dashdot',
                 width: 1.5
             },
-            hoverinfo: 'name'
+            // hoverinfo: 'name' // Replaced by hovertemplate
+            hovertemplate: `%{name}<br>${_t('plot_xlabel')}: %{x:.2f}%<br>Density: %{y:.4f}<extra></extra>`
         };
+        plotData.push(traceNorm);
     } else {
         traceHist.histnorm = ''; // Plot frequency if no normal fit possible
+        traceHist.hovertemplate = `${_t('plot_xlabel')}: %{x}<br>Frequency: %{y}<extra></extra>`; // Adjust hover for frequency
     }
 
-    const plotData = [traceHist];
-    if (traceNorm) plotData.push(traceNorm);
+    // --- Kernel Density Estimation (KDE) Trace ---
+    if (n > 1 && typeof ss !== 'undefined' && typeof ss.kernelDensityEstimation === 'function') {
+        try {
+            // Use Silverman's rule of thumb for bandwidth, common robust choice
+            const kdePoints = ss.kernelDensityEstimation(data, 'gaussian', 'silverman');
+            const xKde = kdePoints.map(p => p[0]);
+            const yKde = kdePoints.map(p => p[1]);
+
+            if (xKde.length > 0 && yKde.length > 0) {
+                const traceKDE = {
+                    x: xKde,
+                    y: yKde,
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: _t('plot_kde_label'),
+                    line: {
+                        color: ACCENT_COLOR_KDE,
+                        width: 1.8,
+                        dash: 'solid' // Solid line for KDE
+                    },
+                    hovertemplate: `${_t('plot_kde_label')}<br>${_t('plot_xlabel')}: %{x:.2f}%<br>Density: %{y:.4f}<extra></extra>`
+                };
+                plotData.push(traceKDE);
+            }
+        } catch (kdeError) {
+            console.warn("Error calculating KDE:", kdeError);
+        }
+    }
 
     // --- Layout --- 
     const layout = {
@@ -1233,7 +1236,8 @@ function plotHistogramLogic(data) {
              plotData.push({
                 x: [null], y: [null], mode: 'lines',
                 line: { color: color, width: 2, dash: dash }, name: lineName,
-                hoverinfo: 'name'
+                // hoverinfo: 'name'
+                hovertemplate: `%{name}<extra></extra>`
              });
         }
     };
@@ -1257,22 +1261,33 @@ function plotBoxplotLogic(data) {
     const traceBox = {
         y: data,
         type: 'box',
-        name: ' ', // No name needed for single box
-        boxpoints: 'all', // Show individual points
-        jitter: 0.4,      // Spread points slightly
-        pointpos: 0,      // Center points
-        marker: {         // Style for individual points
+        name: ' ',
+        boxpoints: 'all', 
+        jitter: 0.4,      
+        pointpos: 0,      
+        marker: {         
             color: PRIMARY_COLOR,
             size: 4,
             opacity: 0.7,
-            line: { color: DARK_BORDER_COLOR, width: 0.5 } // Point border
+            line: { color: DARK_BORDER_COLOR, width: 0.5 } 
         },
-        line: {           // Style for box lines (median, whiskers)
+        line: {           
             color: DARK_TEXT_COLOR
         },
-        fillcolor: 'rgba(59, 130, 246, 0.3)', // Semi-transparent primary color fill
-        hoverinfo: 'y',   // Show y-value on hover
-        boxmean: 'sd'     // Show mean and standard deviation diamond
+        fillcolor: 'rgba(59, 130, 246, 0.3)', 
+        // hoverinfo: 'y',   // Replaced by hovertemplate or using 'all' with hoverlabel
+        hoverinfo: 'all', // Use Plotly's rich default hover for box components
+        hoverlabel: {
+            bgcolor: DARK_BACKGROUND_COLOR,
+            bordercolor: PRIMARY_COLOR,
+            font: { color: DARK_TEXT_COLOR, family: 'Vazirmatn, sans-serif' }
+        },
+        // For individual points, hovertemplate on the trace level might override, 
+        // or Plotly might handle point hover differently with hoverinfo: 'all'.
+        // If individual point hover needs to be *different* from box summary, it's complex.
+        // Let's assume hoverlabel styles the default rich hover adequately.
+        // hovertemplate: `${_t('plot_ylabel_box')}: %{y:.2f}%<extra></extra>`, // This would apply to points if hoverinfo was 'y'
+        boxmean: 'sd'     
     };
 
     const plotData = [traceBox];
@@ -1331,13 +1346,14 @@ function plotEquityCurveLogic(data) {
         x: indices,
         y: equityCurve,
         type: 'scatter',
-        mode: 'lines', // Use lines only for cleaner look
-        name: _t('plot_equity_title'), // Use title as name
+        mode: 'lines', 
+        name: _t('plot_equity_title'), 
         line: {
-            color: ACCENT_COLOR_EQUITY, // Consistent green
+            color: ACCENT_COLOR_EQUITY, 
             width: 1.8
         },
-        hoverinfo: 'x+y' // Show period and value
+        // hoverinfo: 'x+y' // Replaced by hovertemplate
+        hovertemplate: `${_t('plot_equity_xlabel')}: %{x}<br>${_t('plot_equity_ylabel')}: %{y:,.0f}<extra></extra>`
     };
 
     const plotData = [traceEquity];
@@ -1441,7 +1457,8 @@ function plotQqplotLogic(data) {
             opacity: 0.8,
             line: { color: DARK_BORDER_COLOR, width: 0.5 }
         },
-        hoverinfo: 'x+y'
+        // hoverinfo: 'x+y' // Replaced by hovertemplate
+        hovertemplate: `${_t('plot_qq_xlabel')}: %{x:.2f}<br>${_t('plot_qq_ylabel')}: %{y:.2f}%<extra></extra>`
     };
 
     // Fit line based on sample mean and std dev (robustly handle calculation)
@@ -1472,7 +1489,8 @@ function plotQqplotLogic(data) {
             width: 1.5,
             dash: 'dash'
         },
-        hoverinfo: 'name'
+        // hoverinfo: 'name' // Replaced by hovertemplate
+        hovertemplate: `%{name}<extra></extra>`
     };
 
     const plotData = [traceScatter];
