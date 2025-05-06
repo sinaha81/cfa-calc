@@ -198,7 +198,13 @@ const texts = {
     'confirm_clear_text': {'fa': 'تمام داده‌ها پاک خواهند شد!', 'en': 'All data will be cleared!'},
     'cleared_title': {'fa': 'پاک شد!', 'en': 'Cleared!'},
     'drop_zone_prompt_dedicated': {'en': 'Drag & Drop your CSV/Excel/TXT file here', 'fa': 'فایل CSV/Excel/TXT خود را اینجا بکشید و رها کنید'},
-    'or_divider_text': {'en': 'OR', 'fa': 'یا'}
+    'or_divider_text': {'en': 'OR', 'fa': 'یا'},
+    'save_results_txt_button': {'en': "Save Results to TXT", 'fa': "ذخیره نتایج به TXT"},
+    'save_results_excel_button': {'en': "Save Results to Excel", 'fa': "ذخیره نتایج به Excel"},
+    'excel_sheet_results_title': {'en': "Analysis Results", 'fa': "نتایج تحلیل"},
+    'excel_sheet_raw_data_title': {'en': "Raw Data", 'fa': "داده‌های خام"},
+    'status_saving_txt_success': {'en': "Results saved to TXT file '{filename}'.", 'fa': "نتایج با موفقیت در فایل متنی '{filename}' ذخیره شد."},
+    'status_saving_excel_success': {'en': "Results saved to Excel file '{filename}'.", 'fa': "نتایج با موفقیت در فایل اکسل '{filename}' ذخیره شد."}
 };
 
 // --- DOM Element Selectors ---
@@ -217,7 +223,8 @@ const plotHistButton = document.getElementById('plot-hist-button');
 const plotBoxButton = document.getElementById('plot-box-button');
 const plotEquityButton = document.getElementById('plot-equity-button');
 const plotQqButton = document.getElementById('plot-qq-button');
-const exportResultsButton = document.getElementById('export-results-button');
+const exportResultsTxtButton = document.getElementById('export-results-txt-button'); // New TXT export button
+const exportResultsExcelButton = document.getElementById('export-results-excel-button'); // New Excel export button
 const dedicatedFileDropArea = document.getElementById('dedicated-file-drop-area'); // Correct ID
 const statusBar = document.getElementById('status-bar');
 const resultsDisplayDiv = document.getElementById('results-display');
@@ -852,7 +859,8 @@ function updateActionButtonsState() {
     if (plotBoxButton) plotBoxButton.disabled = !hasData;
     if (plotEquityButton) plotEquityButton.disabled = !hasData;
     if (plotQqButton) plotQqButton.disabled = !hasEnoughDataForCalc;
-    if (exportResultsButton) exportResultsButton.disabled = !hasResults;
+    if (exportResultsTxtButton) exportResultsTxtButton.disabled = !hasResults;
+    if (exportResultsExcelButton) exportResultsExcelButton.disabled = !hasResults;
     if (clearListButton) clearListButton.disabled = !hasData;
 }
 
@@ -1200,7 +1208,7 @@ function plotQqplotLogic(data) { /* ... (Implementation as before) ... */
 
 
 // --- File Export ---
-function exportResultsToTxt() {
+function exportResultsToTxtFile() { // Renamed function
     if (!calculatedResults || typeof calculatedResults.n !== 'number') { // Check if results exist
         Swal.fire(_t('warning_title'), _t('status_no_results'), 'warning');
         updateStatus('status_no_results', {}, 'warning'); return;
@@ -1222,10 +1230,8 @@ function exportResultsToTxt() {
         lines.push(_t('results_title'));
         lines.push("-".repeat(50));
 
-        // Helper remains the same
         const getResultLine = (labelKey, resultKey, options) => `${_t(labelKey)}: ${formatNumber(results[resultKey], options?.digits, options?.addPercent)}`;
 
-        // Add results lines
         lines.push(getResultLine('mean_label', 'mean', {digits:2, addPercent:true}));
         lines.push(getResultLine('geo_mean_label', 'gm', {digits:2, addPercent:true}));
         lines.push(getResultLine('std_dev_label', 'std', {digits:2, addPercent:true}));
@@ -1246,20 +1252,89 @@ function exportResultsToTxt() {
         lines.push("\n" + "=".repeat(50));
         lines.push(`Input Data (${inputData.length} points):`); // Use original length
         lines.push("-".repeat(50));
-        // Format each input point
         lines.push(...inputData.map((p, i) => `${formatNumber(i + 1, 0)}. ${formatNumber(p, 4)}%`));
         lines.push("=".repeat(50));
 
-        const outputText = lines.join('\n'); // Use newline character
+        const outputText = lines.join('\n');
         const blob = new Blob([outputText], { type: 'text/plain;charset=utf-8' });
         const dateStr = now.toISOString().slice(0, 10);
         const filename = `RiskAnalysisResults_${dateStr}.txt`;
 
         downloadBlob(blob, filename);
-        updateStatus('status_save_success', { filename: filename }, 'success');
+        updateStatus('status_saving_txt_success', { filename: filename }, 'success'); // Use new status key
 
     } catch (error) {
-        console.error("Error exporting results:", error);
+        console.error("Error exporting results to TXT:", error);
+        Swal.fire(_t('error_title'), _t('file_save_error_msg', { error: error.message }), 'error');
+        updateStatus('status_save_error', {}, 'error');
+    }
+}
+
+function exportResultsToExcelFile() {
+    if (!calculatedResults || typeof calculatedResults.n !== 'number') {
+        Swal.fire(_t('warning_title'), _t('status_no_results'), 'warning');
+        updateStatus('status_no_results', {}, 'warning'); return;
+    }
+    updateStatus('status_saving_results', {}, 'info'); // Generic saving status
+    const results = calculatedResults;
+    const inputData = dataPoints;
+    const now = new Date();
+    const locale = currentLang === 'fa' ? 'fa-IR' : 'en-US';
+    const dateTimeFormat = new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'medium' });
+
+    try {
+        // --- Create Raw Data Sheet --- (Sheet 1)
+        // Header for raw data
+        const rawDataSheetData = [[_t('col_return')]]; // Header row
+        inputData.forEach(point => {
+            rawDataSheetData.push([point]); // Push each data point as a new row in the first column
+        });
+        const rawDataWorksheet = XLSX.utils.aoa_to_sheet(rawDataSheetData);
+
+        // --- Create Results Summary Sheet --- (Sheet 2)
+        const resultsSheetData = [];
+        resultsSheetData.push([_t('app_title')]);
+        resultsSheetData.push([`${_t('data_count')}:`, formatNumber(results.n, 0)]);
+        resultsSheetData.push([_t('Date', {skipTranslation: true, defaultValue: 'Date'}) + ':', dateTimeFormat.format(now)]); // Using a helper to avoid 'Date' being translated if not present
+        resultsSheetData.push([`${_t('rf_title')}:`, formatNumber(results.rf, 2, true)]);
+        resultsSheetData.push([]); // Empty row for spacing
+
+        const addResultRow = (labelKey, value) => {
+            resultsSheetData.push([_t(labelKey), value]);
+        };
+
+        addResultRow('mean_label', formatNumber(results.mean, 2, true));
+        addResultRow('geo_mean_label', formatNumber(results.gm, 2, true));
+        addResultRow('std_dev_label', formatNumber(results.std, 2, true));
+        addResultRow('downside_dev_label', formatNumber(results.dsd, 2, true));
+        addResultRow('variance_label', formatNumber(results.var, 4, false));
+        addResultRow('cv_label', formatNumber(results.cv, 3, false));
+        addResultRow('mdd_label', formatNumber(results.mdd, 2, true));
+        addResultRow('mdd_period_label', formatNumber(results.mdd_period, 0, false));
+        addResultRow('skewness_label', formatNumber(results.skew, 3, false));
+        addResultRow('kurtosis_label', formatNumber(results.kurt, 3, false));
+        addResultRow('normality_label', `${_t('na_value')} (Calculation Removed)`);
+        addResultRow('var_label', formatNumber(results.var5, 2, true));
+        addResultRow('var_95_label', formatNumber(results.var95, 2, true));
+        addResultRow('max_gain_label', formatNumber(results.max_gain, 2, true));
+        addResultRow('sharpe_label', formatNumber(results.sh, 3, false));
+        addResultRow('sortino_label', formatNumber(results.so, 3, false));
+        
+        const resultsWorksheet = XLSX.utils.aoa_to_sheet(resultsSheetData);
+
+        // --- Create Workbook and Download ---
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, rawDataWorksheet, _t('excel_sheet_raw_data_title'));
+        XLSX.utils.book_append_sheet(workbook, resultsWorksheet, _t('excel_sheet_results_title'));
+
+        const dateStr = now.toISOString().slice(0, 10);
+        const filename = `RiskAnalysisResults_${dateStr}.xlsx`;
+        XLSX.writeFile(workbook, filename);
+
+        updateStatus('status_saving_excel_success', { filename: filename }, 'success');
+
+    } catch (error) {
+        console.error("Error exporting results to Excel:", error);
         Swal.fire(_t('error_title'), _t('file_save_error_msg', { error: error.message }), 'error');
         updateStatus('status_save_error', {}, 'error');
     }
@@ -1410,9 +1485,14 @@ document.addEventListener('DOMContentLoaded', () => {
         } else { console.warn(`Plot button ${btnInfo.id} not found.`); } // Warn instead of error
     });
 
-    if(exportResultsButton) {
-        exportResultsButton.addEventListener('click', exportResultsToTxt);
-    } else { console.error("Export results button not found"); }
+    if(exportResultsTxtButton) {
+        exportResultsTxtButton.addEventListener('click', exportResultsToTxtFile); // Updated to new function name
+    } else { console.error("Export TXT results button not found"); } 
+
+    const exportExcelButton = document.getElementById('export-results-excel-button');
+    if(exportExcelButton) {
+        exportExcelButton.addEventListener('click', exportResultsToExcelFile);
+    } else { console.error("Export Excel results button not found"); }
 
 
     // --- Initialize UI State & Other Setup ---
