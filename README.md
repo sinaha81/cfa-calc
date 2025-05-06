@@ -1,6 +1,6 @@
 # Advanced Risk & Return Analyzer
 
-![ site ]((https://sinaha81.github.io/cfa-calc/))
+![ site ]((https://github.com/sinaha81/cfa-calc/blob/main/image.png)(https://sinaha81.github.io/cfa-calc/))
 
 A user-friendly desktop application built with Python, CustomTkinter, and Matplotlib for analyzing the risk and performance metrics of a financial return series. It supports both English and Persian languages and features a modern dark theme for visualizations.
 
