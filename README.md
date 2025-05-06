@@ -1,6 +1,6 @@
 # Advanced Risk & Return Analyzer
 
-![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![]([https://img.shields.io/badge/License-MIT-blue.svg](https://sinaha81.github.io/cfa-calc/))
 
 A user-friendly desktop application built with Python, CustomTkinter, and Matplotlib for analyzing the risk and performance metrics of a financial return series. It supports both English and Persian languages and features a modern dark theme for visualizations.
 
