@@ -15,6 +15,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Add SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- jsPDF and html2canvas - REMOVED -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script> -->
+    <!-- jsPDF-AutoTable - REMOVED -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script> -->
     <script>
       // Optional: Configure Tailwind CSS
       tailwind.config = {
@@ -63,23 +68,6 @@
       ::-webkit-scrollbar-track { background: #1f2937; /* dark-card */ }
       ::-webkit-scrollbar-thumb { background-color: #4b5563; /* secondary */ border-radius: 10px; border: 2px solid #1f2937; }
       ::-webkit-scrollbar-thumb:hover { background-color: #6b7280; /* gray-500 */ }
-      /* Tooltip styling */
-      #tooltip {
-        position: absolute;
-        display: none;
-        background-color: #1f2937; /* dark-card */
-        color: #d1d5db; /* dark-text */
-        padding: 8px 12px;
-        border-radius: 6px;
-        border: 1px solid #374151; /* dark-border */
-        font-size: 0.875rem; /* text-sm */
-        z-index: 50;
-        max-width: 300px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      }
-      #tooltip.show {
-        display: block;
-      }
       /* Style for Plotly modal background */
       .modal-backdrop.show {
             opacity: 0.7;
@@ -197,7 +185,8 @@
         <!-- Header -->
         <header class="flex flex-wrap justify-between items-center gap-4 border-b border-dark-border pb-4">
             <h1 class="text-2xl md:text-3xl font-bold text-white" data-translate="app_title">تحلیلگر پیشرفته ریسک و بازده</h1>
-            <div>
+            <div class="flex items-center gap-3">
+                
                 <label for="lang-select" class="sr-only" data-translate="lang_select_label">زبان:</label>
                 <select id="lang-select" class="bg-dark-card text-dark-text border border-dark-border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="fa">فارسی</option>
@@ -277,8 +266,7 @@
                 </div>
                  <!-- Data Management Buttons -->
                  <div class="mt-auto pt-4 space-y-2 border-t border-dark-border">
-                    <button id="export-results-txt-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="save_results_txt_button" disabled>ذخیره نتایج به TXT</button>
-                    <button id="export-results-excel-button" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="save_results_excel_button" disabled>ذخیره نتایج به Excel</button>
+                    <button id="export-results-button" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="save_results_button_unified" disabled>ذخیره نتایج</button>
                 </div>
             </aside>
 
@@ -372,10 +360,11 @@
             <span id="status-bar" data-translate="status_ready">آماده.</span>
         </footer>
 
-        <!-- Tooltip Container -->
+        <!-- Tooltip Container - REMOVED AS PER REQUEST -->
+        <!-- 
         <div id="tooltip" role="tooltip">
-            <!-- Content is set by JS -->
-        </div>
+        </div> 
+        -->
 
          <!-- Plot Modal -->
         <div id="plotModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-black/70" aria-labelledby="plotModalLabel" aria-modal="true" role="dialog">
@@ -389,7 +378,7 @@
                  <!-- Modal Body -->
                  <div class="p-1 flex-grow overflow-hidden">
                     <!-- Plotly container -->
-                    <div id="plot-container" class="w-full h-full min-h-[450px]"></div> <!-- Ensure w-full h-full and increased min-height -->
+                    <div id="plot-container" class="w-full h-full min-h-[300px] md:min-h-[400px] lg:min-h-[450px]"></div> <!-- Ensure w-full h-full and responsive min-height -->
                  </div>
             </div>
         </div>
