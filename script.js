@@ -88,187 +88,395 @@ const texts = {
     'select_option': {'en': "Select...", 'fa': "انتخاب کنید..."},
     'data_option_format': {'en': "Data {index} ({value}%)", 'fa': "داده {index} ({value}%)"},
     'mean_tooltip': {
-        'en': `**Arithmetic Mean Return:**
-This is the simple average of observed returns over a period. While easy to calculate, it should be interpreted cautiously.
-
-**Use & Considerations for CFA:**
-*   **Starting Point:** Initial estimate of central tendency.
-*   **Outlier Sensitivity:** Extreme values can heavily skew the mean.
-*   **No Compounding Effect:** Doesn\'t reflect reinvestment of returns. Geometric mean (CAGR) is better for long-term performance.
-*   **Comparison with Median:** Significant difference can indicate skewness.
-*   **Best Use:** Estimating expected return for a single future period, assuming market conditions don\'t change.`,
         'fa': `**میانگین حسابی بازده (Arithmetic Mean Return):**
-این شاخص، میانگین ساده بازده‌های مشاهده شده در یک دوره زمانی معین است (مجموع بازده‌ها تقسیم بر تعداد دوره‌ها). اگرچه محاسبه آن آسان است و نقطه شروعی برای تحلیل بازده فراهم می‌کند، اما باید با احتیاط تفسیر شود.
+این شاخص، میانگین ساده بازده‌های مشاهده شده در یک دوره زمانی معین است (مجموع بازده‌ها تقسیم بر تعداد دوره‌ها). محاسبه آن آسان است و نقطه شروعی برای تحلیل بازده فراهم می‌کند.
 
 **کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
 *   **نقطه شروع تحلیل:** اولین برآورد از بازده مرکزی یک دارایی یا سبد در یک دوره مشخص.
-*   **حساسیت به داده‌های پرت (Outliers):** بازده‌های بسیار بزرگ یا بسیار کوچک (چه مثبت و چه منفی) می‌توانند میانگین حسابی را به شدت تحت تأثیر قرار داده و تصویر نادرستی از بازده "معمول" ارائه دهند.
-*   **عدم نمایش اثر مرکب شدن:** میانگین حسابی، اثر مرکب شدن بازده‌ها در طول زمان (reinvestment of returns) را در نظر نمی‌گیرد. برای ارزیابی عملکرد بلندمدت سرمایه‌گذاری، میانگین هندسی (CAGR) شاخص مناسب‌تری است.
-*   **مقایسه با میانه (Median):** تفاوت قابل توجه بین میانگین حسابی و میانه می‌تواند نشانه‌ای از چولگی (skewness) در توزیع بازده‌ها باشد.
-*   **بهترین کاربرد:** برای تخمین بازده مورد انتظار یک دارایی در یک دوره واحد در آینده (با فرض عدم تغییر شرایط بازار).`
+*   **حساسیت به داده‌های پرت (Outliers):** بازده‌های بسیار بزرگ یا بسیار کوچک (چه مثبت و چه منفی) می‌توانند میانگین حسابی را به شدت تحت تأثیر قرار داده و تصویر نادرستی از بازده "معمول" ارائه دهند. برای مثال، یک سود بسیار بزرگ در یک دوره می‌تواند میانگین را به طور نامتناسبی بالا ببرد.
+*   **عدم نمایش اثر مرکب شدن:** میانگین حسابی، اثر مرکب شدن بازده‌ها در طول زمان (reinvestment of returns) را در نظر نمی‌گیرد. این موضوع به خصوص در افق‌های سرمایه‌گذاری بلندمدت اهمیت پیدا می‌کند.
+*   **مقایسه با میانه (Median):** تفاوت قابل توجه بین میانگین حسابی و میانه می‌تواند نشانه‌ای از چولگی (skewness) در توزیع بازده‌ها باشد. اگر میانگین بزرگتر از میانه باشد، معمولاً نشان‌دهنده چولگی مثبت (تعداد بیشتری بازده کوچک و تعداد کمتری بازده بسیار بزرگ) است.
+*   **بهترین کاربرد:** برای تخمین بازده مورد انتظار یک دارایی در یک دوره واحد در آینده (با فرض عدم تغییر شرایط بازار و توزیع بازده). همچنین در مدل CAPM برای محاسبه بازده مورد انتظار استفاده می‌شود.
+*   **محدودیت:** به تنهایی تصویر کاملی از ریسک یا پایداری بازده‌ها ارائه نمی‌دهد. باید در کنار معیارهای ریسک مانند انحراف معیار و سایر شاخص‌های توزیع بازده بررسی شود.`,
+        'en': `**Arithmetic Mean Return:**
+This is the simple average of observed returns over a period (sum of returns divided by the number of periods). It's easy to calculate and provides a starting point for return analysis.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Starting Point:** Initial estimate of central tendency for an asset or portfolio over a specific period.
+*   **Outlier Sensitivity:** Extreme values (very large gains or losses) can heavily skew the mean, providing a distorted picture of "typical" returns. For instance, one very large profit can disproportionately inflate the mean.
+*   **No Compounding Effect:** Doesn't reflect the reinvestment of returns over time. This is particularly important for long-term investment horizons.
+*   **Comparison with Median:** A significant difference between the arithmetic mean and the median can indicate skewness in the return distribution. If the mean is greater than the median, it often suggests positive skewness (more small returns and fewer very large returns).
+*   **Best Use:** Estimating the expected return for a single future period, assuming market conditions and return distribution don't change. Also used in the CAPM for calculating expected return.
+*   **Limitation:** Alone, it doesn't provide a complete picture of risk or return sustainability. It should be analyzed alongside risk measures like standard deviation and other return distribution characteristics.`
     },
     'geo_mean_tooltip': {
-        'en': `**Geometric Mean (CAGR):** The average rate of return over multiple periods, assuming profits are reinvested. More accurate for time-series data like investment returns.\n\n*Usefulness:* Reflects the compound growth rate of an investment. Crucial for understanding long-term performance.`,
-        'fa': "**میانگین هندسی (CAGR):** میانگین نرخ بازده در چندین دوره، با فرض سرمایه‌گذاری مجدد سودها. برای داده‌های سری زمانی مانند بازده سرمایه‌گذاری دقیق‌تر است.\n\n*کاربرد:* نرخ رشد مرکب یک سرمایه‌گذاری را منعکس می‌کند. برای درک عملکرد بلندمدت حیاتی است."
+        'fa': `**میانگین هندسی بازده (Geometric Mean / CAGR):**
+میانگین هندسی، نرخ رشد مرکب سالانه (CAGR) یک سرمایه‌گذاری را در طول چند دوره زمانی نشان می‌دهد. این معیار اثر مرکب شدن بازده‌ها را در نظر می‌گیرد، یعنی فرض می‌کند که سودهای حاصل از سرمایه‌گذاری مجدداً سرمایه‌گذاری می‌شوند.
+
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **ارزیابی عملکرد بلندمدت:** شاخص بسیار مهمی برای ارزیابی عملکرد واقعی و بلندمدت سرمایه‌گذاری‌های پرریسک‌تر است، زیرا نرخ رشد "واقعی" را که سرمایه‌گذار تجربه کرده، نشان می‌دهد.
+*   **مقایسه سرمایه‌گذاری‌ها:** برای مقایسه عملکرد سرمایه‌گذاری‌های مختلف در طول زمان، به خصوص اگر افق سرمایه‌گذاری چند دوره باشد، مناسب‌تر از میانگین حسابی است.
+*   **همیشه کمتر یا مساوی میانگین حسابی:** میانگین هندسی همیشه کمتر یا مساوی میانگین حسابی همان مجموعه از بازده‌ها خواهد بود (مگر اینکه تمام بازده‌ها یکسان باشند که در این صورت برابر خواهند بود). هرچه نوسان بازده‌ها بیشتر باشد، تفاوت بین این دو میانگین نیز بیشتر خواهد شد.
+*   **محاسبه:** حاصلضرب (1+بازده دوره) برای تمام دوره‌ها، به توان (1 تقسیم بر تعداد دوره‌ها)، منهای 1. سپس در 100 ضرب می‌شود تا به درصد تبدیل شود.
+*   **محدودیت:** اگر هر یک از بازده‌های دوره 100-% یا کمتر باشد (یعنی ارزش سرمایه‌گذاری صفر یا منفی شود)، محاسبه میانگین هندسی با مشکل مواجه می‌شود یا تعریف نشده است. برای بازده‌های منفی بزرگ باید با احتیاط استفاده شود.
+*   **تفسیر:** نشان‌دهنده نرخ رشد یکنواختی است که اگر سرمایه‌گذاری در هر دوره با آن نرخ رشد می‌کرد، در نهایت به همان ارزش پایانی می‌رسید که با بازده‌های واقعی و نوسانی خود رسیده است.`,
+        'en': `**Geometric Mean Return (CAGR):**
+The geometric mean shows the Compound Annual Growth Rate (CAGR) of an investment over multiple periods. It accounts for the effect of compounding, assuming profits are reinvested.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Evaluating Long-Term Performance:** A crucial metric for assessing the true, long-term performance of investments, as it reflects the actual growth rate experienced by the investor.
+*   **Comparing Investments:** More appropriate than the arithmetic mean for comparing the performance of different investments over time, especially for multi-period horizons.
+*   **Always Less Than or Equal to Arithmetic Mean:** The geometric mean will always be less than or equal to the arithmetic mean of the same set of returns (unless all returns are identical, in which case they are equal). The greater the volatility of returns, the larger the difference between the two means.
+*   **Calculation:** The product of (1 + period return) for all periods, raised to the power of (1 divided by the number of periods), minus 1. Then multiplied by 100 for percentage.
+*   **Limitation:** If any period return is -100% or less (investment value becomes zero or negative), the geometric mean calculation can be problematic or undefined. Use with caution for large negative returns.
+*   **Interpretation:** Represents the constant rate of return that, if achieved in each period, would have resulted in the same final investment value as achieved with the actual, fluctuating returns.`
     },
     'std_dev_tooltip': {
-        'en': `**Standard Deviation of Returns:**
-A key statistical measure of the total volatility or dispersion of returns around their arithmetic mean. Represents the Total Risk of an investment.
-
-**Use & Considerations for CFA:**
-*   **Primary Risk Metric:** Higher standard deviation implies greater volatility, thus higher uncertainty and risk.
-*   **Risk Comparison:** Used to compare the risk of different investments (assuming normal or near-normal return distributions).
-*   **Input for Financial Models:** Essential input for CAPM, portfolio optimization models (e.g., Markowitz), and Sharpe Ratio calculations.
-*   **Interpret with Mean:** Should always be considered alongside the mean return. Coefficient of Variation (CV) combines these.
-*   **Normality Assumption Limitation:** Most effective when return distributions are approximately normal. For significant skewness or kurtosis, other risk measures (downside deviation, VaR, ES) might be more appropriate.
-*   **Calculation:** Square root of variance.`,
         'fa': `**انحراف معیار بازده (Standard Deviation of Returns):**
 یک شاخص آماری کلیدی برای اندازه‌گیری میزان پراکندگی یا نوسان کل بازده‌های یک دارایی یا سبد حول میانگین حسابی آن در یک دوره معین. این شاخص، ریسک کل (Total Risk) سرمایه‌گذاری را نمایندگی می‌کند.
 
 **کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
-*   **معیار اصلی ریسک:** انحراف معیار بالاتر به معنای نوسانات بیشتر و در نتیجه، عدم قطعیت بالاتر در مورد بازده‌های آتی و ریسک بیشتر است.
-*   **مقایسه ریسک دارایی‌ها:** برای مقایسه ریسک سرمایه‌گذاری‌های مختلف (با فرض توزیع نرمال یا نزدیک به نرمال بازده‌ها).
-*   **ورودی مدل‌های مالی:** در بسیاری از مدل‌های مالی مانند مدل قیمت‌گذاری دارایی‌های سرمایه‌ای (CAPM)، مدل‌های بهینه‌سازی پورتفولیو (مانند مارکویتز) و محاسبات نسبت شارپ، انحراف معیار یک ورودی اساسی است.
-*   **تفسیر در کنار میانگین:** انحراف معیار باید همیشه در کنار میانگین بازده تفسیر شود. ضریب تغییرات (CV) این دو را با هم ترکیب می‌کند.
-*   **محدودیت فرض توزیع نرمال:** انحراف معیار به عنوان معیار ریسک، زمانی بهترین کارایی را دارد که توزیع بازده‌ها تقریباً نرمال (متقارن و زنگوله‌ای شکل) باشد. در صورت وجود چولگی یا کشیدگی قابل توجه، معیارهای ریسک دیگری مانند انحراف معیار نزولی، VaR یا ES ممکن است مناسب‌تر باشند.
-*   **محاسبه:** جذر واریانس.`
-    },
-    'downside_dev_tooltip': {'en': `**Downside Deviation (Target=0):** Measures volatility of returns below a target return (here, 0%). Focuses only on negative volatility or \'bad\' risk.\n\n*Usefulness:* Helps differentiate between 'good' volatility (upside) and 'bad' volatility (downside). Used in Sortino Ratio.`, 'fa': `**انحراف معیار نزولی (هدف=۰):** نوسان بازده‌های کمتر از یک بازده هدف (در اینجا ۰٪) را اندازه‌گیری می‌کند. فقط بر نوسانات منفی یا ریسک 'بد' تمرکز دارد.\n\n*کاربرد:* به تمایز بین نوسان 'خوب' (روند صعودی) و نوسان 'بد' (روند نزولی) کمک می‌کند. در نسبت سورتینو استفاده می‌شود.`},
-    'variance_tooltip': {
-        'en': `**Variance of Returns:**
-The average of the squared deviations of returns from their arithmetic mean. Like standard deviation, it measures return dispersion.
+*   **معیار اصلی ریسک:** انحراف معیار بالاتر به معنای نوسانات بیشتر و در نتیجه، عدم قطعیت بالاتر در مورد بازده‌های آتی و ریسک بیشتر است. سرمایه‌گذاران ریسک‌گریز، انحراف معیار پایین‌تر را ترجیح می‌دهند (به ازای سطح معینی از بازده).
+*   **مقایسه ریسک دارایی‌ها:** برای مقایسه ریسک سرمایه‌گذاری‌های مختلف (با فرض توزیع نرمال یا نزدیک به نرمال بازده‌ها). دارایی با انحراف معیار بالاتر، پرریسک‌تر تلقی می‌شود.
+*   **ورودی مدل‌های مالی:** در بسیاری از مدل‌های مالی مانند مدل قیمت‌گذاری دارایی‌های سرمایه‌ای (CAPM)، مدل‌های بهینه‌سازی پورتفولیو (مانند مارکویتز برای ساخت مرز کارا) و محاسبات نسبت شارپ، انحراف معیار یک ورودی اساسی است.
+*   **تفسیر در کنار میانگین:** انحراف معیار باید همیشه در کنار میانگین بازده تفسیر شود. ضریب تغییرات (CV) این دو را با هم ترکیب می‌کند تا ریسک به ازای هر واحد بازده را نشان دهد.
+*   **محدودیت فرض توزیع نرمال:** انحراف معیار به عنوان معیار ریسک، زمانی بهترین کارایی را دارد که توزیع بازده‌ها تقریباً نرمال (متقارن و زنگوله‌ای شکل) باشد. در صورت وجود چولگی یا کشیدگی قابل توجه، انحراف معیار ممکن است تصویر کاملی از ریسک ارائه ندهد و معیارهای ریسک دیگری مانند انحراف معیار نزولی، VaR یا CVaR ممکن است مناسب‌تر باشند.
+*   **ریسک کل:** شامل ریسک سیستماتیک (بازار) و غیرسیستماتیک (خاص شرکت) می‌شود.`,
+        'en': `**Standard Deviation of Returns:**
+A key statistical measure of the total volatility or dispersion of returns around their arithmetic mean. Represents the Total Risk of an investment.
 
-**Use & Considerations for CFA:**
-*   **Basis for Standard Deviation:** Standard deviation is the square root of variance. Variance itself is less directly interpreted due to its squared unit.
-*   **Mathematical Properties:** Variance has useful mathematical properties for statistical and financial models (e.g., calculating portfolio variance).
-*   **Less Intuitive:** Being in squared units, its direct interpretation for risk is harder than standard deviation.
-*   **Outlier Sensitivity:** Highly affected by outliers, similar to arithmetic mean and standard deviation.`,
+**Use & Considerations for CFA Charterholders:**
+*   **Primary Risk Metric:** Higher standard deviation implies greater volatility, thus higher uncertainty and risk. Risk-averse investors prefer lower standard deviation for a given level of return.
+*   **Comparing Asset Risk:** Used to compare the risk of different investments (assuming normal or near-normal return distributions). An asset with a higher standard deviation is considered riskier.
+*   **Input for Financial Models:** Essential input for CAPM, portfolio optimization models (e.g., Markowitz for efficient frontier construction), and Sharpe Ratio calculations.
+*   **Interpret with Mean:** Should always be considered alongside the mean return. The Coefficient of Variation (CV) combines these to show risk per unit of return.
+*   **Normality Assumption Limitation:** Most effective when return distributions are approximately normal. For significant skewness or kurtosis, standard deviation may not fully capture risk, and other risk measures (downside deviation, VaR, CVaR) might be more appropriate.
+*   **Total Risk:** Encompasses both systematic (market) risk and unsystematic (firm-specific) risk.`
+    },
+    'downside_dev_tooltip': {
+        'fa': `**انحراف معیار نزولی (Downside Deviation / Semi-Deviation):**
+این معیار، نوسانات بازده‌های یک سرمایه‌گذاری را فقط برای دوره‌هایی که بازده از یک آستانه مشخص (معمولاً میانگین بازده، نرخ بدون ریسک، یا صفر) کمتر بوده است، اندازه‌گیری می‌کند. در این تحلیل، آستانه صفر در نظر گرفته شده است، یعنی فقط بازده‌های منفی در محاسبه ریسک دخیل هستند.
+
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **تمرکز بر ریسک نامطلوب:** بسیاری از سرمایه‌گذاران، نوسانات مثبت (بازده‌های بالاتر از حد انتظار) را "ریسک" تلقی نمی‌کنند. انحراف معیار نزولی فقط بر نوسانات "بد" یا زیان‌آور تمرکز دارد.
+*   **مفید برای توزیع‌های غیرمتقارن:** اگر توزیع بازده‌ها چوله باشد (به خصوص چولگی منفی)، انحراف معیار کل ممکن است ریسک واقعی را به درستی نشان ندهد. انحراف معیار نزولی در این موارد تصویر دقیق‌تری از ریسک زیان ارائه می‌دهد.
+*   **ورودی نسبت سورتینو:** این معیار در مخرج کسر نسبت سورتینو (Sortino Ratio) استفاده می‌شود که جایگزینی برای نسبت شارپ است و فقط ریسک زیان را جریمه می‌کند.
+*   **تعریف آستانه:** انتخاب آستانه (Target Return) مهم است. آستانه صفر به معنای تمرکز بر زیان‌های مطلق است. آستانه‌های دیگر مانند میانگین بازده یا نرخ بدون ریسک نیز قابل استفاده‌اند.
+*   **تفاوت با انحراف معیار کل:** اگر توزیع بازده متقارن باشد، انحراف معیار نزولی (با آستانه میانگین) تقریباً نصف انحراف معیار کل خواهد بود. در توزیع‌های چوله، این رابطه برقرار نیست.`,
+        'en': `**Downside Deviation (Semi-Deviation):**
+Measures the volatility of investment returns only for periods when the return was less than a specified target (usually the mean return, risk-free rate, or zero). In this analysis, the target is zero, meaning only negative returns contribute to the risk calculation.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Focus on Undesirable Risk:** Many investors do not perceive positive volatility (returns higher than expected) as "risk." Downside deviation focuses only on "bad" or loss-making volatility.
+*   **Useful for Asymmetric Distributions:** If return distributions are skewed (especially negatively skewed), standard deviation may not accurately reflect true risk. Downside deviation provides a more accurate picture of loss risk in such cases.
+*   **Input for Sortino Ratio:** This metric is used in the denominator of the Sortino Ratio, an alternative to the Sharpe Ratio that only penalizes downside risk.
+*   **Target Definition:** The choice of the target return is important. A zero target focuses on absolute losses. Other targets like mean return or risk-free rate can also be used.
+*   **Difference from Total Standard Deviation:** If the return distribution is symmetric, downside deviation (with mean as target) will be approximately half of the total standard deviation. This relationship doesn't hold for skewed distributions.`
+    },
+    'variance_tooltip': {
         'fa': `**واریانس بازده (Variance of Returns):**
 واریانس، میانگین مجذور انحرافات بازده‌ها از میانگین حسابی‌شان است. این شاخص، مانند انحراف معیار، میزان پراکندگی یا نوسان بازده‌ها را اندازه‌گیری می‌کند.
 
 **کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
-*   **پایه محاسبه انحراف معیار:** انحراف معیار، جذر واریانس است. واریانس به خودی خود به دلیل واحد مربع آن (مثلاً درصد مربع) کمتر به طور مستقیم تفسیر می‌شود.
-*   **خواص ریاضی:** واریانس دارای خواص ریاضی مفیدی است که استفاده از آن را در مدل‌های آماری و مالی (مانند محاسبه واریانس پورتفولیو) تسهیل می‌کند. برای مثال، واریانس مجموع متغیرهای تصادفی مستقل، برابر با مجموع واریانس‌های آنهاست (برخلاف انحراف معیار).
+*   **پایه محاسبه انحراف معیار:** انحراف معیار، جذر واریانس است. واریانس به خودی خود به دلیل واحد مربع آن (مثلاً درصد مربع) کمتر به طور مستقیم تفسیر می‌شود، اما از نظر ریاضی اهمیت دارد.
+*   **خواص ریاضی در نظریه پورتفولیو:** واریانس دارای خواص ریاضی مفیدی است که استفاده از آن را در مدل‌های آماری و مالی، به ویژه در نظریه پورتفولیو مارکویتز، تسهیل می‌کند. برای مثال، محاسبه واریانس یک پورتفولیو متشکل از چندین دارایی، با استفاده از واریانس تک تک دارایی‌ها و کوواریانس بین آن‌ها انجام می‌شود.
 *   **عدم شهود مستقیم:** از آنجا که واحد آن مجذور واحد بازده است، تفسیر مستقیم و شهودی آن برای ریسک، دشوارتر از انحراف معیار است.
-*   **حساسیت به داده‌های پرت:** همانند میانگین حسابی و انحراف معیار، واریانس نیز به شدت تحت تأثیر داده‌های پرت قرار می‌گیرد.`
+*   **حساسیت به داده‌های پرت:** همانند میانگین حسابی و انحراف معیار، واریانس نیز به شدت تحت تأثیر داده‌های پرت قرار می‌گیرد. یک داده پرت با فاصله زیاد از میانگین، به دلیل به توان دو رسیدن، تأثیر بسیار زیادی بر واریانس خواهد داشت.
+*   **استفاده در آزمون‌های آماری:** واریانس در بسیاری از آزمون‌های فرض آماری و مدل‌های رگرسیونی کاربرد دارد.`,
+        'en': `**Variance of Returns:**
+The average of the squared deviations of returns from their arithmetic mean. Like standard deviation, it measures return dispersion or volatility.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Basis for Standard Deviation:** Standard deviation is the square root of variance. Variance itself is less directly interpreted due to its squared unit (e.g., percent-squared) but is mathematically significant.
+*   **Mathematical Properties in Portfolio Theory:** Variance has useful mathematical properties that facilitate its use in statistical and financial models, particularly in Markowitz portfolio theory. For example, calculating the variance of a portfolio of multiple assets involves the variances of individual assets and the covariances between them.
+*   **Less Intuitive:** Being in squared units (e.g., if returns are in percent, variance is in percent-squared), its direct interpretation for risk is harder than standard deviation.
+*   **Outlier Sensitivity:** Highly affected by outliers, similar to arithmetic mean and standard deviation. An outlier with a large deviation from the mean will have a very large impact on variance due to the squaring effect.
+*   **Use in Statistical Tests:** Variance is used in many statistical hypothesis tests and regression models.`
     },
-    'cv_tooltip': {'en': "**Coefficient of Variation (CV):** Standard deviation divided by the absolute mean return. Measures risk per unit of return. Useful for comparing investments with different return levels.\n\n*Usefulness:* Provides a standardized measure of risk relative to return. Higher CV means more risk for each unit of expected return.", 'fa': "**ضریب تغییرات (CV):** انحراف معیار تقسیم بر قدر مطلق میانگین بازده. ریسک به ازای هر واحد بازده را اندازه‌گیری می‌کند. برای مقایسه سرمایه‌گذاری‌ها با سطوح بازده مختلف مفید است.\n\n*کاربرد:* یک معیار استاندارد شده از ریسک نسبت به بازده ارائه می‌دهد. CV بالاتر به معنای ریسک بیشتر برای هر واحد بازده مورد انتظار است."},
-    'mdd_tooltip': {'en': "**Maximum Drawdown (MDD):** The largest peak-to-trough decline during a specific period. Represents the worst possible loss from a previous high.\n\n*Usefulness:* Indicates the maximum potential loss an investor might have experienced. A key measure of downside risk and resilience.", 'fa': "**حداکثر افت سرمایه (MDD):** بزرگترین کاهش از اوج تا حضیض در یک دوره خاص. نشان‌دهنده بدترین زیان ممکن از یک سقف قبلی است.\n\n*کاربرد:* حداکثر زیان بالقوه‌ای که یک سرمایه‌گذار ممکن است تجربه کرده باشد را نشان می‌دهد. یک معیار کلیدی برای ریسک نزولی و انعطاف‌پذیری است."},
-    'mdd_period_tooltip': {'en': "**MDD Period (steps):** The number of periods (data points) over which the maximum drawdown occurred, from peak to trough.\n\n*Usefulness:* Shows how long the worst losing streak lasted. Provides context to the MDD magnitude.", 'fa': "**دوره MDD (تعداد دوره):** تعداد دوره‌ها (نقاط داده) که حداکثر افت سرمایه در طول آن رخ داده است، از اوج تا حضیض.\n\n*کاربرد:* نشان می‌دهد که بدترین دوره زیان‌ده چه مدت طول کشیده است. به بزرگی MDD زمینه می‌بخشد."},
-    'skewness_tooltip': {'en': "**Skewness:** Measures the asymmetry of the return distribution. \nPositive: Tail on the right (more large gains). \nNegative: Tail on the left (more large losses).\nZero: Symmetrical.\n\n*Usefulness:* Indicates the likelihood of extreme positive or negative returns. Investors often prefer positive skewness.", 'fa': "**چولگی:** عدم تقارن توزیع بازده را اندازه‌گیری می‌کند. \nمثبت: دنباله در سمت راست (سودهای بزرگ بیشتر). \nمنفی: دنباله در سمت چپ (زیان‌های بزرگ بیشتر).\nصفر: متقارن.\n\n*کاربرد:* احتمال بازده‌های شدید مثبت یا منفی را نشان می‌دهد. سرمایه‌گذاران اغلب چولگی مثبت را ترجیح می‌دهند."},
-    'kurtosis_tooltip': {'en': "**Excess Kurtosis:** Measures the 'tailedness' of the distribution. \nPositive (Leptokurtic): Fatter tails, more outliers (extreme events are more likely than normal distribution). \nNegative (Platykurtic): Thinner tails, fewer outliers. \nZero for normal distribution.\n\n*Usefulness:* Indicates the risk of extreme outcomes (fat tails). High kurtosis suggests higher probability of large shocks.", 'fa': "**کشیدگی اضافی:** 'دنباله‌دار بودن' توزیع را اندازه‌گیری می‌کند. \nمثبت (لپتوکورتیک): دنباله‌های چاق‌تر، مقادیر پرت بیشتر (وقایع شدید محتمل‌تر از توزیع نرمال هستند). \nمنفی (پلاتیکورتیک): دنباله‌های لاغرتر، مقادیر پرت کمتر. \nبرای توزیع نرمال صفر است.\n\n*کاربرد:* ریسک نتایج شدید (دنباله‌های چاق) را نشان می‌دهد. کشیدگی بالا نشان‌دهنده احتمال بیشتر شوک‌های بزرگ است."},
-    'normality_tooltip': {'en': "**Normality (Shapiro-Wilk Test):** This statistical test assesses if the data likely comes from a normally distributed population. (Note: Actual test is not performed in this version; placeholder.)\n\n*Usefulness:* Many financial models assume normality. If data is not normal, model assumptions might be violated.", 'fa': "**نرمال بودن (آزمون شاپیرو-ویلک):** این آزمون آماری بررسی می‌کند که آیا داده‌ها احتمالاً از یک جامعه با توزیع نرمال آمده‌اند یا خیر. (توجه: آزمون واقعی در این نسخه انجام نمی‌شود؛ صرفاً یک جایگزین است.)\n\n*کاربرد:* بسیاری از مدل‌های مالی نرمال بودن را فرض می‌کنند. اگر داده‌ها نرمال نباشند، ممکن است مفروضات مدل نقض شوند."},
-    'var_tooltip': {'en': "**Historical VaR 5% (Value at Risk):** The maximum loss expected (with 95% confidence) over a single period, based on historical data. E.g., a VaR 5% of -2% means there is a 5% chance of losing 2% or more.\n\n*Usefulness:* Provides an estimate of downside risk in a single number. Widely used in risk management.", 'fa': "**ارزش در معرض خطر (VaR) ۵٪ تاریخی:** حداکثر زیان مورد انتظار (با اطمینان ۹۵٪) در یک دوره واحد، بر اساس داده‌های تاریخی. به عنوان مثال، VaR ۵٪ برابر با ۲-% به این معنی است که ۵٪ احتمال دارد ۲٪ یا بیشتر زیان کنید.\n\n*کاربرد:* تخمینی از ریسک نزولی را در یک عدد واحد ارائه می‌دهد. به طور گسترده در مدیریت ریسک استفاده می‌شود."},
-    'var_95_tooltip': {'en': "**Historical Gain 95%:** The return that was exceeded 95% of the time historically. Represents a high-probability positive outcome.\n\n*Usefulness:* Shows the level of gain achieved in the vast majority of historical periods. Complements VaR by looking at the positive side.", 'fa': "**سود تاریخی ۹۵٪:** بازدهی که در ۹۵٪ مواقع تاریخی از آن فراتر رفته است. نشان‌دهنده یک نتیجه مثبت با احتمال بالا است.\n\n*کاربرد:* سطح سودی که در اکثریت قریب به اتفاق دوره‌های تاریخی به دست آمده است را نشان می‌دهد. با نگاه کردن به جنبه مثبت، VaR را تکمیل می‌کند."},
-    'max_gain_tooltip': {'en': "**Maximum Gain:** The single best return observed in the data series.\n\n*Usefulness:* Highlights the highest upside potential experienced historically. Can be an indicator of explosive growth potential, but also of high volatility if combined with large losses.", 'fa': "**حداکثر سود:** بهترین بازده مشاهده شده در سری داده‌ها.\n\n*کاربرد:* بالاترین پتانسیل رشد تجربه شده در تاریخ را برجسته می‌کند. می‌تواند نشانه‌ای از پتانسیل رشد انفجاری باشد، اما در صورت ترکیب با زیان‌های بزرگ، نشانه‌ای از نوسانات بالا نیز هست."},
-    'sharpe_tooltip': {'en': "**Sharpe Ratio:** (Mean Return - Risk-Free Rate) / Standard Deviation. Measures risk-adjusted return. Higher is better.\n\n*Usefulness:* Indicates how much excess return (above risk-free rate) is generated per unit of total risk (standard deviation). Allows comparison of different investments on a risk-adjusted basis.", 'fa': "**نسبت شارپ:** (میانگین بازده - نرخ بازده بدون ریسک) / انحراف معیار. بازده تعدیل‌شده بر اساس ریسک را اندازه‌گیری می‌کند. مقدار بالاتر بهتر است.\n\n*کاربرد:* نشان می‌دهد به ازای هر واحد ریسک کل (انحراف معیار) چه مقدار بازده مازاد (بالاتر از نرخ بدون ریسک) تولید می‌شود. امکان مقایسه سرمایه‌گذاری‌های مختلف را بر اساس تعدیل ریسک فراهم می‌کند."},
-    'sortino_tooltip': {'en': "**Sortino Ratio:** (Mean Return - Risk-Free Rate) / Downside Deviation. Similar to Sharpe, but only penalizes for downside volatility. Higher is better.\n\n*Usefulness:* Preferred by some over Sharpe as it doesn't penalize for 'good' (upside) volatility. Focuses on return relative to 'bad' risk.", 'fa': "**نسبت سورتینو:** (میانگین بازده - نرخ بازده بدون ریسک) / انحراف معیار نزولی. مشابه نسبت شارپ است، اما فقط برای نوسانات نزولی جریمه در نظر می‌گیرد. مقدار بالاتر بهتر است.\n\n*کاربرد:* توسط برخی به نسبت شارپ ترجیح داده می‌شود زیرا برای نوسانات 'خوب' (روند صعودی) جریمه در نظر نمی‌گیرد. بر بازده نسبت به ریسک 'بد' تمرکز دارد."},
-    'rf_tooltip': {'en': "**Risk-Free Rate (% Annually):** The theoretical rate of return of an investment with zero risk (e.g., government bonds). Used as a benchmark for other investments.\n\n*Usefulness:* Essential for calculating risk-adjusted return metrics like Sharpe and Sortino ratios. Represents the opportunity cost of taking on risk.", 'fa': "**نرخ بازده بدون ریسک (% سالانه):** نرخ بازده نظری یک سرمایه‌گذاری با ریسک صفر (مثلاً اوراق قرضه دولتی). به عنوان معیاری برای سایر سرمایه‌گذاری‌ها استفاده می‌شود.\n\n*کاربرد:* برای محاسبه معیارهای بازده تعدیل‌شده بر اساس ریسک مانند نسبت‌های شارپ و سورتینو ضروری است. هزینه فرصت پذیرش ریسک را نشان می‌دهد."},
-    'file_select_title': {'en': "Select Data File (CSV or Excel)", 'fa': "انتخاب فایل داده (CSV یا Excel)"},
-    'save_results_title': {'en': "Save Analysis Results", 'fa': "ذخیره نتایج تحلیل"},
-    'error_title': {'en': "Error", 'fa': "خطا"},
-    'warning_title': {'en': "Warning", 'fa': "هشدار"},
-    'info_title': {'en': "Information", 'fa': "اطلاعات"},
-    'invalid_format_msg': {'en': "Only CSV, Excel, and TXT files are supported.", 'fa': "فقط فایل‌های CSV ،Excel و TXT پشتیبانی می‌شوند."},
-    'file_not_found_msg': {'en': "File not found:\n{path}", 'fa': "فایل پیدا نشد:\n{path}"},
-    'file_read_error_msg': {'en': "Error reading file:\n{error}", 'fa': "خطایی در هنگام خواندن فایل رخ داد:\n{error}"},
-    'file_save_error_msg': {'en': "Error saving file:\n{error}", 'fa': "خطایی در هنگام ذخیره فایل رخ داد:\n{error}"},
-    'plot_hist_title': {'en': 'Histogram with VaR and Gain Tails', 'fa': 'هیستوگرام با نواحی VaR و سود'},
-    'plot_xlabel': {'en': 'Return (%)', 'fa': 'درصد بازده (%)'},
-    'plot_ylabel_hist': {'en': 'Frequency / Density', 'fa': 'فراوانی / چگالی'},
-    'plot_kde_label': {'en': 'Density Estimate (KDE)', 'fa': 'تخمین چگالی (KDE)'},
-    'plot_mean_label': {'en': 'Mean: {val}', 'fa': 'میانگین: {val}'},
-    'plot_median_label': {'en': 'Median: {val}', 'fa': 'میانه: {val}'},
-    'plot_norm_label': {'en': 'Normal Fit (μ={mean}, σ={std})', 'fa': 'توزیع نرمال متناظر (μ={mean}, σ={std})'},
-    'plot_hist_data_label': {'en': 'Data Frequency', 'fa': 'فراوانی داده‌ها'},
-    'plot_var_label': {'en': 'VaR 5% ({val}%)', 'fa': 'VaR ۵٪ ({val}%)'},
-    'plot_gain_label': {'en': 'Gain 95% ({val}%)', 'fa': 'سود ۹۵٪ ({val}%)'},
-    'plot_box_title': {'en': 'Box Plot of Returns', 'fa': 'نمودار جعبه‌ای بازده‌ها'},
-    'plot_ylabel_box': {'en': 'Return (%)', 'fa': 'درصد بازده (%)'},
-    'plot_equity_title': {'en': 'Equity Curve (Cumulative Growth)', 'fa': 'نمودار ارزش تجمعی'},
-    'plot_equity_ylabel': {'en': 'Cumulative Value (starts at 1000)', 'fa': 'ارزش تجمعی (شروع از ۱۰۰۰)'},
-    'plot_equity_xlabel': {'en': 'Period / Data Point Index', 'fa': 'دوره / ردیف داده'},
-    'plot_qq_title': {'en': 'Quantile-Quantile Plot (vs Normal Distribution)', 'fa': 'نمودار QQ (مقایسه با توزیع نرمال)'},
-    'plot_qq_ylabel': {'en': 'Sample Quantiles (Data)', 'fa': 'چارک‌های نمونه (داده‌ها)'},
-    'plot_qq_xlabel': {'en': 'Theoretical Quantiles (Normal)', 'fa': 'چارک‌های نظری (نرمال)'},
-    'na_value': {'en': "N/A", 'fa': "نامعتبر"},
-    'col_index': {'en': "Index", 'fa': "ردیف"},
-    'col_return': {'en': "Return (%)", 'fa': "بازده (%)"},
-    'plot_modal_title': {'en': 'Plot', 'fa': 'نمودار'},
-    'plotFailed': {'en': 'Plot generation failed.', 'fa': 'رسم نمودار با خطا مواجه شد.'},
-    'enterValidNumbers': {'en': 'Please enter valid numbers.', 'fa': 'لطفاً اعداد معتبر وارد کنید.'},
-    'enterData': {'en': 'Please enter some data first.', 'fa': 'لطفاً ابتدا داده وارد کنید.'},
-    'clear_list_confirm': {'en': 'Clear Entire List?', 'fa': 'پاک کردن کل لیست؟'},
-    'ok_button': {'en': 'OK', 'fa': 'باشه'},
-    'confirm_delete_text': {'fa': 'حذف خواهد شد!', 'en': 'will be deleted!'},
-    'cancel_button': {'fa': 'لغو', 'en': 'Cancel'},
-    'deleted_title': {'fa': 'حذف شد!', 'en': 'Deleted!'},
-    'confirm_clear_text': {'fa': 'تمام داده‌ها پاک خواهند شد!', 'en': 'All data will be cleared!'},
-    'cleared_title': {'fa': 'پاک شد!', 'en': 'Cleared!'},
-    'drop_zone_prompt_dedicated': {'en': 'Drag & Drop your CSV/Excel/TXT file here', 'fa': 'فایل CSV/Excel/TXT خود را اینجا بکشید و رها کنید'},
-    'or_divider_text': {'en': 'OR', 'fa': 'یا'},
-    'save_results_txt_button': {'en': "Save Results to TXT", 'fa': "ذخیره نتایج به TXT"}, // Kept for reference, but button is unified
-    'save_results_excel_button': {'en': "Save Results to Excel", 'fa': "ذخیره نتایج به Excel"}, // Kept for reference
-    'excel_sheet_results_title': {'en': "Analysis Results", 'fa': "نتایج تحلیل"},
-    'excel_sheet_raw_data_title': {'en': "Raw Data", 'fa': "داده‌های خام"},
-    'status_saving_txt_success': {'en': "Results saved to TXT file '{filename}'.", 'fa': "نتایج با موفقیت در فایل متنی '{filename}' ذخیره شد."},
-    'status_saving_excel_success': {'en': "Results saved to Excel file '{filename}'.", 'fa': "نتایج با موفقیت در فایل اکسل '{filename}' ذخیره شد."},
-    'save_results_button_unified': {'en': "Save Results", 'fa': "ذخیره نتایج"},
-    'export_format_title': {'en': "Select Export Format", 'fa': "انتخاب فرمت خروجی"},
-    'export_txt': {'en': "Text File (.txt)", 'fa': "فایل متنی (.txt)"},
-    'export_excel': {'en': "Excel File (.xlsx)", 'fa': "فایل اکسل (.xlsx)"},
-    // 'export_pdf': {'en': "PDF File (.pdf)", 'fa': "فایل PDF (.pdf)"}, // Removed PDF
-    'status_saving_pdf_success': {'en': "Results saved to PDF file '{filename}'.", 'fa': "نتایج با موفقیت در فایل PDF '{filename}' ذخیره شد."},
-    // 'include_charts_q': {'en': "Include charts in PDF?", 'fa': "آیا نمودارها در PDF ذخیره شوند؟"}, // Removed PDF
-    // 'metric_header_pdf': {'en': "Metric", 'fa': "شاخص"}, // Removed PDF
-    // 'value_header_pdf': {'en': "Value", 'fa': "مقدار"}  // Removed PDF
-    'boxplot_hover_stats': {'fa': 'آمار جعبه', 'en': 'Box Statistics'},
-    'boxplot_hover_max': {'fa': 'بیشینه (حصار بالا)', 'en': 'Max (Upper Fence)'},
-    'boxplot_hover_q3': {'fa': 'چارک سوم (Q3)', 'en': 'Q3'},
-    'boxplot_hover_median': {'fa': 'میانه', 'en': 'Median'},
-    'boxplot_hover_q1': {'fa': 'چارک اول (Q1)', 'en': 'Q1'},
-    'boxplot_hover_min': {'fa': 'کمینه (حصار پایین)', 'en': 'Min (Lower Fence)'},
-    'boxplot_hover_mean': {'fa': 'میانگین', 'en': 'Mean'},
-    'boxplot_hover_std': {'fa': 'انحراف معیار', 'en': 'Std. Dev.'},
-    'plot_ylabel_box': {'fa': 'درصد بازده (%)', 'en': 'Return (%)'}, 
-    'plot_box_title': {'fa': 'نمودار جعبه‌ای بازده‌ها', 'en': 'Box Plot of Returns'},
-    'equity_curve_label': {'fa': 'منحنی ارزش تجمعی', 'en': 'Equity Curve'},
-    'hwm_trace_label': {'fa': 'بیشترین ارزش (HWM)', 'en': 'High Watermark (HWM)'},
-    'period_label': {'fa': 'دوره', 'en': 'Period'},
-    'equity_value_label': {'fa': 'ارزش پرتفوی', 'en': 'Portfolio Value'},
-    'hwm_label': {'fa': 'بیشترین ارزش تا کنون', 'en': 'High Watermark'},
-    'drawdown_from_hwm_label': {'fa': 'افت از بیشترین ارزش', 'en': 'Drawdown from HWM'},
-    'plot_xlabel_equity': {'fa': 'تعداد دوره سپری شده', 'en': 'Number of Periods'},
-    'plot_ylabel_equity_value': {'fa': 'ارزش (مبنای ۱۰۰)', 'en': 'Value (Base 100)'},
-    'mdd_period_label': {'fa': 'دوره حداکثر افت سرمایه', 'en': 'Max Drawdown Period'}, // Already exists but ensure used if needed
-    'qq_data_quantiles_label': {'fa': 'چارک‌های داده', 'en': 'Data Quantiles'},
-    'qq_norm_ref_line_label': {'fa': 'خط مرجع نرمال', 'en': 'Normal Reference Line'},
-    'qq_hover_point': {'fa': 'نقطه چارک', 'en': 'Quantile Point'},
-    'qq_hover_theoretical': {'fa': 'چارک نظری', 'en': 'Theoretical Quantile'},
-    'qq_hover_sample': {'fa': 'چارک نمونه', 'en': 'Sample Quantile'},
-    'status_qq_insufficient_points': {'fa': 'نقاط معتبر کافی برای رسم نمودار QQ وجود ندارد.', 'en': 'Not enough valid data points to plot QQ chart.'},
-    'error_lib_missing': {'fa': 'کتابخانه مورد نیاز ({lib}) یافت نشد.', 'en': 'Required library ({lib}) not found.'},
+    'cv_tooltip': {
+        'fa': `**ضریب تغییرات (Coefficient of Variation - CV):**
+ضریب تغییرات یک معیار ریسک نسبی است که از تقسیم انحراف معیار بر قدر مطلق میانگین بازده به دست می‌آید. این شاخص نشان می‌دهد که به ازای هر واحد بازده مورد انتظار، چه میزان ریسک (نوسان) وجود دارد.
+
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **مقایسه ریسک دارایی‌های با بازده متفاوت:** CV برای مقایسه ریسک سرمایه‌گذاری‌هایی که میانگین بازده آن‌ها به طور قابل توجهی متفاوت است، بسیار مفید است. انحراف معیار به تنهایی ممکن است در این موارد گمراه‌کننده باشد. برای مثال، یک دارایی با بازده میانگین ۲۰٪ و انحراف معیار ۱۰٪، CV برابر ۰.۵ دارد. دارایی دیگر با بازده میانگین ۱۰٪ و انحراف معیار ۷٪، CV برابر ۰.۷ دارد. با وجود انحراف معیار کمتر، دارایی دوم به ازای هر واحد بازده، ریسک بیشتری دارد.
+*   **بدون واحد:** CV یک عدد بدون واحد است که تفسیر و مقایسه آن را آسان می‌کند.
+*   **هرچه کمتر، بهتر:** مقدار CV پایین‌تر نشان‌دهنده ریسک کمتر به ازای هر واحد بازده است و معمولاً مطلوب‌تر تلقی می‌شود.
+*   **محدودیت برای میانگین‌های نزدیک به صفر:** اگر میانگین بازده بسیار کوچک یا نزدیک به صفر باشد، CV می‌تواند مقادیر بسیار بزرگی به خود بگیرد و تفسیر آن دشوار شود یا حتی بی‌معنا باشد. همچنین برای میانگین‌های منفی، معمولاً از قدر مطلق میانگین در مخرج استفاده می‌شود تا از نتایج بی‌معنا جلوگیری شود.
+*   **مکمل سایر معیارها:** CV نباید به تنهایی استفاده شود، بلکه به عنوان یک ابزار مکمل در کنار سایر معیارهای ریسک و بازده مانند نسبت شارپ و بررسی توزیع بازده‌ها قرار می‌گیرد.`,
+        'en': `**Coefficient of Variation (CV):**
+The CV is a relative measure of risk, calculated by dividing the standard deviation by the absolute value of the mean return. It indicates how much risk (volatility) exists per unit of expected return.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Comparing Risk of Assets with Different Returns:** CV is very useful for comparing the risk of investments that have significantly different mean returns. Standard deviation alone might be misleading in such cases. For example, an asset with a mean return of 20% and a standard deviation of 10% has a CV of 0.5. Another asset with a mean return of 10% and a standard deviation of 7% has a CV of 0.7. Despite the lower standard deviation, the second asset is riskier per unit of return.
+*   **Unitless:** CV is a unitless number, making it easy to interpret and compare.
+*   **Lower is Better:** A lower CV indicates less risk per unit of return and is generally considered more desirable.
+*   **Limitation for Means Near Zero:** If the mean return is very small or close to zero, the CV can become very large and difficult to interpret or even meaningless. For negative means, the absolute value of the mean is typically used in the denominator to avoid nonsensical results.
+*   **Complements Other Metrics:** CV should not be used in isolation but as a complementary tool alongside other risk and return measures like the Sharpe ratio and an examination of the return distribution.`
+    },
+    'mdd_tooltip': {
+        'fa': `**حداکثر افت سرمایه (Maximum Drawdown - MDD):**
+MDD بزرگترین درصد کاهش از یک سقف (Peak) قبلی به یک حضیض (Trough) بعدی در طول یک دوره زمانی مشخص است. این شاخص نشان‌دهنده بدترین زیان تجربه شده توسط سرمایه‌گذاری است که در بالاترین نقطه وارد شده و در پایین‌ترین نقطه خارج شده باشد (قبل از اینکه یک سقف جدید شکل بگیرد).
+
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **اندازه‌گیری ریسک زیان شدید:** MDD یک معیار مهم برای ارزیابی ریسک نزولی و به خصوص ریسک تجربه زیان‌های بزرگ و طولانی مدت است. این شاخص به سرمایه‌گذار کمک می‌کند تا بدترین سناریوی تاریخی را درک کند.
+*   **تأثیر روانی:** زیان‌های بزرگ می‌توانند تأثیر روانی قابل توجهی بر سرمایه‌گذاران داشته باشند و منجر به تصمیمات احساسی شوند. MDD به ارزیابی تحمل ریسک سرمایه‌گذار کمک می‌کند.
+*   **مقایسه استراتژی‌ها و مدیران:** برای مقایسه عملکرد استراتژی‌های سرمایه‌گذاری مختلف یا مدیران صندوق‌ها، به خصوص از منظر مدیریت ریسک، استفاده می‌شود.
+*   **وابستگی به دوره زمانی:** مقدار MDD به دوره زمانی تحلیل شده بستگی دارد. دوره‌های طولانی‌تر احتمال مشاهده MDD بزرگتر را افزایش می‌دهند.
+*   **عدم نمایش فراوانی:** MDD فقط بزرگترین افت را نشان می‌دهد و اطلاعاتی در مورد فراوانی یا شدت سایر افت‌های کوچکتر ارائه نمی‌دهد.
+*   **اهمیت در مدیریت ثروت:** برای مشتریانی که به حفظ سرمایه اهمیت زیادی می‌دهند، MDD یک پارامتر کلیدی در انتخاب سرمایه‌گذاری‌ها است.`,
+        'en': `**Maximum Drawdown (MDD):**
+The MDD is the largest percentage decline from a previous peak to a subsequent trough during a specific period. It represents the worst loss an investment would have experienced if an investor bought at the highest point and sold at the lowest point before a new peak was formed.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Measuring Extreme Loss Risk:** MDD is a critical measure for assessing downside risk, especially the risk of experiencing large and prolonged losses. It helps investors understand the worst-case historical scenario.
+*   **Psychological Impact:** Large losses can have a significant psychological impact on investors, potentially leading to emotional decisions. MDD helps in assessing an investor's risk tolerance.
+*   **Comparing Strategies and Managers:** Used to compare the performance of different investment strategies or fund managers, particularly from a risk management perspective.
+*   **Time Period Dependency:** The MDD value depends on the analyzed time period. Longer periods increase the likelihood of observing a larger MDD.
+*   **No Frequency Information:** MDD only shows the largest drawdown and provides no information about the frequency or severity of other smaller drawdowns.
+*   **Importance in Wealth Management:** For clients who prioritize capital preservation, MDD is a key parameter in investment selection.`
+    },
+    'mdd_period_tooltip': {
+        'fa': `**دوره حداکثر افت سرمایه (MDD Period):**
+این شاخص، تعداد دوره‌ها (مثلاً روزها، هفته‌ها، یا ماه‌ها، بسته به فرکانس داده‌ها) را نشان می‌دهد که حداکثر افت سرمایه (MDD) در طول آن رخ داده است؛ یعنی از زمانی که ارزش سرمایه‌گذاری در سقف (Peak) بوده تا زمانی که به حضیض (Trough) رسیده است.
+
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **ارائه زمینه به MDD:** صرفاً دانستن مقدار MDD کافی نیست. دانستن اینکه این افت چقدر طول کشیده تا به کف خود برسد، به درک بهتر شدت و پایداری آن کمک می‌کند. یک MDD بزرگ که در مدت کوتاهی رخ داده، ممکن است از یک MDD مشابه که در مدت زمان بسیار طولانی‌تری اتفاق افتاده، تأثیر متفاوتی داشته باشد.
+*   **زمان بازیابی (Recovery Time):** اگرچه این شاخص مستقیماً زمان بازیابی (مدت زمان لازم برای بازگشت به سقف قبلی) را نشان نمی‌دهد، اما پیش‌زمینه‌ای برای آن فراهم می‌کند. دوره‌های افت طولانی‌تر معمولاً به زمان بازیابی طولانی‌تری نیز نیاز دارند.
+*   **ارزیابی پایداری استراتژی:** استراتژی‌هایی که دوره‌های افت کوتاهتری دارند، حتی اگر مقدار MDD آن‌ها مشابه سایرین باشد، ممکن است برای سرمایه‌گذاران با تحمل ریسک کمتر، جذاب‌تر باشند.
+*   **تکمیل کننده MDD:** این معیار باید همیشه در کنار مقدار MDD تفسیر شود تا تصویر کامل‌تری از ریسک تجربه شده ارائه دهد.`,
+        'en': `**MDD Period:**
+This indicates the number of periods (e.g., days, weeks, or months, depending on data frequency) over which the maximum drawdown (MDD) occurred; i.e., from the time the investment value was at its peak until it reached its trough.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Provides Context to MDD:** Knowing just the MDD magnitude isn't enough. Understanding how long it took for this drawdown to reach its bottom helps in better grasping its severity and persistence. A large MDD that occurred over a short period might have a different impact than a similar MDD that unfolded over a much longer timeframe.
+*   **Recovery Time:** While this metric doesn't directly show recovery time (time to get back to the previous peak), it provides a precursor. Longer drawdown periods often imply longer recovery times.
+*   **Assessing Strategy Resilience:** Strategies with shorter drawdown periods, even if their MDD magnitude is similar to others, might be more palatable for investors with lower risk tolerance.
+*   **Complements MDD:** This metric should always be interpreted alongside the MDD value to provide a more complete picture of the experienced risk.`
+    },
+    'skewness_tooltip': {
+        'fa': `**چولگی (Skewness):**
+چولگی معیاری برای عدم تقارن توزیع احتمالی بازده‌های یک سرمایه‌گذاری حول میانگین آن است.
+*   **چولگی مثبت (Positive Skewness):** نشان می‌دهد که دم سمت راست توزیع بلندتر یا "چاق‌تر" از دم سمت چپ است. این یعنی تعداد بیشتری بازده کوچک منفی یا نزدیک به صفر وجود دارد، اما احتمال وقوع بازده‌های بسیار بزرگ مثبت (داده‌های پرت مثبت) نیز بیشتر است. میانگین در این حالت معمولاً بزرگتر از میانه است.
+*   **چولگی منفی (Negative Skewness):** نشان می‌دهد که دم سمت چپ توزیع بلندتر یا "چاق‌تر" از دم سمت راست است. این یعنی تعداد بیشتری بازده کوچک مثبت یا نزدیک به صفر وجود دارد، اما احتمال وقوع بازده‌های بسیار بزرگ منفی (زیان‌های شدید یا داده‌های پرت منفی) نیز بیشتر است. میانگین در این حالت معمولاً کوچکتر از میانه است.
+*   **چولگی صفر:** توزیع کاملاً متقارن است (مانند توزیع نرمال).
+
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **درک ریسک و پتانسیل بازده نامتقارن:** چولگی به درک بهتر ماهیت ریسک و بازده کمک می‌کند. سرمایه‌گذاران معمولاً چولگی مثبت را ترجیح می‌دهند (پتانسیل سودهای بزرگ و نامحدود، در حالی که زیان‌ها محدود به ۱۰۰-٪ است)، هرچند این ممکن است با فراوانی بیشتر زیان‌های کوچک همراه باشد. چولگی منفی نشان‌دهنده ریسک "سقوط ناگهانی" یا زیان‌های فاجعه‌بار است.
+*   **ارزیابی استراتژی‌ها:** برخی استراتژی‌ها ذاتاً چولگی خاصی دارند. مثلاً فروش اختیار معامله (option writing) معمولاً چولگی منفی دارد (سودهای کوچک و مکرر، با ریسک زیان بزرگ و نادر).
+*   **کفایت معیارهای مبتنی بر میانگین-واریانس:** اگر چولگی قابل توجه باشد (مثلاً بیشتر از |0.5| یا |1|)، معیارهایی مانند نسبت شارپ که بر فرض نرمال بودن (و در نتیجه چولگی صفر) استوارند، ممکن است به تنهایی کافی نباشند.
+*   **تأثیر بر مدیریت ریسک:** چولگی منفی نیازمند توجه ویژه در مدیریت ریسک است، زیرا انحراف معیار به تنهایی ممکن است ریسک دنباله را کمتر از حد برآورد کند.`,
+        'en': `**Skewness:**
+Measures the asymmetry of the probability distribution of investment returns around its mean.
+*   **Positive Skewness:** Indicates the right tail of the distribution is longer or "fatter" than the left. This means more frequent small negative or near-zero returns, but a higher chance of very large positive returns (positive outliers). The mean is typically greater than the median.
+*   **Negative Skewness:** Indicates the left tail is longer or "fatter." This means more frequent small positive or near-zero returns, but a higher chance of very large negative returns (severe losses or negative outliers). The mean is typically less than the median.
+*   **Zero Skewness:** The distribution is perfectly symmetrical (like a normal distribution).
+
+**Use & Considerations for CFA Charterholders:**
+*   **Understanding Asymmetric Risk/Return Profiles:** Skewness helps in better understanding the nature of risk and return. Investors often prefer positive skewness (potential for large, unbounded gains while losses are limited to -100%), though this might come with more frequent small losses. Negative skewness indicates "crash risk" or catastrophic losses.
+*   **Evaluating Strategies:** Some strategies inherently have specific skewness. For example, option writing typically exhibits negative skewness (small, frequent gains with a risk of rare, large losses).
+*   **Adequacy of Mean-Variance Metrics:** If skewness is significant (e.g., beyond |0.5| or |1|), metrics like the Sharpe ratio, which assume normality (and thus zero skewness), may not be sufficient alone.
+*   **Impact on Risk Management:** Negative skewness requires special attention in risk management, as standard deviation alone might underestimate tail risk.`
+    },
+    'kurtosis_tooltip': {
+        'fa': `**کشیدگی اضافی (Excess Kurtosis):**
+کشیدگی معیاری برای سنجش "دنباله‌دار بودن" (tailedness) یا "قله‌دار بودن" (peakedness) توزیع بازده‌ها در مقایسه با توزیع نرمال است. کشیدگی اضافی، کشیدگی توزیع را نسبت به کشیدگی توزیع نرمال (که برابر با ۳ است) می‌سنجد. بنابراین، کشیدگی اضافی برای توزیع نرمال صفر است.
+*   **مثبت (Leptokurtic / لپتوکورتیک):** کشیدگی اضافی > ۰. توزیع دارای قله تیزتر و دنباله‌های "چاق‌تر" (fatter tails) نسبت به توزیع نرمال است. این یعنی احتمال وقوع داده‌های پرت (بازده‌های بسیار بزرگ مثبت یا منفی) بیشتر از آن چیزی است که توزیع نرمال پیش‌بینی می‌کند. داده‌ها بیشتر در اطراف میانگین و در دنباله‌ها متمرکز شده‌اند و کمتر در "شانه‌ها"ی توزیع قرار دارند.
+*   **منفی (Platykurtic / پلاتیکورتیک):** کشیدگی اضافی < ۰. توزیع دارای قله پهن‌تر و دنباله‌های "لاغرتر" (thinner tails) نسبت به توزیع نرمال است. این یعنی احتمال وقوع داده‌های پرت کمتر از توزیع نرمال است. داده‌ها بیشتر در شانه‌های توزیع پراکنده‌اند.
+*   **صفر (Mesokurtic / مزوکورتیک):** کشیدگی اضافی = ۰. توزیع دارای کشیدگی مشابه توزیع نرمال است.
+
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **ارزیابی ریسک دنباله (Tail Risk):** کشیدگی بالا (لپتوکورتیک) نشان‌دهنده ریسک بیشتر وقوع رویدادهای شدید و نادر (هم سودهای بسیار بزرگ و هم زیان‌های بسیار بزرگ) است. در این حالت، انحراف معیار به تنهایی ممکن است ریسک واقعی را کمتر از حد برآورد کند.
+*   **تأثیر بر مدل‌سازی ریسک:** مدل‌های مدیریت ریسک (مانند VaR) که بر فرض توزیع نرمال بنا شده‌اند، در حضور کشیدگی بالا ممکن است ریسک را دست کم بگیرند.
+*   **تشخیص حباب‌ها یا سقوط‌ها:** بازارهای مالی اغلب کشیدگی اضافی مثبت از خود نشان می‌دهند، که منعکس‌کننده این واقعیت است که حرکات شدید قیمت (چه مثبت و چه منفی) بیشتر از آنچه تحت توزیع نرمال انتظار می‌رود، رخ می‌دهند.
+*   **تفسیر مقادیر:** کشیدگی اضافی بیشتر از ۱ معمولاً قابل توجه تلقی می‌شود.`,
+        'en': `**Excess Kurtosis:**
+Kurtosis measures the "tailedness" or "peakedness" of the return distribution compared to a normal distribution. Excess kurtosis measures the kurtosis of a distribution relative to that of a normal distribution (which is 3). Thus, excess kurtosis for a normal distribution is 0.
+*   **Positive (Leptokurtic):** Excess Kurtosis > 0. The distribution has a sharper peak and "fatter tails" than a normal distribution. This means extreme outliers (very large positive or negative returns) are more likely than predicted by a normal distribution. Data are more concentrated around the mean and in the tails, and less in the "shoulders" of the distribution.
+*   **Negative (Platykurtic):** Excess Kurtosis < 0. The distribution has a flatter peak and "thinner tails" than a normal distribution. This means extreme outliers are less likely than in a normal distribution. Data are more spread out in the shoulders.
+*   **Zero (Mesokurtic):** Excess Kurtosis = 0. The distribution has kurtosis similar to a normal distribution.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Assessing Tail Risk:** High kurtosis (leptokurtic) indicates a greater risk of extreme, rare events (both very large gains and very large losses). In this case, standard deviation alone may underestimate true risk.
+*   **Impact on Risk Modeling:** Risk management models (like VaR) based on the assumption of normality may underestimate risk in the presence of high kurtosis.
+*   **Identifying Bubbles or Crashes:** Financial markets often exhibit positive excess kurtosis, reflecting the fact that extreme price movements (both positive and negative) occur more frequently than would be expected under a normal distribution.
+*   **Interpreting Values:** Excess kurtosis greater than 1 is often considered significant.`
+    },
+    'normality_tooltip': {
+        'fa': `**مفهوم آزمون نرمال بودن داده‌ها:**
+بسیاری از مدل‌ها و معیارهای مالی (مانند نسبت شارپ، انحراف معیار به عنوان ریسک کل، و مدل CAPM) بر این فرض بنا شده‌اند که بازده سرمایه‌گذاری از یک توزیع نرمال (زنگوله‌ای شکل) پیروی می‌کند. توزیع نرمال دارای ویژگی‌های خاصی است: متقارن است (چولگی صفر) و دارای کشیدگی خاصی است (کشیدگی اضافی صفر).
+
+**اهمیت بررسی نرمال بودن (حتی اگر در این برنامه محاسبه نشود):**
+*   **اعتبار مدل‌ها:** اگر داده‌های بازده واقعی نرمال نباشند، نتایج و تفاسیر حاصل از مدل‌هایی که بر فرض نرمال بودن استوارند، ممکن است گمراه‌کننده یا نادرست باشند.
+*   **درک ریسک واقعی:** انحراف معیار در توزیع‌های غیرنرمال (به خصوص با چولگی و کشیدگی بالا) ممکن است ریسک واقعی، به ویژه ریسک رویدادهای شدید (tail risk)، را کمتر از حد برآورد کند.
+*   **انتخاب معیارهای مناسب:** در صورت غیرنرمال بودن داده‌ها، استفاده از معیارهای جایگزین یا مکمل (مانند CVaR، نسبت سورتینو، نسبت امگا، یا بررسی مستقیم چولگی و کشیدگی) برای تحلیل ریسک و بازده ضروری می‌شود.
+*   **آزمون‌های رایج:** آزمون‌های آماری مختلفی مانند شاپیرو-ویلک (Shapiro-Wilk)، جارک-برا (Jarque-Bera)، یا کلموگروف-اسمیرنوف (Kolmogorov-Smirnov) برای بررسی نرمال بودن داده‌ها استفاده می‌شوند.
+
+**توجه:** این برنامه در حال حاضر آزمون آماری نرمال بودن را انجام نمی‌دهد. مقادیر چولگی و کشیدگی می‌توانند سرنخ‌هایی در مورد میزان انحراف از نرمال بودن ارائه دهند.`,
+        'en': `**Concept of Normality Testing:**
+Many financial models and metrics (like the Sharpe ratio, standard deviation as total risk, and CAPM) are based on the assumption that investment returns follow a normal (bell-shaped) distribution. A normal distribution has specific characteristics: it is symmetrical (zero skewness) and has a specific kurtosis (zero excess kurtosis).
+
+**Importance of Checking for Normality (even if not calculated in this app):**
+*   **Model Validity:** If actual return data are not normal, the results and interpretations from models assuming normality can be misleading or incorrect.
+*   **Understanding True Risk:** In non-normal distributions (especially with high skewness and kurtosis), standard deviation might underestimate true risk, particularly tail risk.
+*   **Choosing Appropriate Metrics:** If data are non-normal, using alternative or complementary metrics (like CVaR, Sortino ratio, Omega ratio, or directly examining skewness and kurtosis) becomes essential for risk and return analysis.
+*   **Common Tests:** Various statistical tests like Shapiro-Wilk, Jarque-Bera, or Kolmogorov-Smirnov are used to check for normality.
+
+**Note:** This application does not currently perform a statistical normality test. The skewness and kurtosis values can provide clues about deviations from normality.`
+    },
+    'var_tooltip': {
+        'fa': `**ارزش در معرض خطر (VaR) ۵٪ تاریخی:**
+VaR یک معیار ریسک است که حداکثر زیان مورد انتظار برای یک سرمایه‌گذاری را در یک دوره زمانی مشخص و با یک سطح اطمینان معین، بر اساس داده‌های تاریخی، تخمین می‌زند. VaR ۵٪ به این معناست که با اطمینان ۹۵٪، انتظار می‌رود زیان روزانه/دوره‌ای از این مقدار بیشتر نشود؛ یا به عبارت دیگر، ۵٪ احتمال دارد که زیان واقعی از این مقدار فراتر رود (بدتر شود).
+
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **اندازه‌گیری ریسک نزولی:** VaR یک عدد واحد برای بیان ریسک نزولی ارائه می‌دهد که فهم آن نسبتاً آسان است.
+*   **گزارش‌دهی ریسک و تخصیص سرمایه:** به طور گسترده در مدیریت ریسک، گزارش‌دهی به نهادهای نظارتی، و تعیین حدود ریسک و تخصیص سرمایه استفاده می‌شود.
+*   **مفروضات:** VaR تاریخی فرض می‌کند که الگوهای بازده گذشته در آینده نیز تکرار خواهند شد. روش‌های دیگری برای محاسبه VaR وجود دارد (پارامتریک، مونت کارلو) که مفروضات متفاوتی دارند.
+*   **محدودیت‌ها:**
+    *   **عدم نمایش شدت زیان در دنباله:** VaR نمی‌گوید اگر زیان از آستانه آن فراتر رفت، *چقدر* می‌تواند باشد. فقط نقطه برش را نشان می‌دهد. برای این منظور، معیارهایی مانند CVaR (کسری مورد انتظار) مناسب‌ترند.
+    *   **عدم جامعیت (Subadditivity):** VaR همیشه یک معیار ریسک جامع نیست، به این معنی که VaR یک پورتفولیو ممکن است از مجموع VaR اجزای آن بیشتر باشد (اثر تنوع‌بخشی را به درستی نشان نمی‌دهد). CVaR این خاصیت را دارد.
+    *   **حساسیت به پارامترها:** مقدار VaR به دوره زمانی، سطح اطمینان و روش محاسبه انتخاب شده حساس است.
+*   **تفسیر:** مقدار منفی نشان‌دهنده زیان است. مثلاً VaR ۵٪ برابر با ۲-% یعنی ۵٪ احتمال دارد در دوره بعدی حداقل ۲٪ زیان کنید.`,
+        'en': `**Historical Value at Risk (VaR) 5%:**
+VaR is a risk measure that estimates the maximum expected loss for an investment over a specific time horizon and at a given confidence level, based on historical data. A VaR 5% means that with 95% confidence, the daily/periodical loss is not expected to exceed this amount; or, in other words, there is a 5% chance that the actual loss will be worse than this amount.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Measuring Downside Risk:** VaR provides a single number for downside risk that is relatively easy to understand.
+*   **Risk Reporting and Capital Allocation:** Widely used in risk management, regulatory reporting, and setting risk limits and capital allocation.
+*   **Assumptions:** Historical VaR assumes that past return patterns will repeat in the future. Other methods exist for calculating VaR (parametric, Monte Carlo) with different assumptions.
+*   **Limitations:**
+    *   **Doesn't Show Severity of Tail Losses:** VaR doesn't tell you *how much* you could lose if the loss exceeds its threshold. It only shows the cutoff point. For this, metrics like CVaR (Expected Shortfall) are more suitable.
+    *   **Not Always Subadditive:** VaR is not always a coherent risk measure, meaning the VaR of a portfolio can be greater than the sum of the VaRs of its components (doesn't always properly reflect diversification). CVaR is subadditive.
+    *   **Parameter Sensitivity:** The VaR value is sensitive to the chosen time horizon, confidence level, and calculation method.
+*   **Interpretation:** A negative value indicates a loss. E.g., a VaR 5% of -2% means there is a 5% chance of losing at least 2% in the next period.`
+    },
+    'var_95_tooltip': {
+        'fa': `**سود تاریخی ۹۵٪ (صدک ۹۵ام بازده‌ها):**
+این معیار نشان‌دهنده سطحی از بازده است که در ۹۵٪ مواقع در دوره تاریخی مورد بررسی، بازده واقعی *کمتر یا مساوی* آن بوده است. به عبارت دیگر، تنها در ۵٪ مواقع، بازده واقعی از این سطح فراتر رفته (بهتر شده) است.
+
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **بررسی پتانسیل سود بالا (دنباله راست):** این معیار به ما کمک می‌کند تا یک نقطه مرجع برای بازده‌های بسیار خوب در توزیع تاریخی داشته باشیم. نشان می‌دهد که برای قرار گرفتن در ۵٪ بهترین بازده‌های تاریخی، چه عملکردی لازم بوده است.
+*   **مکمل VaR:** در حالی که VaR ۵٪ به بدترین ۵٪ زیان‌ها نگاه می‌کند، این معیار به بهترین ۵٪ سودها (یا به طور دقیق‌تر، نقطه‌ای که ۹۵٪ بازده‌ها از آن کمتر هستند) توجه دارد.
+*   **درک پراکندگی در سمت مثبت:** به درک بهتر گستره بازده‌های مثبت و احتمال وقوع سودهای بسیار بالا کمک می‌کند.
+*   **محدودیت:** مانند سایر معیارهای تاریخی، تضمینی برای تکرار آن در آینده نیست. همچنین، این معیار به تنهایی ریسک‌های مرتبط با کسب این سودها را نشان نمی‌دهد.
+*   **تفسیر:** اگر سود تاریخی ۹۵٪ برابر با ۱۰٪ باشد، یعنی در ۹۵ درصد از دوره‌های گذشته، بازده کمتر یا مساوی ۱۰٪ بوده و فقط در ۵ درصد از دوره‌ها، بازدهی بیشتر از ۱۰٪ کسب شده است.`,
+        'en': `**Historical Gain 95% (95th Percentile of Returns):**
+This metric indicates a level of return such that 95% of the time in the historical period under review, the actual return was *less than or equal to* it. In other words, only 5% of the time did the actual return exceed (was better than) this level.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Examining High Profit Potential (Right Tail):** This helps establish a reference point for very good returns in the historical distribution. It shows what performance was needed to be in the top 5% of historical returns.
+*   **Complements VaR:** While VaR 5% looks at the worst 5% of losses, this metric focuses on the best 5% of gains (or more accurately, the point below which 95% of returns lie).
+*   **Understanding Upside Dispersion:** Helps in better understanding the range of positive returns and the likelihood of very high profits.
+*   **Limitation:** Like other historical metrics, it's not a guarantee of future performance. Also, this metric alone doesn't show the risks associated with achieving these gains.
+*   **Interpretation:** If the Historical Gain 95% is 10%, it means that in 95% of past periods, the return was less than or equal to 10%, and only in 5% of periods was a return greater than 10% achieved.`
+    },
+    'max_gain_tooltip': {
+        'fa': `**حداکثر سود (Maximum Gain):**
+این معیار، بالاترین بازده مشاهده شده در یک تک دوره (مثلاً روزانه، هفتگی) در کل سری زمانی داده‌های ورودی است.
+
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **نشان‌دهنده پتانسیل رشد حداکثری در گذشته:** حداکثر سود به ما نشان می‌دهد که در بهترین حالت، سرمایه‌گذاری مورد نظر در یک دوره چقدر بازدهی داشته است. این می‌تواند جذاب باشد، اما باید با احتیاط تفسیر شود.
+*   **احتمال رویداد نادر:** حداکثر سود معمولاً یک رویداد نادر است و نباید انتظار داشت که به طور مکرر تکرار شود.
+*   **نیاز به بررسی زمینه:** مهم است که دلیل وقوع چنین سود بزرگی بررسی شود. آیا ناشی از یک رویداد خاص و غیرقابل تکرار بوده (مانند اعلام یک خبر بسیار مثبت) یا بخشی از رفتار معمول دارایی در شرایط خاص بازار است؟
+*   **عدم نمایش ریسک:** این معیار هیچ اطلاعاتی در مورد ریسک یا نوسانات کلی سرمایه‌گذاری ارائه نمی‌دهد. یک سرمایه‌گذاری می‌تواند حداکثر سود بالایی داشته باشد اما همزمان بسیار پرریسک و با زیان‌های بزرگ نیز همراه باشد.
+*   **مقایسه با حداکثر زیان (MDD):** مقایسه حداکثر سود با حداکثر افت سرمایه (MDD) و سایر معیارهای توزیع بازده می‌تواند دید بهتری نسبت به دامنه نوسانات و عدم تقارن احتمالی آن ارائه دهد.`,
+        'en': `**Maximum Gain:**
+This metric is the single highest observed return in a single period (e.g., daily, weekly) within the entire input data series.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Indicates Maximum Past Upside Potential:** The maximum gain shows how much the investment returned in its best single period. This can be attractive but must be interpreted with caution.
+*   **Likely a Rare Event:** The maximum gain is usually a rare event and should not be expected to repeat frequently.
+*   **Need for Contextual Review:** It's important to investigate why such a large gain occurred. Was it due to a specific, unrepeatable event (like a very positive news announcement) or part of the asset's typical behavior under certain market conditions?
+*   **No Risk Indication:** This metric provides no information about the overall risk or volatility of the investment. An investment can have a high maximum gain but also be very risky and prone to large losses.
+*   **Comparison with Maximum Drawdown (MDD):** Comparing the maximum gain with the MDD and other return distribution metrics can provide a better perspective on the range of fluctuations and potential asymmetry.`
+    },
+    'sharpe_tooltip': {
+        'fa': `**نسبت شارپ (Sharpe Ratio):**
+نسبت شارپ یک معیار شناخته شده برای اندازه‌گیری بازده تعدیل شده بر اساس ریسک است. این نسبت از تقسیم بازده مازاد یک سرمایه‌گذاری نسبت به نرخ بازده بدون ریسک (Excess Return) بر انحراف معیار آن (که به عنوان نماینده ریسک کل در نظر گرفته می‌شود) به دست می‌آید.
+فرمول: (میانگین بازده دارایی - نرخ بازده بدون ریسک) / انحراف معیار بازده دارایی.
+
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **مقایسه سرمایه‌گذاری‌ها:** نسبت شارپ امکان مقایسه جذابیت سرمایه‌گذاری‌های مختلف را بر اساس بازدهی که به ازای هر واحد ریسک ارائه می‌دهند، فراهم می‌کند. مقدار بالاتر نشان‌دهنده عملکرد بهتر به ازای ریسک پذیرفته شده است.
+*   **رتبه‌بندی پورتفولیوها و استراتژی‌ها:** به طور گسترده برای رتبه‌بندی مدیران سرمایه‌گذاری، صندوق‌ها و استراتژی‌های معاملاتی استفاده می‌شود.
+*   **مفروضات:** به طور ضمنی فرض می‌کند که بازده‌ها دارای توزیع نرمال هستند (یا حداقل توزیع متقارن با چولگی و کشیدگی کم). همچنین فرض می‌کند که انحراف معیار، نماینده مناسبی برای ریسک کل است.
+*   **محدودیت‌ها در توزیع‌های غیرنرمال:** اگر توزیع بازده‌ها به طور قابل توجهی غیرنرمال باشد (مثلاً چولگی یا کشیدگی زیادی داشته باشد)، نسبت شارپ ممکن است تصویر کاملی از عملکرد تعدیل شده بر اساس ریسک ارائه ندهد. در این موارد، معیارهایی مانند نسبت سورتینو یا نسبت امگا ممکن است مناسب‌تر باشند.
+*   **حساسیت به نرخ بدون ریسک:** انتخاب نرخ بدون ریسک مناسب اهمیت دارد و می‌تواند بر مقدار نسبت شارپ تأثیر بگذارد.
+*   **تفسیر مقادیر:** نسبت شارپ بالاتر از ۱ معمولاً خوب تلقی می‌شود، بالاتر از ۲ بسیار خوب و بالاتر از ۳ عالی است. با این حال، این مقادیر باید در زمینه بازار و نوع دارایی تفسیر شوند. نسبت شارپ منفی نشان می‌دهد که بازده دارایی حتی از نرخ بدون ریسک نیز کمتر بوده است.`,
+        'en': `**Sharpe Ratio:**
+A well-known measure of risk-adjusted return. It's calculated by dividing the excess return of an investment (over the risk-free rate) by its standard deviation (which represents total risk).
+Formula: (Mean Asset Return - Risk-Free Rate) / Standard Deviation of Asset Returns.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Comparing Investments:** The Sharpe ratio allows comparison of the attractiveness of different investments based on the return they generate per unit of risk. A higher value indicates better performance for the risk taken.
+*   **Ranking Portfolios and Strategies:** Widely used for ranking investment managers, funds, and trading strategies.
+*   **Assumptions:** Implicitly assumes that returns are normally distributed (or at least symmetrically distributed with low skewness and kurtosis). It also assumes standard deviation is an adequate proxy for total risk.
+*   **Limitations with Non-Normal Distributions:** If return distributions are significantly non-normal (e.g., high skewness or kurtosis), the Sharpe ratio may not provide a complete picture of risk-adjusted performance. In such cases, metrics like the Sortino ratio or Omega ratio might be more appropriate.
+*   **Sensitivity to Risk-Free Rate:** The choice of an appropriate risk-free rate is important and can affect the Sharpe ratio value.
+*   **Interpreting Values:** A Sharpe ratio above 1 is generally considered good, above 2 very good, and above 3 excellent. However, these values should be interpreted in the context of the market and asset type. A negative Sharpe ratio indicates the asset underperformed even the risk-free rate.`
+    },
+    'sortino_tooltip': {
+        'fa': `**نسبت سورتینو (Sortino Ratio):**
+نسبت سورتینو مشابه نسبت شارپ است، اما در مخرج کسر به جای انحراف معیار کل، از انحراف معیار نزولی (Downside Deviation) استفاده می‌کند. انحراف معیار نزولی فقط نوسانات بازده‌های کمتر از یک آستانه معین (معمولاً نرخ بدون ریسک یا صفر) را به عنوان ریسک در نظر می‌گیرد.
+فرمول: (میانگین بازده دارایی - نرخ بازده بدون ریسک یا آستانه) / انحراف معیار نزولی بازده دارایی.
+
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **تمرکز بر ریسک زیان:** این نسبت برای سرمایه‌گذارانی که بیشتر نگران ریسک زیان هستند و نوسانات مثبت را ریسک تلقی نمی‌کنند، معیار مناسب‌تری نسبت به شارپ است. این نسبت، بازده مازاد را فقط نسبت به ریسک "بد" یا نامطلوب می‌سنجد.
+*   **مفید برای توزیع‌های نامتقارن:** اگر توزیع بازده‌ها چوله باشد (به خصوص چولگی منفی)، نسبت سورتینو می‌تواند تصویر دقیق‌تری از عملکرد تعدیل شده بر اساس ریسک واقعی (ریسک زیان) ارائه دهد، زیرا نسبت شارپ در این حالت ممکن است گمراه‌کننده باشد.
+*   **جایگزین شارپ:** در تحلیل‌هایی که فرض نرمال بودن بازده‌ها معتبر نیست، سورتینو اغلب به شارپ ترجیح داده می‌شود.
+*   **انتخاب آستانه:** انتخاب آستانه برای محاسبه انحراف معیار نزولی (که می‌تواند نرخ بدون ریسک، صفر، یا حداقل بازده قابل قبول MAR باشد) بر مقدار نسبت سورتینو تأثیرگذار است. در این تحلیل، آستانه صفر برای انحراف معیار نزولی و نرخ بدون ریسک برای بازده مازاد در صورت کسر استفاده شده است.
+*   **مقدار بالاتر، بهتر:** همانند نسبت شارپ، مقدار بالاتر نسبت سورتینو نشان‌دهنده عملکرد بهتر به ازای هر واحد ریسک نزولی است.`,
+        'en': `**Sortino Ratio:**
+Similar to the Sharpe ratio, but it uses downside deviation instead of total standard deviation in the denominator. Downside deviation only considers the volatility of returns below a specified target (usually the risk-free rate or zero) as risk.
+Formula: (Mean Asset Return - Risk-Free Rate or Target) / Downside Deviation of Asset Returns.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Focus on Loss Risk:** This ratio is more suitable than Sharpe for investors who are primarily concerned with the risk of loss and do not consider positive volatility as risk. It measures excess return relative only to "bad" or undesirable risk.
+*   **Useful for Asymmetric Distributions:** If return distributions are skewed (especially negatively skewed), the Sortino ratio can provide a more accurate picture of risk-adjusted performance against actual loss risk, as the Sharpe ratio might be misleading in such cases.
+*   **Alternative to Sharpe:** Often preferred over Sharpe in analyses where the assumption of normality of returns is not valid.
+*   **Target Selection:** The choice of the target for calculating downside deviation (which can be the risk-free rate, zero, or a Minimum Acceptable Return - MAR) affects the Sortino ratio value. In this analysis, a zero target is used for downside deviation, and the risk-free rate for excess return in the numerator.
+*   **Higher is Better:** Like the Sharpe ratio, a higher Sortino ratio indicates better performance per unit of downside risk.`
+    },
+    'rf_tooltip': {
+        'fa': `**نرخ بازده بدون ریسک (% سالانه):**
+نرخ بازده بدون ریسک، نرخ بازده نظری یک سرمایه‌گذاری است که هیچ گونه ریسکی ندارد. در عمل، معمولاً بازده اوراق قرضه دولتی کوتاه‌مدت (مانند اسناد خزانه) به عنوان نماینده‌ای برای نرخ بدون ریسک در نظر گرفته می‌شود، زیرا فرض بر این است که دولت ناشر این اوراق، تعهدات خود را بازپرداخت خواهد کرد.
+
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **مبنای ارزیابی بازده مازاد:** نرخ بدون ریسک به عنوان یک نرخ مبنا (Benchmark) برای ارزیابی عملکرد سایر سرمایه‌گذاری‌های پرریسک‌تر استفاده می‌شود. بازده مازاد یک سرمایه‌گذاری، تفاوت بین بازده آن سرمایه‌گذاری و نرخ بدون ریسک است.
+*   **ورودی کلیدی در مدل‌های مالی:** در بسیاری از مدل‌های مالی و ارزش‌گذاری، از جمله مدل قیمت‌گذاری دارایی‌های سرمایه‌ای (CAPM) و در محاسبه نسبت‌های عملکرد تعدیل شده بر اساس ریسک مانند نسبت شارپ و سورتینو، نرخ بدون ریسک یک ورودی اساسی است.
+*   **هزینه فرصت پذیرش ریسک:** نرخ بدون ریسک نشان‌دهنده حداقل بازدهی است که یک سرمایه‌گذار می‌تواند بدون پذیرش هیچ ریسکی به دست آورد. بنابراین، هرگونه بازده اضافی نسبت به این نرخ، پاداشی برای پذیرش ریسک تلقی می‌شود.
+*   **انتخاب نرخ مناسب:** انتخاب نرخ بدون ریسک مناسب (مثلاً سررسید اوراق قرضه دولتی) باید با افق زمانی سرمایه‌گذاری و نوع تحلیل همخوانی داشته باشد. تغییر در نرخ بدون ریسک می‌تواند نتایج تحلیل‌ها را تحت تأثیر قرار دهد.`,
+        'en': `**Risk-Free Rate (% Annually):**
+The theoretical rate of return of an investment with zero risk. In practice, the return on short-term government bonds (like Treasury bills) is typically used as a proxy for the risk-free rate, as the issuing government is assumed to meet its obligations.
+
+**Use & Considerations for CFA Charterholders:**
+*   **Basis for Evaluating Excess Return:** The risk-free rate serves as a benchmark for evaluating the performance of other, riskier investments. The excess return of an investment is the difference between its return and the risk-free rate.
+*   **Key Input in Financial Models:** A fundamental input in many financial and valuation models, including the Capital Asset Pricing Model (CAPM), and in calculating risk-adjusted performance ratios like Sharpe and Sortino.
+*   **Opportunity Cost of Taking Risk:** The risk-free rate represents the minimum return an investor can achieve without taking on any risk. Therefore, any additional return above this rate is considered compensation for bearing risk.
+*   **Choosing the Appropriate Rate:** The choice of the appropriate risk-free rate (e.g., maturity of the government bond) should align with the investment horizon and the type of analysis. Changes in the risk-free rate can impact analysis results.`
+    },
+    // CVaR and Omega tooltips were already expanded in a previous step, ensure they are consistent with this level of detail.
     'cvar_label': {
         'fa': "CVaR ۵٪ (کسری مورد انتظار)",
         'en': "CVaR 5% (Expected Shortfall)"
     },
     'cvar_tooltip': {
         'fa': `**ارزش در معرض خطر شرطی (CVaR) / کسری مورد انتظار (ES) ۵٪:**
-این معیار میانگین زیان‌هایی است که در ۵٪ بدترین سناریوها (یعنی زمانی که زیان از VaR ۵٪ بیشتر می‌شود) رخ می‌دهد.
-برخلاف VaR که فقط نقطه برش زیان را نشان می‌دهد، CVaR شدت زیان‌های فراتر از VaR را اندازه‌گیری می‌کند.
+این معیار میانگین زیان‌هایی است که در ۵٪ بدترین سناریوهای تاریخی بازده رخ می‌دهد (یعنی زمانی که زیان از نقطه VaR ۵٪ بیشتر یا مساوی آن می‌شود). CVaR به این سوال پاسخ می‌دهد: "اگر زیان از آستانه VaR فراتر رفت، به طور متوسط چقدر خواهد بود؟"
 
-**اهمیت برای تحلیلگر مالی (CFA):**
-*   **درک بهتر ریسک دنباله (Tail Risk):** CVaR دید عمیق‌تری نسبت به زیان‌های شدید و نادر ارائه می‌دهد.
-*   **مکمل VaR:** اطلاعات کامل‌تری نسبت به VaR در مورد توزیع زیان‌ها در ناحیه دنباله فراهم می‌کند.
-*   **مورد ترجیح در مدیریت ریسک پیشرفته:** بسیاری از نهادهای نظارتی و فعالان حرفه‌ای بازار، CVaR را به دلیل تصویر واقعی‌تر از ریسک‌های شدید، بر VaR ترجیح می‌دهند.`,
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **درک بهتر ریسک دنباله (Tail Risk):** برخلاف VaR که فقط یک نقطه برش را نشان می‌دهد، CVaR شدت و میانگین زیان‌های واقعی در ناحیه دنباله توزیع بازده را اندازه‌گیری می‌کند. این امر به درک عمیق‌تری از زیان‌های شدید و نادر کمک می‌کند.
+*   **مکمل VaR:** CVaR اطلاعات کامل‌تری نسبت به VaR در مورد توزیع زیان‌ها در ناحیه بحرانی فراهم می‌کند و تصویر واقعی‌تری از ریسک ارائه می‌دهد.
+*   **مورد ترجیح در مدیریت ریسک پیشرفته:** بسیاری از نهادهای نظارتی و فعالان حرفه‌ای بازار، CVaR را به دلیل نمایش بهتر ریسک‌های فاجعه‌بار (catastrophic risks) و خاصیت جامعیت (subadditivity)، بر VaR ترجیح می‌دهند. (خاصیت جامعیت یعنی ریسک پورتفولیو از مجموع ریسک اجزای آن بیشتر نیست که VaR همیشه این ویژگی را ندارد).
+*   **تصمیم‌گیری آگاهانه‌تر:** با ارائه تصویری از میانگین زیان‌های شدید، به سرمایه‌گذاران و مدیران ریسک کمک می‌کند تا تصمیمات آگاهانه‌تری در مورد تخصیص دارایی و مدیریت ریسک اتخاذ کنند.
+*   **محاسبه:** ابتدا VaR ۵٪ محاسبه می‌شود، سپس تمام بازده‌هایی که کمتر یا مساوی این VaR هستند شناسایی شده و میانگین آن‌ها به عنوان CVaR ۵٪ در نظر گرفته می‌شود.`,
         'en': `**Conditional Value at Risk (CVaR) / Expected Shortfall (ES) 5%:**
-This metric represents the average loss in the worst 5% of scenarios (i.e., when losses exceed the VaR 5% threshold).
-Unlike VaR, which only indicates the cutoff point for losses, CVaR measures the severity of losses beyond the VaR.
+This metric represents the average loss in the worst 5% of historical return scenarios (i.e., when losses are greater than or equal to the VaR 5% threshold). CVaR answers the question: "If the loss exceeds the VaR threshold, what is the average magnitude of that loss?"
 
-**Significance for CFA Charterholders:**
-*   **Better Understanding of Tail Risk:** CVaR provides deeper insight into extreme and infrequent losses.
-*   **Complements VaR:** Offers more complete information about the distribution of losses in the tail region compared to VaR.
-*   **Preferred in Advanced Risk Management:** Many regulatory bodies and market professionals prefer CVaR over VaR for its more realistic portrayal of extreme risks.`
+**Use & Considerations for CFA Charterholders:**
+*   **Better Understanding of Tail Risk:** Unlike VaR, which only indicates a cutoff point, CVaR measures the severity and average of actual losses in the tail of the return distribution. This aids in a deeper understanding of extreme and infrequent losses.
+*   **Complements VaR:** CVaR provides more complete information than VaR about the distribution of losses in the critical tail region, offering a more realistic picture of risk.
+*   **Preferred in Advanced Risk Management:** Many regulatory bodies and market professionals prefer CVaR over VaR due to its better representation of catastrophic risks and its property of subadditivity (meaning the risk of a portfolio is not greater than the sum of the risks of its components, a property VaR does not always satisfy).
+*   **More Informed Decision-Making:** By providing a picture of average extreme losses, it helps investors and risk managers make more informed decisions about asset allocation and risk management.
+*   **Calculation:** First, VaR 5% is calculated. Then, all returns less than or equal to this VaR are identified, and their average is taken as CVaR 5%.`
     },
     'omega_label': {
         'fa': "نسبت اُمگا (آستانه: RF)",
@@ -276,23 +484,23 @@ Unlike VaR, which only indicates the cutoff point for losses, CVaR measures the 
     },
     'omega_tooltip': {
         'fa': `**نسبت اُمگا (Omega Ratio):**
-یک معیار عملکرد تعدیل شده بر اساس ریسک است که کل توزیع بازده را در نظر می‌گیرد، نه فقط میانگین و واریانس (مانند نسبت شارپ).
-این نسبت، مجموع بازده‌های مطلوب (بالاتر از یک آستانه، معمولاً نرخ بدون ریسک) را به مجموع بازده‌های نامطلوب (پایین‌تر از همان آستانه) مقایسه می‌کند.
+نسبت امگا یک معیار عملکرد تعدیل شده بر اساس ریسک است که کل توزیع بازده را در نظر می‌گیرد و به مفروضات خاصی در مورد شکل توزیع (مانند نرمال بودن) وابسته نیست. این نسبت، مجموع وزنی بازده‌های مطلوب (بالاتر از یک آستانه، در اینجا نرخ بدون ریسک) را به مجموع وزنی بازده‌های نامطلوب (پایین‌تر از همان آستانه) مقایسه می‌کند.
 
-**اهمیت برای تحلیلگر مالی (CFA):**
-*   **تحلیل جامع‌تر ریسک و بازده:** به خصوص برای توزیع‌های بازده غیرنرمال (چوله یا با کشیدگی زیاد) مفید است، جایی که معیارهای سنتی ممکن است تصویر کاملی ارائه ندهند.
-*   **عدم وابستگی به مفروضات خاص توزیع:** برخلاف نسبت شارپ، به طور ضمنی نرمال بودن توزیع بازده را فرض نمی‌گیرد.
-*   **در نظر گرفتن تمام گشتاورها:** به طور غیرمستقیم تمام گشتاورهای توزیع بازده را در محاسبات خود لحاظ می‌کند.
-*   مقدار بالاتر نشان‌دهنده عملکرد بهتر است.`,
+**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
+*   **تحلیل جامع ریسک و بازده:** به خصوص برای توزیع‌های بازده غیرنرمال (مثلاً دارای چولگی یا کشیدگی زیاد) مفید است، جایی که معیارهای سنتی مانند نسبت شارپ (که بر میانگین و واریانس تکیه دارند) ممکن است تصویر کاملی از رابطه ریسک و بازده ارائه ندهند.
+*   **در نظر گرفتن تمام گشتاورها:** به طور غیرمستقیم تمام ویژگی‌های توزیع بازده (میانگین، واریانس، چولگی، کشیدگی و ...) را در محاسبات خود لحاظ می‌کند و صرفاً به دو گشتاور اول محدود نیست.
+*   **انتخاب آستانه (Threshold):** نتیجه نسبت امگا به آستانه انتخاب شده بستگی دارد. استفاده از نرخ بدون ریسک به عنوان آستانه رایج است، اما آستانه‌های دیگری مانند صفر یا حداقل بازده قابل قبول (MAR) نیز می‌توانند استفاده شوند.
+*   **تفسیر:** مقدار بالاتر نسبت امگا نشان‌دهنده عملکرد بهتر است. نسبت امگای بزرگتر از ۱ نشان می‌دهد که احتمال و مقدار سودهای بالاتر از آستانه، بیشتر از احتمال و مقدار زیان‌های پایین‌تر از آستانه بوده است.
+*   **جایگزین مناسب برای نسبت شارپ:** در شرایطی که مفروضات نسبت شارپ (مانند نرمال بودن بازده یا تقارن توزیع) برقرار نیست، نسبت امگا می‌تواند جایگزین یا مکمل بسیار خوبی باشد.`,
         'en': `**Omega Ratio:**
-A risk-adjusted performance measure that considers the entire distribution of returns, not just mean and variance (like the Sharpe Ratio).
-It compares the sum of desirable returns (above a threshold, typically the risk-free rate) to the sum of undesirable returns (below the same threshold).
+The Omega ratio is a risk-adjusted performance measure that considers the entire distribution of returns and does not depend on specific assumptions about the shape of the distribution (like normality). It compares the weighted sum of desirable returns (above a threshold, here the risk-free rate) to the weighted sum of undesirable returns (below the same threshold).
 
-**Significance for CFA Charterholders:**
-*   **More Comprehensive Risk-Return Analysis:** Particularly useful for non-normal return distributions (skewed or with high kurtosis) where traditional metrics might not provide a complete picture.
-*   **No Dependence on Specific Distributional Assumptions:** Unlike the Sharpe Ratio, it doesn't implicitly assume normality of returns.
-*   **Considers All Moments:** Indirectly incorporates all moments of the return distribution in its calculation.
-*   A higher value indicates better performance.`
+**Use & Considerations for CFA Charterholders:**
+*   **Comprehensive Risk-Return Analysis:** Particularly useful for non-normal return distributions (e.g., with significant skewness or kurtosis), where traditional metrics like the Sharpe ratio (which rely on mean and variance) may not provide a complete picture of the risk-return trade-off.
+*   **Considers All Moments:** Indirectly incorporates all features of the return distribution (mean, variance, skewness, kurtosis, etc.) in its calculation, not just the first two moments.
+*   **Threshold Selection:** The Omega ratio result depends on the chosen threshold. Using the risk-free rate as the threshold is common, but other thresholds like zero or a Minimum Acceptable Return (MAR) can also be used.
+*   **Interpretation:** A higher Omega ratio indicates better performance. An Omega ratio greater than 1 suggests that the probability and magnitude of gains above the threshold have been greater than the probability and magnitude of losses below the threshold.
+*   **Good Alternative to Sharpe Ratio:** In situations where the assumptions of the Sharpe ratio (like normality or symmetry of returns) do not hold, the Omega ratio can be a very good alternative or complement.`
     }
 };
 
