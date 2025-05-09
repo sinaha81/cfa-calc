@@ -248,6 +248,46 @@ The average of the squared deviations of returns from their arithmetic mean. Lik
     'qq_hover_sample': {'fa': 'چارک نمونه', 'en': 'Sample Quantile'},
     'status_qq_insufficient_points': {'fa': 'نقاط معتبر کافی برای رسم نمودار QQ وجود ندارد.', 'en': 'Not enough valid data points to plot QQ chart.'},
     'error_lib_missing': {'fa': 'کتابخانه مورد نیاز ({lib}) یافت نشد.', 'en': 'Required library ({lib}) not found.'},
+    'cvar_label': {'fa': "CVaR ۵٪ (کسری مورد انتظار)", 'en': "CVaR 5% (Expected Shortfall)"},
+    'cvar_tooltip': {
+        'fa': `**ارزش در معرض خطر شرطی (CVaR) / کسری مورد انتظار (ES) ۵٪:**
+این معیار میانگین زیان‌هایی است که در ۵٪ بدترین سناریوها (یعنی زمانی که زیان از VaR ۵٪ بیشتر می‌شود) رخ می‌دهد.
+برخلاف VaR که فقط نقطه برش زیان را نشان می‌دهد، CVaR شدت زیان‌های فراتر از VaR را اندازه‌گیری می‌کند.
+
+**اهمیت برای تحلیلگر مالی (CFA):**
+*   **درک بهتر ریسک دنباله (Tail Risk):** CVaR دید عمیق‌تری نسبت به زیان‌های شدید و نادر ارائه می‌دهد.
+*   **مکمل VaR:** اطلاعات کامل‌تری نسبت به VaR در مورد توزیع زیان‌ها در ناحیه دنباله فراهم می‌کند.
+*   **مورد ترجیح در مدیریت ریسک پیشرفته:** بسیاری از نهادهای نظارتی و فعالان حرفه‌ای بازار، CVaR را به دلیل تصویر واقعی‌تر از ریسک‌های شدید، بر VaR ترجیح می‌دهند.`,
+        'en': `**Conditional Value at Risk (CVaR) / Expected Shortfall (ES) 5%:**
+This metric represents the average loss in the worst 5% of scenarios (i.e., when losses exceed the VaR 5% threshold).
+Unlike VaR, which only indicates the cutoff point for losses, CVaR measures the severity of losses beyond the VaR.
+
+**Significance for CFA Charterholders:**
+*   **Better Understanding of Tail Risk:** CVaR provides deeper insight into extreme and infrequent losses.
+*   **Complements VaR:** Offers more complete information about the distribution of losses in the tail region compared to VaR.
+*   **Preferred in Advanced Risk Management:** Many regulatory bodies and market professionals prefer CVaR over VaR for its more realistic portrayal of extreme risks.`
+    },
+    'omega_label': {'fa': "نسبت اُمگا (آستانه: RF)", 'en': "Omega Ratio (Threshold: RF)"},
+    'omega_tooltip': {
+        'fa': `**نسبت اُمگا (Omega Ratio):**
+یک معیار عملکرد تعدیل شده بر اساس ریسک است که کل توزیع بازده را در نظر می‌گیرد، نه فقط میانگین و واریانس (مانند نسبت شارپ).
+این نسبت، مجموع بازده‌های مطلوب (بالاتر از یک آستانه، معمولاً نرخ بدون ریسک) را به مجموع بازده‌های نامطلوب (پایین‌تر از همان آستانه) مقایسه می‌کند.
+
+**اهمیت برای تحلیلگر مالی (CFA):**
+*   **تحلیل جامع‌تر ریسک و بازده:** به خصوص برای توزیع‌های بازده غیرنرمال (چوله یا با کشیدگی زیاد) مفید است، جایی که معیارهای سنتی ممکن است تصویر کاملی ارائه ندهند.
+*   **عدم وابستگی به مفروضات خاص توزیع:** برخلاف نسبت شارپ، به طور ضمنی نرمال بودن توزیع بازده را فرض نمی‌گیرد.
+*   **در نظر گرفتن تمام گشتاورها:** به طور غیرمستقیم تمام گشتاورهای توزیع بازده را در محاسبات خود لحاظ می‌کند.
+*   مقدار بالاتر نشان‌دهنده عملکرد بهتر است.`,
+        'en': `**Omega Ratio:**
+A risk-adjusted performance measure that considers the entire distribution of returns, not just mean and variance (like the Sharpe Ratio).
+It compares the sum of desirable returns (above a threshold, typically the risk-free rate) to the sum of undesirable returns (below the same threshold).
+
+**Significance for CFA Charterholders:**
+*   **More Comprehensive Risk-Return Analysis:** Particularly useful for non-normal return distributions (skewed or with high kurtosis) where traditional metrics might not provide a complete picture.
+*   **No Dependence on Specific Distributional Assumptions:** Unlike the Sharpe Ratio, it doesn't implicitly assume normality of returns.
+*   **Considers All Moments:** Indirectly incorporates all moments of the return distribution in its calculation.
+*   A higher value indicates better performance.`
+    }
 };
 
 // --- DOM Element Selectors ---
@@ -924,6 +964,35 @@ function calculateMetrics() {
         }
         calculatedResults['so'] = sortino;
 
+        // Calculate CVaR 5% (Expected Shortfall)
+        let cvar5 = NaN;
+        if (calculatedResults.var5 !== null && !isNaN(calculatedResults.var5) && n > 0) {
+            const shortfallReturns = data.filter(r => r <= calculatedResults.var5);
+            if (shortfallReturns.length > 0) {
+                cvar5 = calculateMean(shortfallReturns);
+            } else {
+                // This case should be rare if var5 is derived from the data itself
+                // If var5 is the minimum value, CVaR5 is that minimum value.
+                cvar5 = calculatedResults.var5;
+            }
+        }
+        calculatedResults['cvar5'] = cvar5;
+
+        // Calculate Omega Ratio (Threshold: Risk-Free Rate)
+        let omega = NaN;
+        if (n > 0) {
+            const gains = data.filter(r => r > rf).reduce((sum, r) => sum + (r - rf), 0);
+            const losses = data.filter(r => r < rf).reduce((sum, r) => sum + (rf - r), 0);
+
+            if (losses === 0) {
+                omega = (gains > 0) ? Infinity : 1; // Or NaN, or some large number. Convention: 1 if no gains/losses, Infinity if gains but no losses.
+            } else {
+                omega = gains / losses;
+            }
+        }
+        calculatedResults['omega'] = omega;
+
+
         console.log("Calculations complete. Results:", calculatedResults); 
 
         updateResultsUI();
@@ -988,6 +1057,8 @@ function updateResultsUI() {
     updateSpan('result-max-gain', results.max_gain, formatOpt(2, true), 'pos');
     updateSpan('result-sharpe', results.sh, formatOpt(3, false), 'neutral'); 
     updateSpan('result-sortino', results.so, formatOpt(3, false), 'neutral'); 
+    updateSpan('result-cvar5', results.cvar5, formatOpt(2, true), 'neg');
+    updateSpan('result-omega', results.omega, formatOpt(3, false), 'neutral');
 }
 
 
@@ -1004,6 +1075,15 @@ const ACCENT_COLOR_MEDIAN = '#60a5fa';   // Tailwind blue-400
 const ACCENT_COLOR_FIT = '#a78bfa';      // Tailwind violet-400
 const ACCENT_COLOR_KDE = '#14b8a6';      // Tailwind teal-500
 const ACCENT_COLOR_EQUITY = '#22c55e';   // Tailwind green-500
+
+// New distinct colors for histogram lines
+const HIST_NORM_FIT_COLOR = '#673ab7'; // User requested purple (was Tailwind pink-400)
+const HIST_KDE_COLOR = '#818cf8';      // Tailwind indigo-400 (for KDE)
+const HIST_MEAN_LINE_COLOR = '#facc15';  // Tailwind yellow-400 (brighter mean)
+const HIST_MEDIAN_LINE_COLOR = '#38bdf8'; // Tailwind sky-400 (for Median)
+const HIST_VAR_LINE_COLOR = '#f87171';   // Tailwind red-400 (already highlight-neg, good for VaR)
+const HIST_GAIN_LINE_COLOR = '#34d399';  // Tailwind emerald-400 (already highlight-pos, good for Gain)
+
 
 // --- Responsive Plotting Parameters ---
 function getResponsiveLayoutParams() {
@@ -1188,7 +1268,7 @@ function plotHistogramLogic(data) {
             type: 'scatter',
             mode: 'lines',
             name: _t('plot_norm_label', { mean: formatNumber(mean, 2), std: formatNumber(std, 2) }),
-            line: { color: ACCENT_COLOR_FIT, dash: 'dashdot', width: responsiveParams.lineWidth },
+            line: { color: HIST_NORM_FIT_COLOR, dash: 'dashdot', width: responsiveParams.lineWidth },
             hoverinfo: 'name' // Simpler hover for curves
         });
     }
@@ -1206,7 +1286,7 @@ function plotHistogramLogic(data) {
                     type: 'scatter',
                     mode: 'lines',
                     name: _t('plot_kde_label'), // "تخمین چگالی (KDE)"
-                    line: { color: ACCENT_COLOR_KDE, width: responsiveParams.lineWidth, dash: 'longdash' },
+                    line: { color: HIST_KDE_COLOR, width: responsiveParams.lineWidth, dash: 'longdash' },
                     hoverinfo: 'name'
                 });
             }
@@ -1231,13 +1311,13 @@ function plotHistogramLogic(data) {
         }
     };
 
-    addVerticalLine(mean, ACCENT_COLOR_MEAN, 'solid', _t('plot_mean_val_label', { val: formatNumber(mean, 2) }), _t('mean_label'));
-    addVerticalLine(median, ACCENT_COLOR_MEDIAN, 'dash', _t('plot_median_val_label', { val: formatNumber(median, 2) }), _t('median_label'));
+    addVerticalLine(mean, HIST_MEAN_LINE_COLOR, 'solid', _t('plot_mean_val_label', { val: formatNumber(mean, 2) }), _t('mean_label'));
+    addVerticalLine(median, HIST_MEDIAN_LINE_COLOR, 'dash', _t('plot_median_val_label', { val: formatNumber(median, 2) }), _t('median_label'));
     if (!isNaN(var_5)) {
-      addVerticalLine(var_5, ACCENT_COLOR_NEG, 'dot', _t('plot_var_label', { val: formatNumber(var_5, 2) }), _t('var_label'));
+      addVerticalLine(var_5, HIST_VAR_LINE_COLOR, 'dot', _t('plot_var_label', { val: formatNumber(var_5, 2) }), _t('var_label'));
     }
     if (!isNaN(var_95)) {
-      addVerticalLine(var_95, ACCENT_COLOR_POS, 'dot', _t('plot_gain_label', { val: formatNumber(var_95, 2) }), _t('var_95_label'));
+      addVerticalLine(var_95, HIST_GAIN_LINE_COLOR, 'dot', _t('plot_gain_label', { val: formatNumber(var_95, 2) }), _t('var_95_label'));
     }
     // Add lines for Standard Deviations
     if (!isNaN(mean) && !isNaN(std) && std > 1e-9) {
@@ -1707,6 +1787,8 @@ function exportResultsToTxtFile() {
         lines.push(getResultLine('max_gain_label', 'max_gain', {digits:2, addPercent:true}));
         lines.push(getResultLine('sharpe_label', 'sh', {digits:3, addPercent:false}));
         lines.push(getResultLine('sortino_label', 'so', {digits:3, addPercent:false}));
+        lines.push(getResultLine('cvar_label', 'cvar5', {digits:2, addPercent:true}));
+        lines.push(getResultLine('omega_label', 'omega', {digits:3, addPercent:false}));
 
         lines.push("\n" + "=".repeat(50));
         lines.push(`Input Data (${inputData.length} points):`); 
@@ -1775,6 +1857,8 @@ function exportResultsToExcelFile() {
         addResultRow('max_gain_label', formatNumber(results.max_gain, 2, true));
         addResultRow('sharpe_label', formatNumber(results.sh, 3, false));
         addResultRow('sortino_label', formatNumber(results.so, 3, false));
+        addResultRow('cvar_label', formatNumber(results.cvar5, 2, true));
+        addResultRow('omega_label', formatNumber(results.omega, 3, false));
         
         const resultsWorksheet = XLSX.utils.aoa_to_sheet(resultsSheetData);
 
@@ -1901,6 +1985,8 @@ async function exportResultsToPdfFile() {
              [_t('max_gain_label'), formatNumber(results.max_gain, 2, true)],
              [_t('sharpe_label'), formatNumber(results.sh, 3, false)],
              [_t('sortino_label'), formatNumber(results.so, 3, false)],
+             [_t('cvar_label'), formatNumber(results.cvar5, 2, true)],
+             [_t('omega_label'), formatNumber(results.omega, 3, false)],
         ];
         resultsTableBody.forEach(row => {
             htmlContent += `<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`;
