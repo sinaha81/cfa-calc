@@ -15,11 +15,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Add SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <!-- jsPDF and html2canvas - REMOVED -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script> -->
-    <!-- jsPDF-AutoTable - REMOVED -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script> -->
     <script>
       // Optional: Configure Tailwind CSS
       tailwind.config = {
@@ -58,7 +53,7 @@
     <style>
       /* Apply base font if specified */
       body {
-         /* font-family: 'Vazirmatn', sans-serif; */
+         font-family: 'Vazirmatn', sans-serif;
          /* Ensure font is loaded if used */
          background-color: #111827; /* Equivalent to dark-bg */
          color: #d1d5db; /* Equivalent to dark-text */
@@ -271,6 +266,42 @@
                         <span><strong data-translate="omega_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="omega_tooltip">ⓘ</span></span>
                         <span id="result-omega" class="font-mono font-semibold text-highlight-neutral">-</span>
                     </div>
+                    <!-- Regression Results Added Here -->
+                    <div class="border-t border-dark-border mt-3 pt-3">
+                        <h3 class="text-md font-semibold mb-1 text-center" data-translate="regression_results_title">نتایج رگرسیون (بتا)</h3>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="beta_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="beta_tooltip">ⓘ</span></span>
+                            <span id="result-beta" class="font-mono text-dark-text-muted">-</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="alpha_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="alpha_tooltip">ⓘ</span></span>
+                            <span id="result-alpha" class="font-mono text-dark-text-muted">-</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="rsquared_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="rsquared_tooltip">ⓘ</span></span>
+                            <span id="result-rsquared" class="font-mono text-dark-text-muted">-</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="reg_stderr_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="reg_stderr_tooltip">ⓘ</span></span>
+                            <span id="result-reg-stderr" class="font-mono text-dark-text-muted">-</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="beta_t_stat_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="beta_t_stat_tooltip">ⓘ</span></span>
+                            <span id="result-beta-tstat" class="font-mono text-dark-text-muted">-</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="beta_p_value_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="beta_p_value_tooltip">ⓘ</span></span>
+                            <span id="result-beta-pvalue" class="font-mono text-dark-text-muted">-</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="alpha_t_stat_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="alpha_t_stat_tooltip">ⓘ</span></span>
+                            <span id="result-alpha-tstat" class="font-mono text-dark-text-muted">-</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="alpha_p_value_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="alpha_p_value_tooltip">ⓘ</span></span>
+                            <span id="result-alpha-pvalue" class="font-mono text-dark-text-muted">-</span>
+                        </div>
+                    </div>
                 </div>
                  <!-- Data Management Buttons -->
                  <div class="mt-auto pt-4 space-y-2 border-t border-dark-border">
@@ -283,7 +314,7 @@
 
                 <!-- Input Section - Renaming ID and removing drop prompt attribute -->
                 <section id="data-input-methods-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
-                    <h2 class="text-lg font-semibold mb-3" data-translate="add_data_title">۲. افزودن داده جدید (%)</h2>
+                    <h2 class="text-lg font-semibold mb-3" data-translate="add_data_title">۱. افزودن داده بازده دارایی (%)</h2>
                     
                     <!-- Manual Data Input Area -->
                     <div class="mb-6">
@@ -312,11 +343,25 @@
                     </div>
                 </section>
 
+                <!-- Market Data Input Section -->
+                <section id="market-data-input-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
+                    <h2 class="text-lg font-semibold mb-3" data-translate="add_market_data_title">۲. افزودن داده‌های بازده بازار (%)</h2>
+                    <p class="text-sm text-dark-text-muted mb-3" data-translate="add_market_data_hint">(برای محاسبه بتا، تعداد داده‌های بازده بازار باید با داده‌های بازده دارایی یکسان باشد)</p>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <textarea id="market-value-entry" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="2" data-translate-placeholder="add_market_data_placeholder" placeholder="مقادیر بازده بازار..."></textarea>
+                        <button id="add-market-data-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_market_data_button">افزودن داده بازار</button>
+                    </div>
+                    <div id="market-data-display" class="mt-3 bg-[#2b2b2b] p-2 rounded border border-dark-border overflow-y-auto h-24 text-sm">
+                        <p class="text-dark-text-muted text-center p-2 market-data-placeholder" data-translate="market_list_empty_option">لیست داده‌های بازار خالی است.</p>
+                    </div>
+                     <button id="clear-market-data-button" class="mt-2 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="clear_market_data_button" disabled>پاک کردن داده‌های بازار</button>
+                </section>
+
                 <!-- Edit/Delete Section -->
                 <section class="bg-dark-card p-4 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold mb-3" data-translate="edit_delete_title">۲. ویرایش / حذف داده</h2>
+                    <h2 class="text-xl font-semibold mb-3" data-translate="edit_delete_title">۳. ویرایش / حذف داده دارایی</h2>
                     <div class="flex flex-col sm:flex-row flex-wrap gap-2 items-center">
-                        <select id="edit-select" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 w-full sm:w-auto mb-2 sm:mb-0" disabled>
+                        <select id="edit-select" title="انتخاب داده برای ویرایش یا حذف" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 w-full sm:w-auto mb-2 sm:mb-0" disabled>
                             <option value="" data-translate="select_option">انتخاب...</option>
                             <!-- Options populated by JS -->
                         </select>
@@ -331,7 +376,7 @@
                 <!-- RF Rate Section -->
                 <section class="bg-dark-card p-4 rounded-lg shadow-md">
                      <div class="flex flex-wrap items-center gap-2">
-                        <label for="rf-rate" class="text-base font-semibold whitespace-nowrap" data-translate="rf_title">۳. نرخ بازده بدون ریسک (% سالانه):</label>
+                        <label for="rf-rate" class="text-base font-semibold whitespace-nowrap" data-translate="rf_title">۴. نرخ بازده بدون ریسک (% سالانه):</label>
                         <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="rf_tooltip">ⓘ</span>
                         <input type="text" id="rf-rate" class="w-24 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" value="2.0" data-translate-placeholder="rf_placeholder" placeholder="مثلا 2.5">
                     </div>
@@ -340,7 +385,7 @@
                 <!-- Data List Section -->
                 <section class="bg-dark-card p-4 rounded-lg shadow-md flex flex-col" style="min-height: 200px;">
                     <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-xl font-semibold" data-translate="data_list_title">۴. لیست داده‌های فعلی</h2>
+                        <h2 class="text-xl font-semibold" data-translate="data_list_title">۵. لیست داده‌های دارایی</h2>
                         <button id="clear-list-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="clear_list_button" disabled>پاک کردن</button>
                     </div>
                     <div id="data-display" class="flex-grow bg-[#2b2b2b] p-2 rounded border border-dark-border overflow-y-auto h-40 text-sm">
@@ -351,12 +396,13 @@
 
                 <!-- Action Buttons Section -->
                 <section class="bg-dark-card p-4 rounded-lg shadow-md space-y-4">
-                     <button id="calculate-button" class="w-full bg-highlight-neutral hover:bg-amber-600 text-gray-900 font-bold py-3 px-4 rounded text-lg transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="calculate_button">۵. محاسبه معیارها</button>
+                     <button id="calculate-button" class="w-full bg-highlight-neutral hover:bg-amber-600 text-gray-900 font-bold py-3 px-4 rounded text-lg transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="calculate_button">۶. محاسبه معیارها</button>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <button id="plot-hist-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_hist_button" disabled>هیستوگرام</button>
                         <button id="plot-box-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_box_button" disabled>جعبه‌ای</button>
                         <button id="plot-equity-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_equity_button" disabled>تجمعی</button>
                         <button id="plot-qq-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_qq_button" disabled>QQ</button>
+                        <button id="plot-regression-button" class="col-span-2 md:col-span-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_regression_button" disabled>نمودار رگرسیون</button>
                     </div>
                 </section>
 
@@ -367,12 +413,6 @@
         <footer class="mt-6 py-2 px-4 text-center text-sm text-dark-text-muted border-t border-dark-border">
             <span id="status-bar" data-translate="status_ready">آماده.</span>
         </footer>
-
-        <!-- Tooltip Container - REMOVED AS PER REQUEST -->
-        <!-- 
-        <div id="tooltip" role="tooltip">
-        </div> 
-        -->
 
          <!-- Plot Modal -->
         <div id="plotModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-black/70" aria-labelledby="plotModalLabel" aria-modal="true" role="dialog">

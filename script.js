@@ -1,53 +1,58 @@
 // Global variables and constants
 let currentLang = 'fa';
 let dataPoints = []; // Array to hold numerical data points
+let marketDataPoints = []; // Array to hold market return data points
 let calculatedResults = {};
 let selectedEditIndex = -1;
 
 // --- Translations Dictionary ---
 const texts = {
     'app_title': {'en': "Advanced Risk & Return Analyzer", 'fa': "تحلیلگر پیشرفته ریسک و بازده"},
-    'status_ready': {'en': "Ready.", 'fa': "آماده."},
-    'status_calculating': {'en': "Calculating metrics...", 'fa': "درحال محاسبه معیارها..."},
+    'status_ready': {'en': "Ready.", 'fa': "آماده"},
+    'status_calculating': {'en': "Calculating metrics...", 'fa': "در حال محاسبه معیارها..."},
     'status_calc_done': {'en': "Calculations complete.", 'fa': "محاسبات کامل شد."},
     'status_calc_error': {'en': "Calculation error: {error}", 'fa': "خطا در محاسبات: {error}"},
-    'status_plotting_hist': {'en': "Plotting histogram...", 'fa': "درحال رسم هیستوگرام..."},
-    'status_plotting_box': {'en': "Plotting box plot...", 'fa': "درحال رسم نمودار جعبه‌ای..."},
-    'status_plotting_equity': {'en': "Plotting equity curve...", 'fa': "درحال رسم نمودار ارزش تجمعی..."},
-    'status_plotting_qq': {'en': "Plotting QQ plot...", 'fa': "درحال رسم نمودار QQ..."},
+    'status_plotting_hist': {'en': "Plotting histogram...", 'fa': "در حال رسم هیستوگرام..."},
+    'status_plotting_box': {'en': "Plotting box plot...", 'fa': "در حال رسم نمودار جعبه‌ای..."},
+    'status_plotting_equity': {'en': "Plotting equity curve...", 'fa': "در حال رسم نمودار ارزش تجمعی..."},
+    'status_plotting_qq': {'en': "Plotting QQ plot...", 'fa': "در حال رسم نمودار QQ..."},
     'status_plot_done': {'en': "Plot generated.", 'fa': "نمودار رسم شد."},
     'status_plot_error': {'en': "Error plotting: {error}", 'fa': "خطا در رسم نمودار: {error}"},
-    'status_data_added': {'en': "{count} data point(s) added.", 'fa': "{count} داده با موفقیت اضافه شد."},
-    'status_data_invalid': {'en': "{count} added. Some invalid entries ignored: {entries}", 'fa': "{count} داده اضافه شد. برخی ورودی‌های نامعتبر نادیده گرفته شد: {entries}"},
-    'status_no_valid_data': {'en': "Error: No valid data entered.", 'fa': "خطا: هیچ داده معتبری وارد نشد."},
+    'status_data_added': {'en': "{count} data point(s) added.", 'fa': "{count} داده جدید با موفقیت اضافه شد."},
+    'status_data_invalid': {'en': "{count} added. Some invalid entries ignored: {entries}", 'fa': "{count} داده اضافه شد. ورودی‌های نامعتبر ({entries}) نادیده گرفته شدند."},
+    'status_no_valid_data': {'en': "Error: No valid data entered.", 'fa': "خطا: هیچ داده معتبری وارد نشده است."},
     'status_empty_input': {'en': "Empty input ignored.", 'fa': "ورودی خالی نادیده گرفته شد."},
     'status_data_edited': {'en': "Data point {index} edited from {old_val}% to {new_val}%."},
     'status_data_deleted': {'en': "Data point {index} ({val}%) deleted."},
-    'status_list_cleared': {'en': "Data list cleared."},
+    'status_list_cleared': {'en': "Data list cleared.", 'fa': "لیست داده‌ها پاک شد."},
     'status_results_reset': {'en': "Results reset. Click 'Calculate' to analyze."},
-    'status_saving_results': {'en': "Preparing to save results..."},
+    'status_saving_results': {'en': "Preparing to save results...", 'fa': "در حال آماده‌سازی برای ذخیره نتایج..."},
     'status_save_success': {'en': "Results saved to '{filename}'."}, // Generic, might be overridden
     'status_save_cancel': {'en': "Save operation cancelled.", 'fa': "عملیات ذخیره‌سازی لغو شد."},
     'status_save_error': {'en': "Error saving file.", 'fa': "خطا در ذخیره‌سازی فایل."},
-    'status_import_cancel': {'en': "Import operation cancelled or no file dropped.", 'fa': "عملیات ورود داده لغو شد یا فایلی انتخاب نشد."},
-    'status_importing': {'en': "Reading file '{filename}'...", 'fa': "درحال خواندن فایل '{filename}'..."},
-    'status_import_success': {'en': "{count} data points imported successfully.", 'fa': "{count} داده با موفقیت وارد شد."},
+    'status_import_cancel': {'en': "Import operation cancelled or no file dropped.", 'fa': "عملیات ورود داده لغو شد یا فایلی انتخاب نگردید."},
+    'status_importing': {'en': "Reading file '{filename}'...", 'fa': "در حال خواندن فایل '{filename}'..."},
+    'status_import_success': {'en': "{count} data points imported successfully.", 'fa': "{count} داده با موفقیت از فایل وارد شد."},
     'status_import_error': {'en': "Error reading file.", 'fa': "خطا در خواندن فایل."},
     'status_import_format_error': {'en': "Error: Invalid file format. Please drop a CSV, Excel, or TXT file.", 'fa': "خطا: فرمت فایل نامعتبر است. لطفاً یک فایل CSV، Excel یا TXT انتخاب کنید."},
-    'status_import_no_numeric': {'en': "Error: No numeric column found in the file.", 'fa': "خطا: هیچ ستون عددی در فایل پیدا نشد."},
-    'status_import_no_valid': {'en': "Error: No valid numeric data found in the file/column.", 'fa': "خطا: هیچ داده عددی معتبری در فایل/ستون پیدا نشد."},
-    'status_rf_error': {'en': "Error: Invalid Risk-Free Rate.", 'fa': "خطا: نرخ بدون ریسک نامعتبر است."},
-    'status_need_data_calc': {'en': "Insufficient data for calculation (min 2 points).", 'fa': "داده کافی برای محاسبات وجود ندارد (حداقل ۲ نقطه)."},
+    'status_import_no_numeric': {'en': "Error: No numeric column found in the file.", 'fa': "خطا: ستون عددی در فایل یافت نشد."},
+    'status_import_no_valid': {'en': "Error: No valid numeric data found in the file/column.", 'fa': "خطا: داده عددی معتبری در فایل/ستون یافت نشد."},
+    'status_rf_error': {'en': "Error: Invalid Risk-Free Rate.", 'fa': "خطا: نرخ بازده بدون ریسک نامعتبر است."},
+    'status_need_data_calc': {'en': "Insufficient data for calculation (min 2 points).", 'fa': "داده کافی برای محاسبات موجود نیست (حداقل ۲ داده)."},
     'status_need_data_plot': {'en': "No data to plot.", 'fa': "داده‌ای برای رسم نمودار وجود ندارد."},
-    'status_no_results': {'en': "No results to save.", 'fa': "نتیجه‌ای برای ذخیره وجود ندارد."},
-    'status_no_data_save': {'en': "No data to save.", 'fa': "داده‌ای برای ذخیره وجود ندارد."},
-    'status_select_edit': {'en': "Select an item to edit first.", 'fa': "ابتدا یک مورد را برای ویرایش انتخاب کنید."},
-    'status_select_delete': {'en': "Select an item to delete first.", 'fa': "ابتدا یک مورد را برای حذف انتخاب کنید."},
+    'status_no_results': {'en': "No results to save.", 'fa': "نتیجه‌ای برای ذخیره موجود نیست."},
+    'status_no_data_save': {'en': "No data to save.", 'fa': "داده‌ای برای ذخیره موجود نیست."},
+    'status_select_edit': {'en': "Select an item to edit first.", 'fa': "ابتدا یک داده را برای ویرایش انتخاب کنید."},
+    'status_select_delete': {'en': "Select an item to delete first.", 'fa': "ابتدا یک داده را برای حذف انتخاب کنید."},
     'status_edit_empty': {'en': "New value cannot be empty.", 'fa': "مقدار جدید نمی‌تواند خالی باشد."},
     'status_edit_invalid': {'en': "Invalid value entered.", 'fa': "مقدار وارد شده نامعتبر است."},
     'status_edit_index_error': {'en': "Error saving data (index error).", 'fa': "خطا در ذخیره داده (خطای اندیس)."},
     'status_delete_index_error': {'en': "Error deleting data (index error).", 'fa': "خطا در حذف داده (خطای اندیس)."},
-    'results_title': {'en': "Analysis Results:", 'fa': "نتایج تحلیل:"},
+    'status_plot_error_no_paired_data': {'en': "Regression plot error: Asset and market data must have the same number of points.", 'fa': "خطای نمودار رگرسیون: تعداد داده‌های دارایی و بازار باید یکسان باشد.", 'title': "Regression Data Mismatch"},
+    'status_plot_error_no_regression_params': {'en': "Regression plot error: Beta and Alpha parameters not available or invalid.", 'fa': "خطای نمودار رگرسیون: پارامترهای بتا و آلفا موجود یا معتبر نیستند.", 'title': "Regression Parameters Missing"},
+    'status_feature_unavailable': {'en': "This feature ({feature}) is currently unavailable.", 'fa': "این قابلیت ({feature}) در حال حاضر در دسترس نیست."},
+    'value_invalid': {'en': "Invalid", 'fa': "نامعتبر"},
+    'results_title': {'en': "Analysis Results:", 'fa': "نتایج تحلیل"},
     'data_count': {'en': "Data Points", 'fa': "تعداد داده‌ها"},
     'mean_label': {'en': "Arithmetic Mean", 'fa': "میانگین حسابی"},
     'geo_mean_label': {'en': "Geometric Mean (CAGR)", 'fa': "میانگین هندسی (CAGR)"},
@@ -58,35 +63,38 @@ const texts = {
     'mdd_label': {'en': "Max Drawdown (MDD)", 'fa': "حداکثر افت سرمایه (MDD)"},
     'mdd_period_label': {'en': "MDD Period (steps)", 'fa': "دوره MDD (تعداد دوره)"},
     'skewness_label': {'en': "Skewness", 'fa': "چولگی"},
-    'kurtosis_label': {'en': "Excess Kurtosis", 'fa': "کشیدگی اضافی"},
+    'kurtosis_label': {'en': "Excess Kurtosis", 'fa': "کشیدگی مازاد"},
     'normality_label': {'en': "Normality (Shapiro-Wilk)", 'fa': "نرمال بودن (شاپیرو-ویلک)"},
-    'var_label': {'en': "Historical VaR 5%", 'fa': "VaR تاریخی ۵٪"},
-    'var_95_label': {'en': "Historical Gain 95%", 'fa': "سود تاریخی ۹۵٪"},
+    'var_label': {'en': "Historical VaR 5%", 'fa': "ارزش در معرض خطر تاریخی ۵٪"},
+    'var_95_label': {'en': "Historical Gain 95%", 'fa': "کسب سود تاریخی ۹۵٪"},
     'max_gain_label': {'en': "Max Gain", 'fa': "حداکثر سود"},
     'sharpe_label': {'en': "Sharpe Ratio", 'fa': "نسبت شارپ"},
     'sortino_label': {'en': "Sortino Ratio", 'fa': "نسبت سورتینو"},
-    // 'save_results_button': {'en': "Save Results to Text File", 'fa': "ذخیره نتایج در فایل متنی"}, // Replaced
-    'add_data_title': {'en': " Add New Data (%)", 'fa': "۲. افزودن داده جدید (%)"},
-    'add_data_hint': {'en': "(Enter multiple values separated by comma, space, or newline)", 'fa': "(می‌توانید چندین مقدار با کاما، فاصله یا خط جدید وارد کنید)"},
-    'add_data_placeholder': {'en': "Enter value(s) and press Enter or 'Add'", 'fa': "مقدار(ها) را وارد و Enter یا 'افزودن' را بزنید"},
+    'add_data_title': {'en': " Add New Data (%)", 'fa': "افزودن داده جدید (%)"},
+    'add_data_hint': {'en': "(Enter multiple values separated by comma, space, or newline)", 'fa': "(مقادیر متعدد را با کاما، فاصله یا خط جدید وارد کنید)"},
+    'add_data_placeholder': {'en': "Enter value(s) and press Enter or 'Add'", 'fa': "مقدار(ها) را وارد و 'افزودن' یا Enter را بزنید"},
     'add_button': {'en': "Add", 'fa': "افزودن"},
-    'edit_delete_title': {'en': " Edit / Delete Data:", 'fa': "۳. ویرایش / حذف داده:"},
+    'edit_delete_title': {'en': " Edit / Delete Data:", 'fa': "ویرایش / حذف داده"},
     'edit_placeholder': {'en': "New value", 'fa': "مقدار جدید"},
     'save_button': {'en': "Save", 'fa': "ذخیره"},
     'delete_button': {'en': "Delete", 'fa': "حذف"},
-    'rf_title': {'en': " Risk-Free Rate (% Annually):", 'fa': "۴. نرخ بازده بدون ریسک (% سالانه):"},
-    'rf_placeholder': {'en': "e.g., 2.5", 'fa': "مثلا 2.5"},
-    'data_list_title': {'en': " Current Data List:", 'fa': "۵. لیست داده‌های فعلی:"},
-    'clear_list_button': {'en': "Clear Entire List", 'fa': "پاک کردن کل لیست"},
-    'calculate_button': {'en': " Calculate Metrics", 'fa': "۶. محاسبه معیارها"},
+    'rf_title': {'en': " Risk-Free Rate (% Annually):", 'fa': "نرخ بازده بدون ریسک (% سالانه)"},
+    'rf_placeholder': {'en': "e.g., 2.5", 'fa': "مثال: 2.5"},
+    'data_list_title': {'en': " Current Data List:", 'fa': "لیست داده‌های فعلی"},
+    'clear_list_button': {'en': "Clear Entire List", 'fa': "پاک کردن لیست"},
+    'calculate_button': {'en': " Calculate Metrics", 'fa': "محاسبه معیارها"},
     'plot_hist_button': {'en': "Plot Histogram", 'fa': "رسم هیستوگرام"},
     'plot_box_button': {'en': "Plot Box Plot", 'fa': "رسم نمودار جعبه‌ای"},
     'plot_equity_button': {'en': "Plot Equity Curve", 'fa': "رسم نمودار ارزش تجمعی"},
     'plot_qq_button': {'en': "Plot QQ-Plot", 'fa': "رسم نمودار QQ"},
-    'lang_select_label': {'en': "Language:", 'fa': "زبان:"},
-    'list_empty_option': {'en': "List Empty", 'fa': "لیست خالی است"},
+    'lang_select_label': {'en': "Language:", 'fa': "زبان"},
+    'list_empty_option': {'en': "List Empty", 'fa': "لیست خالی است."},
     'select_option': {'en': "Select...", 'fa': "انتخاب کنید..."},
-    'data_option_format': {'en': "Data {index} ({value}%)", 'fa': "داده {index} ({value}%)"},
+    'data_option_format': {'en': "Data {index} ({value}%)", 'fa': "داده {index} ({value}٪)"},
+    'save_results_button_unified': {'en': "Save Results", 'fa': "ذخیره نتایج"}, // کلید جدید برای دکمه یکپارچه ذخیره
+    'drop_zone_prompt_dedicated': {'en': "Drag & drop your CSV/Excel/TXT file here", 'fa': "فایل CSV/Excel/TXT خود را اینجا بکشید و رها کنید"},
+    'or_divider_text': {'en': "OR", 'fa': "یا"},
+    'plot_modal_title': {'en': "Chart", 'fa': "نمودار"},
     'mean_tooltip': {
         'fa': `**میانگین حسابی بازده (Arithmetic Mean Return):**
 این شاخص، میانگین ساده بازده‌های مشاهده شده در یک دوره زمانی معین است (مجموع بازده‌ها تقسیم بر تعداد دوره‌ها). محاسبه آن آسان است و نقطه شروعی برای تحلیل بازده فراهم می‌کند.
@@ -241,7 +249,7 @@ The MDD is the largest percentage decline from a previous peak to a subsequent t
 
 **کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
 *   **ارائه زمینه به MDD:** صرفاً دانستن مقدار MDD کافی نیست. دانستن اینکه این افت چقدر طول کشیده تا به کف خود برسد، به درک بهتر شدت و پایداری آن کمک می‌کند. یک MDD بزرگ که در مدت کوتاهی رخ داده، ممکن است از یک MDD مشابه که در مدت زمان بسیار طولانی‌تری اتفاق افتاده، تأثیر متفاوتی داشته باشد.
-*   **زمان بازیابی (Recovery Time):** اگرچه این شاخص مستقیماً زمان بازیابی (مدت زمان لازم برای بازگشت به سقف قبلی) را نشان نمی‌دهد، اما پیش‌زمینه‌ای برای آن فراهم می‌کند. دوره‌های افت طولانی‌تر معمولاً به زمان بازیابی طولانی‌تری نیز نیاز دارند.
+*   **زمان بازیابی (Recovery Time):** اگرچه این شاخص مستقیماً زمان بازیابی (مدت زمان لازم برای بازگشت به سقف قبلی) را نشان نمی‌دهد، اما پیش‌زمینه‌ای برای آن فراهم می‌کند. دوره‌های افت طولانی‌تر معمولاً به زمان بازیابی طولانی‌تری نیاز دارند.
 *   **ارزیابی پایداری استراتژی:** استراتژی‌هایی که دوره‌های افت کوتاهتری دارند، حتی اگر مقدار MDD آن‌ها مشابه سایرین باشد، ممکن است برای سرمایه‌گذاران با تحمل ریسک کمتر، جذاب‌تر باشند.
 *   **تکمیل کننده MDD:** این معیار باید همیشه در کنار مقدار MDD تفسیر شود تا تصویر کامل‌تری از ریسک تجربه شده ارائه دهد.`,
         'en': `**MDD Period:**
@@ -390,17 +398,7 @@ This metric is the single highest observed return in a single period (e.g., dail
 *   **Comparison with Maximum Drawdown (MDD):** Comparing the maximum gain with the MDD and other return distribution metrics can provide a better perspective on the range of fluctuations and potential asymmetry.`
     },
     'sharpe_tooltip': {
-        'fa': `**نسبت شارپ (Sharpe Ratio):**
-نسبت شارپ یک معیار شناخته شده برای اندازه‌گیری بازده تعدیل شده بر اساس ریسک است. این نسبت از تقسیم بازده مازاد یک سرمایه‌گذاری نسبت به نرخ بازده بدون ریسک (Excess Return) بر انحراف معیار آن (که به عنوان نماینده ریسک کل در نظر گرفته می‌شود) به دست می‌آید.
-فرمول: (میانگین بازده دارایی - نرخ بازده بدون ریسک) / انحراف معیار بازده دارایی.
-
-**کاربرد و ملاحظات برای تحلیلگر مالی (CFA):**
-*   **مقایسه سرمایه‌گذاری‌ها:** نسبت شارپ امکان مقایسه جذابیت سرمایه‌گذاری‌های مختلف را بر اساس بازدهی که به ازای هر واحد ریسک ارائه می‌دهند، فراهم می‌کند. مقدار بالاتر نشان‌دهنده عملکرد بهتر به ازای ریسک پذیرفته شده است.
-*   **رتبه‌بندی پورتفولیوها و استراتژی‌ها:** به طور گسترده برای رتبه‌بندی مدیران سرمایه‌گذاری، صندوق‌ها و استراتژی‌های معاملاتی استفاده می‌شود.
-*   **مفروضات:** به طور ضمنی فرض می‌کند که بازده‌ها دارای توزیع نرمال هستند (یا حداقل توزیع متقارن با چولگی و کشیدگی کم). همچنین فرض می‌کند که انحراف معیار، نماینده مناسبی برای ریسک کل است.
-*   **محدودیت‌ها در توزیع‌های غیرنرمال:** اگر توزیع بازده‌ها به طور قابل توجهی غیرنرمال باشد (مثلاً چولگی یا کشیدگی زیادی داشته باشد)، نسبت شارپ ممکن است تصویر کاملی از عملکرد تعدیل شده بر اساس ریسک ارائه ندهد. در این موارد، معیارهایی مانند نسبت سورتینو یا نسبت امگا ممکن است مناسب‌تر باشند.
-*   **حساسیت به نرخ بدون ریسک:** انتخاب نرخ بدون ریسک مناسب اهمیت دارد و می‌تواند بر مقدار نسبت شارپ تأثیر بگذارد.
-*   **تفسیر مقادیر:** نسبت شارپ بالاتر از ۱ معمولاً خوب تلقی می‌شود، بالاتر از ۲ بسیار خوب و بالاتر از ۳ عالی است. با این حال، این مقادیر باید در زمینه بازار و نوع دارایی تفسیر شوند. نسبت شارپ منفی نشان می‌دهد که بازده دارایی حتی از نرخ بدون ریسک نیز کمتر بوده است.`,
+        'fa': `Sharpe Ratio: Risk-adjusted return. (More details will be added in Persian later)`,
         'en': `**Sharpe Ratio:**
 A well-known measure of risk-adjusted return. It's calculated by dividing the excess return of an investment (over the risk-free rate) by its standard deviation (which represents total risk).
 Formula: (Mean Asset Return - Risk-Free Rate) / Standard Deviation of Asset Returns.
@@ -501,7 +499,200 @@ The Omega ratio is a risk-adjusted performance measure that considers the entire
 *   **Threshold Selection:** The Omega ratio result depends on the chosen threshold. Using the risk-free rate as the threshold is common, but other thresholds like zero or a Minimum Acceptable Return (MAR) can also be used.
 *   **Interpretation:** A higher Omega ratio indicates better performance. An Omega ratio greater than 1 suggests that the probability and magnitude of gains above the threshold have been greater than the probability and magnitude of losses below the threshold.
 *   **Good Alternative to Sharpe Ratio:** In situations where the assumptions of the Sharpe ratio (like normality or symmetry of returns) do not hold, the Omega ratio can be a very good alternative or complement.`
-    }
+    },
+    // --- SweetAlert titles and buttons ---
+    'error_title': {'en': "Error", 'fa': "خطا"},
+    'warning_title': {'en': "Warning", 'fa': "هشدار"},
+    'info_title': {'en': "Information", 'fa': "اطلاعات"},
+    'ok_button': {'en': "OK", 'fa': "باشه"},
+    'cancel_button': {'en': "Cancel", 'fa': "لغو"},
+    'deleted_title': {'en': "Deleted!", 'fa': "حذف شد!"},
+    'cleared_title': {'en': "Cleared!", 'fa': "پاک شد!"},
+    // --- Specific SweetAlert messages ---
+    'clear_list_confirm': {'en': "Clear entire list?", 'fa': "کل لیست داده‌ها پاک شود؟"},
+    'confirm_clear_text': {'en': "This action cannot be undone.", 'fa': "این عملیات قابل بازگشت نیست."},
+    'confirm_delete_text': {'en': "Are you sure you want to delete this data point?", 'fa': "آیا از حذف این داده مطمئن هستید؟"},
+    'invalid_format_msg': {'en': "Invalid file format. Please use CSV, Excel, or TXT.", 'fa': "فرمت فایل نامعتبر است. لطفاً از فایل‌های CSV، Excel یا TXT استفاده کنید."},
+    'file_save_error_msg': {'en': "Could not save the file: {error}", 'fa': "فایل ذخیره نشد: {error}"},
+    // --- Export related ---
+    'export_format_title': {'en': "Select Export Format", 'fa': "فرمت خروجی را انتخاب کنید"},
+    'export_txt': {'en': "Text File (.txt)", 'fa': "فایل متنی (.txt)"},
+    'export_excel': {'en': "Excel File (.xlsx)", 'fa': "فایل اکسل (.xlsx)"},
+    'excel_sheet_raw_data_title': {'en': "Raw Data", 'fa': "داده‌های خام"},
+    'excel_sheet_results_title': {'en': "Analysis Results", 'fa': "نتایج تحلیل"},
+    'status_saving_txt_success': {'en': "Results saved to '{filename}'.", 'fa': "نتایج با موفقیت در فایل '{filename}' ذخیره شد."},
+    'status_saving_excel_success': {'en': "Results saved to '{filename}'.", 'fa': "نتایج با موفقیت در فایل '{filename}' ذخیره شد."},
+    'col_return': {'en': "Return (%)", 'fa': "بازده (٪)"},
+    'Date': {'en': "Date", 'fa': "تاریخ"},
+    // --- Plotting specific ---
+    'plot_failed': {'en': "Plot generation failed.", 'fa': "ایجاد نمودار با شکست مواجه شد."},
+    'noDataPlot': {'en': "No data available to plot.", 'fa': "داده‌ای برای رسم نمودار موجود نیست."},
+    'error_lib_missing': {'en': "Required library ({lib}) is missing for this plot.", 'fa': "کتابخانه مورد نیاز ({lib}) برای این نمودار یافت نشد."},
+    'status_qq_insufficient_points': {'en': "Not enough valid data points to generate QQ-Plot.", 'fa': "نقاط داده معتبر کافی برای ایجاد نمودار Q-Q وجود ندارد."},
+    'hist_label_main': {'en': "Return Data", 'fa': "داده‌های بازده"},
+    'plot_norm_label': {'en': "Normal Fit (μ={mean}%, σ={std}%)", 'fa': "برازش نرمال (μ={mean}٪، σ={std}٪)"},
+    'plot_kde_label': {'en': "Kernel Density Estimate (KDE)", 'fa': "تخمین چگالی کرنل (KDE)"},
+    'plot_mean_val_label': {'en': "Mean: {val}%", 'fa': "میانگین: {val}٪"},
+    'plot_median_val_label': {'en': "Median: {val}%", 'fa': "میانه: {val}٪"},
+    'median_label': {'en': "Median", 'fa': "میانه"}, // Added for consistency
+    'plot_var_label': {'en': "Hist. VaR 5%: {val}%", 'fa': "ارزش در معرض خطر تاریخی ۵٪: {val}٪"},
+    'plot_gain_label': {'en': "Hist. Gain 95%: {val}%", 'fa': "کسب سود تاریخی ۹۵٪: {val}٪"},
+    'plot_ylabel_hist_density': {'en': "Density", 'fa': "چگالی"},
+    'plot_xlabel': {'en': "Return (%) / Value", 'fa': "بازده (٪) / مقدار"},
+    'hist_hover_value': {'en': "Value", 'fa': "مقدار"},
+    'plot_ylabel_hist': {'en': "Frequency / Density", 'fa': "فراوانی / چگالی"},
+    'boxplot_hover_stats': {'en': "Statistics", 'fa': "آمارها"},
+    'boxplot_hover_max': {'en': "Max (Upper Fence)", 'fa': "حداکثر (حصار بالا)"},
+    'boxplot_hover_q3': {'en': "Q3 (75th Pctl)", 'fa': "چارک سوم (صدک ۷۵)"},
+    'boxplot_hover_median': {'en': "Median", 'fa': "میانه"},
+    'boxplot_hover_q1': {'en': "Q1 (25th Pctl)", 'fa': "چارک اول (صدک ۲۵)"},
+    'boxplot_hover_min': {'en': "Min (Lower Fence)", 'fa': "حداقل (حصار پایین)"},
+    'boxplot_hover_mean': {'en': "Mean", 'fa': "میانگین"},
+    'boxplot_hover_std': {'en': "Std. Dev.", 'fa': "انحراف معیار"},
+    'plot_ylabel_box': {'en': "Return (%) Values", 'fa': "مقادیر بازده (٪)"},
+    'plot_box_title': {'en': "Box Plot of Returns", 'fa': "نمودار جعبه‌ای بازده‌ها"},
+    'equity_curve_label': {'en': "Equity Curve", 'fa': "منحنی ارزش تجمعی"},
+    'period_label': {'en': "Period", 'fa': "دوره"},
+    'equity_value_label': {'en': "Equity Value", 'fa': "ارزش تجمعی"},
+    'hwm_label': {'en': "High Water Mark", 'fa': "بیشترین ارزش ثبت شده"},
+    'drawdown_from_hwm_label': {'en': "Drawdown from HWM", 'fa': "افت از بیشترین ارزش"},
+    'hwm_trace_label': {'en': "High Water Mark Line", 'fa': "خط بیشترین ارزش (HWM)"},
+    'plot_equity_title': {'en': "Cumulative Equity Curve", 'fa': "نمودار ارزش تجمعی سرمایه"},
+    'plot_xlabel_equity': {'en': "Time Period / Observation", 'fa': "دوره زمانی / مشاهده"},
+    'plot_ylabel_equity_value': {'en': "Cumulative Value (Initial = 100)", 'fa': "ارزش تجمعی (اولیه = ۱۰۰)"},
+    'qq_data_quantiles_label': {'en': "Data Quantiles", 'fa': "چارک‌های داده"},
+    'qq_hover_point': {'en': "Quantile Point", 'fa': "نقطه چارک"},
+    'qq_hover_theoretical': {'en': "Theoretical Quantile (Normal)", 'fa': "چارک نظری (نرمال)"},
+    'qq_hover_sample': {'en': "Sample Quantile (Data)", 'fa': "چارک نمونه (داده)"},
+    'qq_norm_ref_line_label': {'en': "Normal Reference Line", 'fa': "خط مرجع نرمال"},
+    'plot_qq_title': {'en': "Q-Q Plot (vs. Normal Distribution)", 'fa': "نمودار Q-Q (در برابر توزیع نرمال)"},
+    'plot_qq_xlabel': {'en': "Theoretical Quantiles (Standard Normal)", 'fa': "چارک‌های نظری (نرمال استاندارد)"},
+    'plot_qq_ylabel': {'en': "Sample Quantiles (Return Data %)", 'fa': "چارک‌های نمونه (داده بازده ٪)"},
+    // --- Regression Analysis Specific --- 
+    'regression_results_title': {'en': "Regression Analysis", 'fa': "نتایج تحلیل رگرسیون"},
+    'beta_label': {'en': "Beta (β)", 'fa': "بتا (β)"},
+    'alpha_label': {'en': "Alpha (α)", 'fa': "آلفا (α)"},
+    'rsquared_label': {'en': "R-squared (R²)", 'fa': "ضریب تعیین (R²)"},
+    'reg_stderr_label': {'en': "Std. Error of Regression", 'fa': "خطای استاندارد رگرسیون"},
+    'beta_t_stat_label': {'en': "Beta t-statistic", 'fa': "آماره t بتا"},
+    'beta_p_value_label': {'en': "Beta p-value", 'fa': "مقدار p بتا"},
+    'alpha_t_stat_label': {'en': "Alpha t-statistic", 'fa': "آماره t آلفا"},
+    'alpha_p_value_label': {'en': "Alpha p-value", 'fa': "مقدار p آلفا"},
+    
+    'add_market_data_title': {'en': "Market Return Data (%)", 'fa': "داده‌های بازده بازار (%)"},
+    'add_market_data_hint': {'en': "(For beta calculation, market return data count must match asset return data count. Min 3 points for full stats.)", 'fa': "(برای محاسبه بتا، تعداد داده‌های بازده بازار باید با داده‌های بازده دارایی یکسان باشد. حداقل ۳ داده برای آمار کامل نیاز است.)"},
+    'add_market_data_placeholder': {'en': "Enter market return values...", 'fa': "مقادیر بازده بازار..."},
+    'add_market_data_button': {'en': "Add Market Data", 'fa': "افزودن داده بازار"},
+    'clear_market_data_button': {'en': "Clear Market Data", 'fa': "پاک کردن داده‌های بازار"},
+    'market_list_empty_option': {'en': "Market data list is empty.", 'fa': "لیست داده‌های بازار خالی است."},
+    'plot_regression_button': {'en': "Regression Plot", 'fa': "نمودار رگرسیون"},
+
+    'beta_tooltip': {
+        'fa': `**بتا (β):**
+بتا معیاری برای سنجش ریسک سیستماتیک یک دارایی یا پورتفولیو نسبت به کل بازار است. این شاخص نشان می‌دهد که بازده دارایی به ازای هر یک درصد تغییر در بازده بازار، چند درصد تغییر می‌کند.
+*   **بتای > ۱:** دارایی پرنوسان‌تر از بازار است. مثلا بتای ۱.۲ یعنی با ۱٪ رشد بازار، انتظار رشد ۱.۲٪ برای دارایی می‌رود و بالعکس.
+*   **بتای = ۱:** دارایی هم‌نوسان با بازار است.
+*   **بتای < ۱ (و > ۰):** دارایی کم‌نوسان‌تر از بازار است.
+*   **بتای = ۰:** بازده دارایی مستقل از بازار است (نادر).
+*   **بتای < ۰:** بازده دارایی در جهت عکس بازار حرکت می‌کند (مثلا طلا در برخی شرایط).
+**کاربرد:** جزء کلیدی مدل CAPM برای محاسبه بازده مورد انتظار.`,
+        'en': `**Beta (β):**
+A measure of an asset or portfolio's systematic risk relative to the overall market. It indicates how much the asset's return changes for every one percent change in the market's return.
+*   **Beta > 1:** More volatile than the market.
+*   **Beta = 1:** Moves with the market.
+*   **Beta < 1 (& > 0):** Less volatile.
+*   **Beta < 0:** Moves inversely to the market.
+**Use:** Key in CAPM for expected return.`
+    },
+    'alpha_tooltip': {
+        'fa': `**آلفا (α):**
+بازده مازاد یک سرمایه‌گذاری پس از تعدیل برای ریسک سیستماتیک (بتا). آلفای مثبت نشان‌دهنده عملکرد بهتر از انتظار بر اساس ریسک بازار است.
+**کاربرد:** ارزیابی مهارت مدیر سرمایه‌گذاری. (عرض از مبدأ در رگرسیون بازده دارایی بر بازار).`,
+        'en': `**Alpha (α):**
+Excess return of an investment after adjusting for systematic risk (beta). Positive alpha indicates outperformance relative to market risk.
+**Use:** Evaluates manager skill. (Intercept in asset vs. market return regression).`
+    },
+    'rsquared_tooltip': {
+        'fa': `**ضریب تعیین (R²):**
+درصدی از تغییرات بازده دارایی که توسط تغییرات بازده بازار توضیح داده می‌شود (بین ۰ و ۱). R² بالا یعنی مدل رگرسیون برازش خوبی دارد و بتا قابل اتکاتر است.
+**کاربرد:** ارزیابی میزان توضیح‌دهندگی مدل رگرسیون.`,
+        'en': `**R-squared (R²):**
+Percentage of an asset's return variability explained by market return variability (0 to 1). High R² means good model fit and more reliable beta.
+**Use:** Assesses regression model's goodness-of-fit.`
+    },
+    'reg_stderr_tooltip': {
+        'fa': `**خطای استاندارد رگرسیون (SER):**
+میزان پراکندگی یا خطای معمول نقاط داده واقعی حول خط رگرسیون. مقدار کمتر، برازش بهتر مدل را نشان می‌دهد.
+**کاربرد:** ارزیابی دقت مدل رگرسیون.`,
+        'en': `**Standard Error of Regression (SER):**
+Typical dispersion of actual data points around the fitted regression line. Smaller SER indicates better model fit.
+**Use:** Assesses regression model accuracy.`
+    },
+    'beta_t_stat_tooltip': {
+        'fa': `**آماره t برای بتا:**
+برای آزمون معناداری آماری ضریب بتا (آیا بتا واقعاً با صفر متفاوت است؟). قدر مطلق بزرگتر، شواهد قوی‌تر برای معنادار بودن بتا است.
+**کاربرد:** تعیین معناداری آماری ضریب بتا.`,
+        'en': `**Beta t-statistic:**
+Tests statistical significance of beta (is beta truly different from zero?). Larger absolute value means stronger evidence for significant beta.
+**Use:** Determines statistical significance of beta.`
+    },
+    'beta_p_value_tooltip': {
+        'fa': `**مقدار p برای بتا:**
+احتمال مشاهده آماره t محاسبه شده (یا شدیدتر)، اگر بتای واقعی صفر باشد. مقدار p کوچک (معمولاً < ۰.۰۵) یعنی بتا از نظر آماری معنادار است.
+**کاربرد:** ارزیابی معناداری آماری ضریب بتا.`,
+        'en': `**Beta p-value:**
+Probability of observing the calculated t-statistic (or more extreme value) if true beta is zero. Small p-value (e.g., < 0.05) means beta is statistically significant.
+**Use:** Assesses statistical significance of beta.`
+    },
+    'alpha_t_stat_tooltip': {
+        'fa': `**آماره t برای آلفا:**
+برای آزمون معناداری آماری ضریب آلفا (آیا آلفا واقعاً با صفر متفاوت است؟). آلفای مثبت و معنادار مطلوب است.
+**کاربرد:** تعیین معناداری آماری ضریب آلفا.`,
+        'en': `**Alpha t-statistic:**
+Tests statistical significance of alpha (is alpha truly different from zero?). Significant positive alpha is desirable.
+**Use:** Determines statistical significance of alpha.`
+    },
+    'alpha_p_value_tooltip': {
+        'fa': `**مقدار p برای آلفا:**
+احتمال مشاهده آماره t محاسبه شده برای آلفا (یا شدیدتر)، اگر آلفای واقعی صفر باشد. مقدار p کوچک (معمولاً < ۰.۰۵) یعنی آلفا از نظر آماری معنادار است.
+**کاربرد:** ارزیابی معناداری آماری ضریب آلفا.`,
+        'en': `**Alpha p-value:**
+Probability of observing the calculated t-statistic for alpha (or a more extreme value) if true alpha is zero. Small p-value (e.g., < 0.05) means alpha is statistically significant.
+**Use:** Assesses statistical significance of alpha.`
+    },
+
+    // --- SweetAlerts and Statuses for Regression & Market Data ---
+    'status_market_data_added': {'en': "{count} market data point(s) added.", 'fa': "{count} داده بازده بازار با موفقیت اضافه شد."},
+    'status_market_data_cleared': {'en': "Market data list cleared.", 'fa': "لیست داده‌های بازار پاک شد."},
+    'status_market_data_empty_input': {'en': "Empty market data input ignored.", 'fa': "ورودی خالی برای داده‌های بازار نادیده گرفته شد."},
+    'status_no_valid_market_data': {'en': "Error: No valid market data entered.", 'fa': "خطا: هیچ داده معتبر بازده بازاری وارد نشده است."},
+    'status_market_data_invalid': {'en': "{count} market data added. Some invalid entries ignored: {entries}", 'fa': "{count} داده بازار اضافه شد. ورودی‌های نامعتبر ({entries}) نادیده گرفته شدند."},
+    'clear_market_data_confirm_title': {'en': "Clear Market Data?", 'fa': "داده‌های بازار پاک شوند؟"},
+    'clear_market_data_confirm_text': {'en': "This will remove all entered market return data.", 'fa': "این عمل تمام داده‌های بازده بازار وارد شده را حذف خواهد کرد."},
+    
+    'error_regression_data_length_mismatch_title': {'en': "Data Length Mismatch", 'fa': "عدم تطابق تعداد داده‌ها"},
+    'error_regression_data_length_mismatch_text': {'en': "For regression analysis, the number of asset returns ({assetCount}) must match market returns ({marketCount}).", 'fa': "برای تحلیل رگرسیون، تعداد داده‌های بازده دارایی ({assetCount}) باید با داده‌های بازده بازار ({marketCount}) یکسان باشد."},
+    'error_regression_insufficient_data_title': {'en': "Insufficient Data for Regression", 'fa': "داده ناکافی برای رگرسیون"},
+    'error_regression_insufficient_data_text': {'en': "At least 3 data points for both asset and market returns are needed for full regression statistics (t-stat, p-value). Basic Beta/Alpha/R² need at least 2 points.", 'fa': "حداقل ۳ نقطه داده هم برای بازده دارایی و هم برای بازده بازار جهت آمار کامل رگرسیون (آماره t، مقدار p) مورد نیاز است. بتا/آلفا/R² پایه حداقل به ۲ نقطه نیاز دارند."},
+    'error_calculating_regression': {'en': "Error calculating regression: {error}", 'fa': "خطا در محاسبه رگرسیون: {error}"},
+
+    'plot_regression_title': {'en': "Regression: Asset vs. Market Returns", 'fa': "رگرسیون: بازده دارایی در مقابل بازده بازار"},
+    'plot_xlabel_market_return': {'en': "Market Return (%)", 'fa': "بازده بازار (٪)"},
+    'plot_ylabel_asset_return': {'en': "Asset Return (%)", 'fa': "بازده دارایی (٪)"},
+    'plot_regression_points_label': {'en': "Data Points (Asset vs Market)", 'fa': "نقاط داده (دارایی در مقابل بازار)"},
+    'plot_regression_line_label': {'en': "Regression Line (α={alpha}, β={beta})", 'fa': "خط رگرسیون (α={alpha}, β={beta})"},
+    'status_no_regression_params': {'en': "Regression parameters (Alpha/Beta) not available for plotting.", 'fa': "پارامترهای رگرسیون (آلفا/بتا) برای رسم نمودار در دسترس نیستند."},
+    // Regression Plot Specific Translations
+    'plot_regression_title': { 'en': 'Regression Plot (Asset vs. Market)', 'fa': 'نمودار رگرسیون (دارایی در مقابل بازار)'},
+    'status_plot_error_no_paired_data': { 'en': "Paired asset and market data are required for regression plot.", 'fa': "برای نمودار رگرسیون به داده‌های جفت شده دارایی و بازار نیاز است." },
+    'status_plot_error_no_regression_params': { 'en': "Regression parameters (alpha, beta) are not available for plotting.", 'fa': "پارامترهای رگرسیون (آلفا، بتا) برای رسم نمودار در دسترس نیستند." },
+    'scatter_plot_legend_actual': { 'en': "Actual Returns", 'fa': "بازده واقعی" },
+    'scatter_plot_legend_regression_line': { 'en': "Regression Line", 'fa': "خط رگرسیون" },
+    'plot_axis_market_returns': { 'en': "Market Returns (%)", 'fa': "بازده بازار (%)" },
+    'plot_axis_asset_returns': { 'en': "Asset Returns (%)", 'fa': "بازده دارایی (%)" },
+    // General keys that might have been missed or are useful
+    'confirm_clear_text': { 'en': 'Are you sure you want to clear all items? This action cannot be undone.', 'fa': 'آیا از پاک کردن همه موارد مطمئن هستید؟ این عمل قابل بازگشت نیست.' },
+    'status_list_cleared': { 'en': '{list_name} has been cleared.', 'fa': '{list_name} پاک شد.' },
 };
 
 // --- DOM Element Selectors ---
@@ -520,6 +711,7 @@ const plotHistButton = document.getElementById('plot-hist-button');
 const plotBoxButton = document.getElementById('plot-box-button');
 const plotEquityButton = document.getElementById('plot-equity-button');
 const plotQqButton = document.getElementById('plot-qq-button');
+const plotRegressionButton = document.getElementById('plot-regression-button'); // Regression plot button
 const exportResultsButton = document.getElementById('export-results-button'); // Unified export button
 const dedicatedFileDropArea = document.getElementById('dedicated-file-drop-area');
 const statusBar = document.getElementById('status-bar');
@@ -529,6 +721,12 @@ const plotModalLabel = document.getElementById('plotModalLabel');
 const plotContainer = document.getElementById('plot-container');
 const plotModalCloseButton = document.getElementById('plotModalCloseButton');
 const fileImporterInput = document.getElementById('file-importer-input');
+
+// Regression specific DOM Elements
+const marketValueEntry = document.getElementById('market-value-entry');
+const addMarketDataButton = document.getElementById('add-market-data-button');
+const marketDataDisplay = document.getElementById('market-data-display');
+const clearMarketDataButton = document.getElementById('clear-market-data-button');
 
 // --- Utility Functions ---
 function _t(key, args = {}) {
@@ -580,7 +778,7 @@ function updateLanguageUI() {
     });
 
     updateEditOptions(); 
-    // initializeTooltips(); // REMOVED - This was causing the error
+    updateMarketDataDisplay(); // Update market data display on lang change
 
     if (Object.keys(calculatedResults).length > 0) {
         updateResultsUI(); 
@@ -816,9 +1014,11 @@ function setupDragAndDrop() {
 function formatNumber(value, digits = 2, addPercent = false) {
     if (value === Infinity) return "∞";
     if (value === -Infinity) return "-∞";
-    if (typeof value !== 'number' || !isFinite(value)) {
-        return _t('na_value'); 
+    // Check for NaN or non-finite numbers first
+    if (typeof value !== 'number' || !isFinite(value) || isNaN(value)) {
+        return _t('value_invalid');
     }
+    // Proceed with formatting if the value is a valid number
     digits = Math.max(0, Math.floor(digits));
 
     const locale = currentLang === 'fa' ? 'fa-IR' : 'en-US';
@@ -1069,7 +1269,7 @@ function clearDataList() {
 function resetResultsDisplay() {
     console.log("Resetting results display to N/A."); 
     resultsDisplayDiv.querySelectorAll('span[id^="result-"]').forEach(span => {
-        span.textContent = _t('na_value'); 
+        span.textContent = _t('value_invalid'); 
         span.classList.remove('text-highlight-pos', 'text-highlight-neg', 'text-highlight-neutral', 'text-dark-text');
         span.classList.add('text-dark-text-muted'); 
     });
@@ -1087,12 +1287,17 @@ function updateActionButtonsState() {
     const hasData = dataPoints.length > 0;
     const hasEnoughDataForCalc = dataPoints.length >= 2;
     const hasResults = calculatedResults && typeof calculatedResults.mean === 'number' && isFinite(calculatedResults.mean);
+    const hasRegressionResults = hasResults && typeof calculatedResults.beta === 'number' && isFinite(calculatedResults.beta) && typeof calculatedResults.alpha === 'number' && isFinite(calculatedResults.alpha);
 
     if (calculateButton) calculateButton.disabled = !hasEnoughDataForCalc;
-    if (plotHistButton) plotHistButton.disabled = !hasData;
-    if (plotBoxButton) plotBoxButton.disabled = !hasData;
-    if (plotEquityButton) plotEquityButton.disabled = !hasData;
-    if (plotQqButton) plotQqButton.disabled = !hasEnoughDataForCalc;
+    if (plotHistButton) plotHistButton.disabled = !hasResults; // Corrected: enable if results exist
+    if (plotBoxButton) plotBoxButton.disabled = !hasResults;   // Corrected: enable if results exist
+    if (plotEquityButton) plotEquityButton.disabled = !hasResults; // Corrected: enable if results exist
+    if (plotQqButton) plotQqButton.disabled = !(hasResults && hasEnoughDataForCalc); // Corrected: QQ plot needs results and enough data
+    
+    const plotRegressionButton = document.getElementById('plot-regression-button');
+    if (plotRegressionButton) plotRegressionButton.disabled = !hasRegressionResults;
+
     if (exportResultsButton) exportResultsButton.disabled = !hasResults; 
     if (clearListButton) clearListButton.disabled = !hasData;
 }
@@ -1206,6 +1411,46 @@ function calculateMetrics() {
         }
         calculatedResults['omega'] = omega;
 
+        // Regression Analysis if market data is available and matches asset data length
+        console.log("Market data for regression check:", marketDataPoints);
+        console.log("Asset data length:", data.length, "Market data length:", marketDataPoints ? marketDataPoints.length : 'N/A');
+
+        if (marketDataPoints && marketDataPoints.length > 0 && marketDataPoints.length === data.length && data.length >= 2) {
+            console.log("Calling calculateRegression...");
+            const regressionResults = calculateRegression(data, marketDataPoints.filter(p => isFinite(p)));
+            console.log("Output of calculateRegression:", regressionResults);
+            if (regressionResults) {
+                calculatedResults['beta'] = regressionResults.beta;
+                calculatedResults['alpha'] = regressionResults.alpha;
+                calculatedResults['rSquared'] = regressionResults.rSquared;
+                calculatedResults['regStdErr'] = regressionResults.stdErrRegression;
+                calculatedResults['betaTStat'] = regressionResults.tStatBeta;
+                calculatedResults['betaPValue'] = regressionResults.pValBeta; // Might be NaN if not calculable simply
+                calculatedResults['alphaTStat'] = regressionResults.tStatAlpha;
+                calculatedResults['alphaPValue'] = regressionResults.pValAlpha; // Might be NaN
+            } else {
+                // Initialize regression fields to NaN if calculation fails or not applicable
+                calculatedResults['beta'] = NaN;
+                calculatedResults['alpha'] = NaN;
+                calculatedResults['rSquared'] = NaN;
+                calculatedResults['regStdErr'] = NaN;
+                calculatedResults['betaTStat'] = NaN;
+                calculatedResults['betaPValue'] = NaN;
+                calculatedResults['alphaTStat'] = NaN;
+                calculatedResults['alphaPValue'] = NaN;
+            }
+        } else {
+            // Initialize regression fields to NaN if no market data or mismatched length
+            console.log("Skipping regression or regression failed, initializing fields to NaN.");
+            calculatedResults['beta'] = NaN;
+            calculatedResults['alpha'] = NaN;
+            calculatedResults['rSquared'] = NaN;
+            calculatedResults['regStdErr'] = NaN;
+            calculatedResults['betaTStat'] = NaN;
+            calculatedResults['betaPValue'] = NaN;
+            calculatedResults['alphaTStat'] = NaN;
+            calculatedResults['alphaPValue'] = NaN;
+        }
 
         console.log("Calculations complete. Results:", calculatedResults); 
 
@@ -1236,11 +1481,13 @@ function updateResultsUI() {
     const updateSpan = (id, value, options, highlight = 'neutral') => {
         const span = document.getElementById(id);
         if (span) {
+            console.log(`updateSpan: id=${id}, rawValue=${value}, options=${JSON.stringify(options)}`); // DEBUG
             const formattedValue = formatNumber(value, options?.digits, options?.addPercent);
+            console.log(`updateSpan: id=${id}, formattedValue=${formattedValue}`); // DEBUG
             span.textContent = formattedValue;
             span.classList.remove('text-dark-text-muted', 'text-highlight-pos', 'text-highlight-neg', 'text-highlight-neutral', 'text-dark-text');
 
-            if (formattedValue !== _t('na_value')) {
+            if (formattedValue !== _t('value_invalid')) {
                  if (highlight === 'pos' && value > 0) span.classList.add('text-highlight-pos');
                  else if (highlight === 'neg' && value < 0) span.classList.add('text-highlight-neg');
                  else if (highlight === 'neutral') span.classList.add('text-highlight-neutral');
@@ -1265,7 +1512,7 @@ function updateResultsUI() {
     updateSpan('result-mdd-period', results.mdd_period, formatOpt(0, false), null);
     updateSpan('result-skew', results.skew, formatOpt(3, false), 'posneg'); 
     updateSpan('result-kurt', results.kurt, formatOpt(3, false), 'neutral'); 
-    const normSpan = document.getElementById('result-normality'); if (normSpan) {normSpan.textContent = _t('na_value'); normSpan.className = 'font-mono text-dark-text-muted';} 
+    const normSpan = document.getElementById('result-normality'); if (normSpan) {normSpan.textContent = _t('value_invalid'); normSpan.className = 'font-mono text-dark-text-muted';} 
     updateSpan('result-var5', results.var5, formatOpt(2, true), 'neg'); 
     updateSpan('result-var95', results.var95, formatOpt(2, true), 'pos'); 
     updateSpan('result-max-gain', results.max_gain, formatOpt(2, true), 'pos');
@@ -1273,6 +1520,16 @@ function updateResultsUI() {
     updateSpan('result-sortino', results.so, formatOpt(3, false), 'neutral'); 
     updateSpan('result-cvar5', results.cvar5, formatOpt(2, true), 'neg');
     updateSpan('result-omega', results.omega, formatOpt(3, false), 'neutral');
+
+    // Update regression results
+    updateSpan('result-beta', results.beta, formatOpt(3, false), 'neutral');
+    updateSpan('result-alpha', results.alpha, formatOpt(3, true), 'posneg'); // Alpha often shown as %
+    updateSpan('result-rsquared', results.rSquared, formatOpt(3, false), 'neutral');
+    updateSpan('result-reg-stderr', results.regStdErr, formatOpt(3, true), 'neutral');
+    updateSpan('result-beta-tstat', results.betaTStat, formatOpt(2, false), 'neutral');
+    updateSpan('result-beta-pvalue', results.betaPValue, formatOpt(3, false), 'neutral');
+    updateSpan('result-alpha-tstat', results.alphaTStat, formatOpt(2, false), 'neutral');
+    updateSpan('result-alpha-pvalue', results.alphaPValue, formatOpt(3, false), 'neutral');
 }
 
 
@@ -2094,280 +2351,20 @@ function exportResultsToExcelFile() {
 }
 
 function downloadBlob(blob, filename) {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
 }
 
-// --- PDF Export Function (Revised - HTML to Canvas approach) ---
+// Simplified and corrected PDF export function placeholder
 async function exportResultsToPdfFile() {
-    if (!calculatedResults || typeof calculatedResults.n !== 'number') {
-        Swal.fire(_t('warning_title'), _t('status_no_results'), 'warning');
-        updateStatus('status_no_results', {}, 'warning'); return;
-    }
-    updateStatus('status_saving_results', {}, 'info');
-
-    // --- Check if required libraries are loaded ---
-    if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined' || typeof window.html2canvas === 'undefined') {
-        console.error("jsPDF or html2canvas library is not loaded!");
-        Swal.fire(_t('error_title'), "کتابخانه های jsPDF یا html2canvas بارگذاری نشده اند.", 'error');
-        updateStatus('status_save_error', {}, 'error');
+    console.warn("PDF export is deprecated and this function should be removed.");
+    updateStatus('status_feature_unavailable', { feature: "PDF Export" }, 'warning');
         return;
-    }
-    
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({
-        orientation: 'p',
-        unit: 'mm',
-        format: 'a4'
-    });
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 10; // Adjust margin as needed
-    const contentWidth = pageWidth - margin * 2;
-    let pdfCreationError = null; // Flag for errors during PDF generation
-
-    // --- Create a temporary container for HTML report content ---
-    const reportContainer = document.createElement('div');
-    reportContainer.id = 'temp-pdf-report-container'; // Add an ID for potential cleanup
-    reportContainer.style.position = 'absolute';
-    reportContainer.style.left = '-9999px'; // Position off-screen
-    reportContainer.style.top = '0';
-    reportContainer.style.width = '800px'; // Use a fixed width for rendering consistency
-    reportContainer.style.padding = '20px';
-    reportContainer.style.backgroundColor = '#111827'; // Match dark theme background
-    reportContainer.style.color = '#d1d5db'; // Match dark theme text
-    reportContainer.style.fontFamily = 'Vazirmatn, sans-serif'; // Apply the font loaded via CSS
-    reportContainer.style.direction = 'rtl';
-    reportContainer.style.fontSize = '14px';
-    reportContainer.style.lineHeight = '1.6';
-    // Add basic table styles directly
-    reportContainer.innerHTML = `
-        <style>
-            #temp-pdf-report-container table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 15px; }
-            #temp-pdf-report-container th, #temp-pdf-report-container td { padding: 5px; border: 1px solid #374151; }
-            #temp-pdf-report-container th { background-color: #1f2937; font-weight: bold; text-align: center; }
-            #temp-pdf-report-container td:first-child { text-align: right; }
-            #temp-pdf-report-container td:last-child { text-align: center; font-family: monospace; }
-            #temp-pdf-report-container .data-table { width: 70%; margin-right: auto; margin-left: auto;} /* Center smaller table */
-            #temp-pdf-report-container .data-table th, #temp-pdf-report-container .data-table td { text-align: center; }
-        </style>
-    `;
-
-    try {
-        const results = calculatedResults;
-        const inputData = dataPoints;
-        const now = new Date();
-        const locale = currentLang === 'fa' ? 'fa-IR' : 'en-US';
-        const dateTimeFormat = new Intl.DateTimeFormat(locale, { dateStyle: 'full', timeStyle: 'medium' });
-
-        // --- Populate HTML content ---
-        let htmlContent = `
-            <h1 style="text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 15px;">${_t('app_title')}</h1>
-            <p style="font-size: 12px; margin-bottom: 5px;">تاریخ گزارش: ${dateTimeFormat.format(now)}</p>
-            <hr style="border-color: #374151; margin: 10px 0;">
-            
-            <h2 style="font-size: 16px; font-weight: bold; margin-top: 15px; margin-bottom: 8px;">${_t('results_title')}</h2>
-            <table>
-                <thead>
-                    <tr><th>${_t('metric_header_pdf')}</th><th>${_t('value_header_pdf')}</th></tr>
-                </thead>
-                <tbody>
-        `;
-        // Results rows
-        const resultsTableBody = [
-             [_t('data_count'), formatNumber(results.n, 0)],
-             [_t('rf_title'), formatNumber(results.rf, 2, true)],
-             [_t('mean_label'), formatNumber(results.mean, 2, true)],
-             [_t('geo_mean_label'), formatNumber(results.gm, 2, true)],
-             [_t('std_dev_label'), formatNumber(results.std, 2, true)],
-             [_t('downside_dev_label'), formatNumber(results.dsd, 2, true)],
-             [_t('variance_label'), formatNumber(results.var, 4, false)],
-             [_t('cv_label'), formatNumber(results.cv, 3, false)],
-             [_t('mdd_label'), formatNumber(results.mdd, 2, true)],
-             [_t('mdd_period_label'), formatNumber(results.mdd_period, 0, false)],
-             [_t('skewness_label'), formatNumber(results.skew, 3, false)],
-             [_t('kurtosis_label'), formatNumber(results.kurt, 3, false)],
-             [_t('var_label'), formatNumber(results.var5, 2, true)],
-             [_t('var_95_label'), formatNumber(results.var95, 2, true)],
-             [_t('max_gain_label'), formatNumber(results.max_gain, 2, true)],
-             [_t('sharpe_label'), formatNumber(results.sh, 3, false)],
-             [_t('sortino_label'), formatNumber(results.so, 3, false)],
-             [_t('cvar_label'), formatNumber(results.cvar5, 2, true)],
-             [_t('omega_label'), formatNumber(results.omega, 3, false)],
-        ];
-        resultsTableBody.forEach(row => {
-            htmlContent += `<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`;
-        });
-        htmlContent += `</tbody></table>`;
-
-        // Input Data Table
-        if (inputData.length > 0) {
-            htmlContent += `<h2 style="font-size: 16px; font-weight: bold; margin-top: 20px; margin-bottom: 8px;">داده های ورودی (${inputData.length} نقطه):</h2>
-                            <table class="data-table">
-                                <thead><tr><th>${_t('col_index')}</th><th>${_t('col_return')}</th></tr></thead>
-                                <tbody>`;
-            inputData.forEach((p, i) => {
-                htmlContent += `<tr><td>${formatNumber(i + 1, 0)}</td><td>${formatNumber(p, 4)}%</td></tr>`;
-            });
-            htmlContent += `</tbody></table>`;
-        }
-
-        // Append the generated HTML to the container
-        reportContainer.innerHTML += htmlContent; // Append to keep the styles
-        document.body.appendChild(reportContainer);
-
-        // --- Capture HTML content as image ---
-        await new Promise(resolve => setTimeout(resolve, 200)); // Slightly longer delay
-        
-        console.log("Capturing report HTML content with html2canvas...");
-        const reportCanvas = await html2canvas(reportContainer, { 
-            scale: 2, 
-            useCORS: true, 
-            backgroundColor: '#111827', // Ensure background for capture
-            width: reportContainer.offsetWidth, // Use actual width
-            height: reportContainer.offsetHeight, // Use actual height
-            scrollX: 0,
-            scrollY: -window.scrollY // Important for off-screen elements
-        });
-        const reportImgData = reportCanvas.toDataURL('image/png');
-        console.log("Report HTML content captured.");
-        document.body.removeChild(reportContainer); // Clean up immediately after capture
-
-        // --- Check if chart should be included ---
-        const plotModalElement = document.getElementById('plotModal');
-        const plotContainerElement = document.getElementById('plot-container');
-        let includeCharts = false;
-        let chartCanvas = null;
-        let chartTitle = '';
-        if (plotModalElement && plotContainerElement && !plotModalElement.classList.contains('hidden') && plotContainerElement.children.length > 0) {
-            const chartConfirmation = await Swal.fire({
-                title: _t('info_title'),
-                text: _t('include_charts_q'),
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: _t('ok_button'),
-                cancelButtonText: _t('cancel_button'),
-            });
-            includeCharts = chartConfirmation.isConfirmed;
-            if (includeCharts) {
-                 try {
-                     chartTitle = document.getElementById('plotModalLabel')?.textContent || _t('plot_modal_title');
-                     console.log("Capturing chart with html2canvas...");
-                     await new Promise(resolve => setTimeout(resolve, 300)); 
-                     chartCanvas = await html2canvas(plotContainerElement, { 
-                         scale: 2, 
-                         useCORS: true, 
-                         backgroundColor: DARK_BACKGROUND_COLOR // Match plot background
-                     });
-                     console.log("Chart captured.");
-                 } catch(chartError) {
-                     console.error("Error capturing chart canvas:", chartError);
-                     Swal.fire(_t('error_title'), "خطا در عکس گرفتن از نمودار.", 'error');
-                     includeCharts = false; 
-                 }
-            }
-        }
-        
-        // --- Add captured images to PDF ---
-        let currentY = margin;
-        
-        // Add Report Image
-        const reportImgHeightMM = (reportCanvas.height * contentWidth) / reportCanvas.width; 
-        let remainingPageHeight = pageHeight - margin - margin; // Usable height
-        let reportImgPartHeight = reportCanvas.height; // Height of the source canvas part
-        let reportSourceY = 0; // Starting Y position on the source canvas
-        
-        // Loop to add parts of the report image, handling page breaks
-        while (reportImgPartHeight > 0) {
-            if (currentY > margin && reportImgPartHeight > remainingPageHeight * (reportCanvas.width / contentWidth) ) { // Check if new page needed and enough content left
-                 pdf.addPage();
-                 currentY = margin;
-                 remainingPageHeight = pageHeight - margin - margin;
-            }
-            
-            // Calculate the height of the chunk to draw on this page (in canvas pixels)
-            let chunkHeightCanvas = Math.min(reportImgPartHeight, remainingPageHeight * (reportCanvas.width / contentWidth));
-            // Calculate the height of this chunk in PDF mm units
-            let chunkHeightMM = (chunkHeightCanvas * contentWidth) / reportCanvas.width;
-
-            // Create a temporary canvas to draw the chunk
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = reportCanvas.width;
-            tempCanvas.height = chunkHeightCanvas;
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.drawImage(reportCanvas, 0, reportSourceY, reportCanvas.width, chunkHeightCanvas, 0, 0, reportCanvas.width, chunkHeightCanvas);
-            
-            // Add the chunk image to the PDF
-            pdf.addImage(tempCanvas.toDataURL('image/png'), 'PNG', margin, currentY, contentWidth, chunkHeightMM);
-
-            // Update positions for the next iteration
-            currentY += chunkHeightMM + 5; // Add some spacing
-            reportSourceY += chunkHeightCanvas;
-            reportImgPartHeight -= chunkHeightCanvas;
-            remainingPageHeight = pageHeight - currentY - margin; // Update remaining height
-        }
-
-
-        // Add Chart Image (if included)
-        if (includeCharts && chartCanvas) {
-            const chartImgData = chartCanvas.toDataURL('image/png');
-            const chartImgHeightMM = (chartCanvas.height * contentWidth) / chartCanvas.width;
-            
-            if (currentY === margin || currentY + chartImgHeightMM + 15 > pageHeight - margin) { // Check if it fits or needs new page (added 15 for title space)
-                 if (currentY > margin) pdf.addPage(); // Add page only if not already at the top
-                 currentY = margin;
-            }
-            
-            // Optionally add chart title as text
-            // This will use the PDF's current font (likely Helvetica if Vazirmatn embedding failed previously)
-            // Or, we can try to use a generic sans-serif and hope for the best
-            pdf.setFontSize(12);
-            pdf.setFont('helvetica', 'bold'); // Using a standard font for chart title
-            pdf.setTextColor(50, 50, 50); // Dark gray text for better contrast if background is white
-            pdf.text(chartTitle, pageWidth / 2, currentY, { align: 'center' }); // Adjust Y for title
-            currentY += 10; // Space after title
-
-            // Recalculate if it still fits after adding title
-            if (currentY + chartImgHeightMM > pageHeight - margin) {
-                 pdf.addPage();
-                 currentY = margin;
-                 // Re-add title on new page if desired
-                 pdf.text(chartTitle, pageWidth / 2, currentY, { align: 'center' });
-                 currentY += 10;
-            }
-
-            pdf.addImage(chartImgData, 'PNG', margin, currentY, contentWidth, chartImgHeightMM);
-        }
-        
-        // --- Save PDF ---
-        const dateStr = now.toISOString().slice(0, 10);
-        const filename = `RiskAnalysisResults_${dateStr}.pdf`;
-        pdf.save(filename);
-        updateStatus('status_saving_pdf_success', { filename: filename }, 'success');
-
-    } catch (error) {
-        pdfCreationError = error; // Store error
-        console.error("Error exporting results to PDF (HTML to Canvas method):", error);
-        Swal.fire(_t('error_title'), _t('file_save_error_msg', { error: error.message }), 'error');
-        updateStatus('status_save_error', {}, 'error');
-    } finally {
-         // Ensure cleanup of the temporary div even if errors occur
-         const tempDiv = document.getElementById('temp-pdf-report-container');
-         if (tempDiv && tempDiv.parentNode) {
-             document.body.removeChild(tempDiv);
-         }
-         // Re-throw error if caught during PDF generation, after cleanup
-         if (pdfCreationError) {
-             // Optional: Rethrow or handle further if needed
-         }
-    }
 }
 
 // --- Tooltip & Modal Handlers ---
@@ -2397,6 +2394,155 @@ function calculateGeometricMean(data) { if (!data || data.length === 0) return N
 function calculateDownsideDeviation(data, target = 0) { if (!data || data.length < 2) return NaN; const n = data.length; const downsideReturns = data.filter(r => r < target); if (downsideReturns.length === 0) return 0.0; const sumSqDev = downsideReturns.reduce((acc, r) => acc + Math.pow(r - target, 2), 0); return Math.sqrt(sumSqDev / (n - 1)); }
 function calculateMaxDrawdown(returnsPerc) { if (!returnsPerc || returnsPerc.length === 0) return { maxDrawdown: 0.0, duration: 0, peakIndex: 0, troughIndex: 0 }; const dataArr = returnsPerc.filter(p => isFinite(p)); if (dataArr.length === 0) return { maxDrawdown: 0.0, duration: 0, peakIndex: 0, troughIndex: 0 }; let cumulative = [1.0]; dataArr.forEach(r => { cumulative.push(cumulative[cumulative.length - 1] * (1 + r / 100.0)); }); let maxDd = 0.0; let peakIndex = 0; let troughIndex = 0; let currentPeakValue = cumulative[0]; let currentPeakIndex = 0; for (let i = 1; i < cumulative.length; i++) { if (cumulative[i] > currentPeakValue) { currentPeakValue = cumulative[i]; currentPeakIndex = i; } else { const currentDrawdown = (currentPeakValue <= 1e-9) ? 0 : (cumulative[i] / currentPeakValue - 1.0) * 100.0; if (currentDrawdown < maxDd) { maxDd = currentDrawdown; peakIndex = currentPeakIndex; troughIndex = i; }}} const duration = troughIndex - peakIndex; return { maxDrawdown: isFinite(maxDd) ? maxDd : 0.0, duration: isFinite(duration) ? duration : 0, peakIndex: peakIndex, troughIndex: troughIndex };}
 
+// Placeholder for missing function to resolve ReferenceError
+function updateMarketDataDisplay() {
+    // Basic implementation to update market data display area
+    const marketDataDisplay = document.getElementById('market-data-display');
+    const placeholder = marketDataDisplay ? marketDataDisplay.querySelector('.market-data-placeholder') : null;
+
+    if (marketDataDisplay) {
+        // Clear previous entries
+        while (marketDataDisplay.firstChild && marketDataDisplay.firstChild !== placeholder) {
+            marketDataDisplay.removeChild(marketDataDisplay.firstChild);
+        }
+        if (placeholder) placeholder.style.display = 'none'; // Hide placeholder initially
+
+        if (marketDataPoints.length === 0) {
+            if (placeholder) {
+                placeholder.textContent = _t('market_list_empty_option');
+                placeholder.style.display = 'block';
+                 if (!marketDataDisplay.contains(placeholder)) { // Ensure placeholder is a child if not already
+                    marketDataDisplay.appendChild(placeholder);
+                }
+            } else {
+                const p = document.createElement('p');
+                p.className = 'text-dark-text-muted text-center p-2 market-data-placeholder'; // Ensure class for styling
+                p.textContent = _t('market_list_empty_option');
+                marketDataDisplay.appendChild(p);
+            }
+        } else {
+            if (placeholder) placeholder.style.display = 'none';
+            marketDataPoints.forEach((value, index) => {
+                const item = document.createElement('div');
+                item.className = 'px-2 py-1 border-b border-dark-border last:border-b-0 text-sm'; // Added text-sm
+                // Assuming 'market_data_item_prefix' is defined in texts object
+                // Example: 'market_data_item_prefix': { 'en': 'Market Data {index}:', 'fa': 'داده بازار {index}:' }
+                item.textContent = `${_t('market_data_item_prefix', { index: index + 1 })} ${formatNumber(value, 2, true)}`;
+                marketDataDisplay.appendChild(item);
+            });
+        }
+    }
+    // Add translation for market_data_item_prefix if not present
+    if (!texts['market_data_item_prefix']) {
+        texts['market_data_item_prefix'] = {
+            'en': 'Market Data {index}:',
+            'fa': 'داده بازار {index}:'
+        };
+    }
+     // Add translation for market_list_empty_option if not present (it should be there from HTML, but as a fallback)
+    if (!texts['market_list_empty_option']) {
+        texts['market_list_empty_option'] = {
+            'en': 'Market data list is empty.',
+            'fa': 'لیست داده‌های بازار خالی است.'
+        };
+    }
+}
+
+function addMarketDataPoint() {
+    const marketValueEntry = document.getElementById('market-value-entry');
+    if (!marketValueEntry) {
+        console.error("Market value entry textarea not found");
+        return;
+    }
+
+    const rawInput = marketValueEntry.value.trim();
+    if (!rawInput) {
+        updateStatus('status_empty_input', {}, 'info');
+        marketValueEntry.focus();
+        return;
+    }
+    const potentialValues = rawInput.split(/[\s,;\\n\t]+/).filter(val => val);
+    let addedCount = 0;
+    const invalidEntries = [];
+    const newlyAddedData = [];
+
+    potentialValues.forEach(rawVal => {
+        const cleanedValue = rawVal.replace(/%/g, '').trim();
+        if (!cleanedValue) return;
+        const valueStr = cleanedValue.replace(',', '.');
+        const value = parseFloat(valueStr);
+
+        if (!isNaN(value) && isFinite(value)) {
+            newlyAddedData.push(value);
+            addedCount++;
+        } else {
+            invalidEntries.push(rawVal);
+        }
+    });
+
+    if (addedCount > 0) {
+        marketDataPoints.push(...newlyAddedData);
+        updateMarketDataDisplay();
+        // updateActionButtonsState(); // Consider if market data presence affects global action buttons
+
+        let statusKey = 'status_data_added';
+        let statusArgs = { count: addedCount };
+        let statusType = 'success';
+
+        if (invalidEntries.length > 0) {
+            statusKey = 'status_data_invalid';
+            const entriesStr = `${invalidEntries.slice(0, 3).join(', ')}${invalidEntries.length > 3 ? '...' : ''}`;
+            statusArgs['entries'] = entriesStr;
+            statusType = 'warning';
+            console.warn(_t(statusKey, statusArgs));
+        }
+        updateStatus(statusKey, statusArgs, statusType);
+    } else if (invalidEntries.length > 0) {
+        Swal.fire(_t('error_title'), _t('status_no_valid_data'), 'error');
+        updateStatus('status_no_valid_data', {}, 'error');
+    }
+
+    marketValueEntry.value = '';
+    marketValueEntry.focus();
+    
+    const clearMarketDataBtn = document.getElementById('clear-market-data-button');
+    if (clearMarketDataBtn) {
+        clearMarketDataBtn.disabled = marketDataPoints.length === 0;
+    }
+    // Also, re-evaluate calculate button if market data is essential for some calculations (e.g. beta)
+    // This might be better handled within a global updateActionButtonsState if market data becomes a hard requirement for 'calculate'
+    if (calculateButton && dataPoints.length >=2 && marketDataPoints.length !== dataPoints.length && marketDataPoints.length > 0) {
+        // If there's asset data and some market data, but counts don't match,
+        // it implies user intends to do regression but data is incomplete.
+        // This is a soft warning/indicator. Actual validation is in calculateMetrics.
+        // console.warn("Asset and Market data counts don't match for regression.");
+    }
+}
+
+function clearMarketDataPoints() {
+    Swal.fire({
+        title: _t('clear_market_data_button') + "?",
+        text: _t('confirm_clear_text'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: _t('ok_button'),
+        cancelButtonText: _t('cancel_button'),
+        customClass: { popup: 'swal2-popup', title: 'swal2-title', htmlContainer: 'swal2-html-container', confirmButton: 'swal2-confirm', cancelButton: 'swal2-cancel'}
+    }).then((result) => {
+        if (result.isConfirmed) {
+            marketDataPoints = [];
+            updateMarketDataDisplay();
+            const clearMarketDataBtn = document.getElementById('clear-market-data-button');
+            if (clearMarketDataBtn) {
+                clearMarketDataBtn.disabled = true;
+            }
+            // updateActionButtonsState(); // If clearing market data affects global state
+            updateStatus('status_list_cleared', { list_name: _t('add_market_data_title') }, 'success'); // Assuming a generic cleared message
+            const marketValueEntry = document.getElementById('market-value-entry');
+            if(marketValueEntry) marketValueEntry.focus();
+        }
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM fully loaded and parsed");
@@ -2427,6 +2573,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
      } else { console.error("Value entry textarea not found"); }
 
+    const marketValueEntry = document.getElementById('market-value-entry');
+    const addMarketDataBtn = document.getElementById('add-market-data-button');
+    const clearMarketDataBtn = document.getElementById('clear-market-data-button');
+
+    if (addMarketDataBtn && marketValueEntry) {
+        addMarketDataBtn.addEventListener('click', addMarketDataPoint);
+        marketValueEntry.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                addMarketDataPoint();
+            }
+        });
+    } else {
+        if (!addMarketDataBtn) console.error("Add market data button not found");
+        if (!marketValueEntry) console.error("Market value entry for market data not found");
+    }
+
+    if (clearMarketDataBtn) {
+        clearMarketDataBtn.addEventListener('click', clearMarketDataPoints);
+        clearMarketDataBtn.disabled = marketDataPoints.length === 0; // Initial state
+    } else {
+        console.error("Clear market data button not found");
+    }
 
     if (editSelect) {
         editSelect.addEventListener('change', loadValueForEditFromMenu);
@@ -2461,7 +2630,20 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'plot-hist-button', func: plotHistogramLogic, titleKey: 'plot_hist_title' },
         { id: 'plot-box-button', func: plotBoxplotLogic, titleKey: 'plot_box_title' },
         { id: 'plot-equity-button', func: plotEquityCurveLogic, titleKey: 'plot_equity_title' },
-        { id: 'plot-qq-button', func: plotQqplotLogic, titleKey: 'plot_qq_title' }
+        { id: 'plot-qq-button', func: plotQqplotLogic, titleKey: 'plot_qq_title' },
+        // Add regression plot button
+        { 
+            id: 'plot-regression-button', 
+            func: () => { // Needs to pass correct data to plotRegressionLogic
+                if (calculatedResults && dataPoints && marketDataPoints && 
+                    typeof calculatedResults.alpha === 'number' && 
+                    typeof calculatedResults.beta === 'number') {
+                    return plotRegressionLogic(dataPoints, marketDataPoints, {alpha: calculatedResults.alpha, beta: calculatedResults.beta });
+                }
+                return null; // Or handle error appropriately
+            }, 
+            titleKey: 'plot_regression_title' 
+        }
     ];
     plotButtons.forEach(btnInfo => {
         const button = document.getElementById(btnInfo.id);
@@ -2528,8 +2710,161 @@ document.addEventListener('DOMContentLoaded', () => {
     } else { console.warn("Plot modal element not found."); }
     document.addEventListener('keydown', escapeKeyHandler); 
 
+    updateEditOptions(); // Moved from outside
     console.log("Application initialized.");
 });
 
-updateEditOptions();
+// updateEditOptions(); // Removed from here
 console.log("script.js loaded and initialized.");
+
+function calculateRegression(assetReturns, marketReturns) {
+    if (!assetReturns || !marketReturns || assetReturns.length !== marketReturns.length || assetReturns.length < 2) {
+        console.warn("Regression calculation requires at least 2 paired data points for asset and market returns.");
+        return null;
+    }
+    if (typeof ss === 'undefined') {
+        console.error("simple-statistics library (ss) is not loaded. Cannot perform regression.");
+        return null;
+    }
+
+    const n = assetReturns.length;
+    const pairedData = assetReturns.map((assetRet, i) => [marketReturns[i], assetRet]); // X: market, Y: asset
+
+    try {
+        const regression = ss.linearRegression(pairedData); // Returns {m: beta, b: alpha}
+        const beta = regression.m;
+        const alpha = regression.b;
+
+        const lineFunc = ss.linearRegressionLine(regression);
+        const rSquared = ss.rSquared(pairedData, lineFunc);
+
+        // Calculate residuals and Standard Error of the Regression (se_regression or RMSE)
+        let sumSqResiduals = 0;
+        for (let i = 0; i < n; i++) {
+            const predictedY = lineFunc(marketReturns[i]);
+            sumSqResiduals += Math.pow(assetReturns[i] - predictedY, 2);
+        }
+        
+        // For SLR, df_error = n - 2. If n < 2, this would be an issue but caught by initial check.
+        // If n = 2, df_error = 0. se_regression would be Infinity or NaN.
+        // simple-statistics might handle 2 points for linearRegression, but stats significance is nil.
+        if (n <= 2) { // With 2 points, R^2 is 1 (or -1), std errors are not well-defined or infinite.
+             return {
+                beta: beta,
+                alpha: alpha,
+                rSquared: rSquared,
+                stdErrRegression: NaN, // Or Infinity, but NaN is safer for display
+                tStatBeta: NaN,
+                pValBeta: NaN,
+                tStatAlpha: NaN,
+                pValAlpha: NaN
+            };
+        }
+        const stdErrRegression = Math.sqrt(sumSqResiduals / (n - 2));
+
+        // Calculate Standard Error of Beta
+        const meanMarket = ss.mean(marketReturns);
+        let sumSqDevMarket = 0;
+        marketReturns.forEach(mr => { sumSqDevMarket += Math.pow(mr - meanMarket, 2); });
+        
+        if (sumSqDevMarket < 1e-9) { // Avoid division by zero if all market returns are the same
+            return { // Beta might be 0 or NaN from ss.linearRegression if market X is constant
+                beta: beta, 
+                alpha: alpha, 
+                rSquared: rSquared,
+                stdErrRegression: stdErrRegression,
+                tStatBeta: NaN, 
+                pValBeta: NaN,
+                tStatAlpha: NaN, // Alpha's t-stat also becomes problematic
+                pValAlpha: NaN
+            };
+        }
+        const stdErrBeta = stdErrRegression / Math.sqrt(sumSqDevMarket);
+        const tStatBeta = beta / stdErrBeta;
+
+        // Calculate Standard Error of Alpha
+        const stdErrAlpha = stdErrRegression * Math.sqrt((1/n) + (Math.pow(meanMarket, 2) / sumSqDevMarket));
+        const tStatAlpha = alpha / stdErrAlpha;
+
+        // P-values would ideally come from a t-distribution.
+        // For now, returning NaN as simple-statistics doesn't directly provide them,
+        // and implementing a t-distribution cdf is beyond a quick fix.
+        // Placeholder: P-values are complex to calculate without a library like jStat or a dedicated function.
+        const pValBeta = NaN; // TODO: Implement or use library for p-value from t-stat and df (n-2)
+        const pValAlpha = NaN; // TODO: Implement or use library for p-value
+
+        return {
+            beta: beta,
+            alpha: alpha,
+            rSquared: rSquared,
+            stdErrRegression: stdErrRegression,
+            tStatBeta: tStatBeta,
+            pValBeta: pValBeta,
+            tStatAlpha: tStatAlpha,
+            pValAlpha: pValAlpha
+        };
+
+    } catch (e) {
+        console.error("Error during regression calculation:", e);
+        return null;
+    }
+}
+
+function plotRegressionLogic(assetReturns, marketReturns, regressionLineParams) {
+    if (!assetReturns || !marketReturns || assetReturns.length === 0 || marketReturns.length === 0 || assetReturns.length !== marketReturns.length) {
+        updateStatus('status_plot_error_no_paired_data', {}, 'error');
+        Swal.fire(_t('error_title'), _t('status_plot_error_no_paired_data'), 'error');
+        return null;
+    }
+    if (!regressionLineParams || typeof regressionLineParams.alpha !== 'number' || typeof regressionLineParams.beta !== 'number') {
+        updateStatus('status_plot_error_no_regression_params', {}, 'error');
+        Swal.fire(_t('error_title'), _t('status_plot_error_no_regression_params'), 'error');
+        return null;
+    }
+
+    const { alpha, beta } = regressionLineParams;
+
+    // Prepare data for scatter plot
+    const traceScatter = {
+        x: marketReturns,
+        y: assetReturns,
+        mode: 'markers',
+        type: 'scatter',
+        name: _t('scatter_plot_legend_actual'),
+        marker: { color: PRIMARY_COLOR, size: 8, opacity: 0.7 }
+    };
+
+    // Prepare data for regression line
+    // Find min and max of market returns to draw the line across the range
+    const minMarketReturn = Math.min(...marketReturns);
+    const maxMarketReturn = Math.max(...marketReturns);
+    const lineX = [minMarketReturn, maxMarketReturn];
+    const lineY = [alpha + beta * minMarketReturn, alpha + beta * maxMarketReturn];
+
+    const traceLine = {
+        x: lineX,
+        y: lineY,
+        mode: 'lines',
+        type: 'scatter',
+        name: _t('scatter_plot_legend_regression_line'),
+        line: { color: ACCENT_COLOR_NEG, width: 2 } // Example color
+    };
+
+    const plotData = [traceScatter, traceLine];
+
+    const layout = getResponsiveLayoutParams();
+    layout.title = _t('plot_regression_title');
+    layout.xaxis = { ...layout.xaxis, title: _t('plot_axis_market_returns'), zeroline: true, zerolinecolor: DARK_BORDER_COLOR, zerolinewidth: 1 };
+    layout.yaxis = { ...layout.yaxis, title: _t('plot_axis_asset_returns'), zeroline: true, zerolinecolor: DARK_BORDER_COLOR, zerolinewidth: 1 };
+    layout.showlegend = true;
+    layout.legend = { 
+        ...layout.legend,
+        orientation: 'h', 
+        yanchor: 'bottom', 
+        y: 1.02, 
+        xanchor: 'right', 
+        x: 1 
+    };
+
+    return { data: plotData, layout: layout };
+}
