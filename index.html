@@ -4,21 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-translate="app_title">تحلیلگر پیشرفته ریسک و بازده</title>
-    <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Plotly.js -->
-    <script src='https://cdn.plot.ly/plotly-latest.min.js'></script>
-    <!-- SheetJS (XLSX) -->
+    <script src='https://cdn.plot.ly/plotly-2.32.0.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-    <!-- Simple Statistics JS -->
     <script src="https://cdn.jsdelivr.net/npm/simple-statistics@7.8.3/dist/simple-statistics.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <!-- Add SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script>
       // Optional: Configure Tailwind CSS
       tailwind.config = {
-        darkMode: 'class',
+        darkMode: 'class', // اطمینان از فعال بودن حالت تاریک بر اساس کلاس
         theme: {
           extend: {
             colors: {
@@ -40,7 +35,6 @@
               'dark-input-border': '#6b7280', // border-gray-500 (example)
             },
             fontFamily: {
-              // Add Vazirmatn if available
               sans: ['Vazirmatn', 'sans-serif'],
               mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
             }
@@ -51,137 +45,45 @@
       document.documentElement.classList.add('dark');
     </script>
     <style>
-      /* Apply base font if specified */
       body {
          font-family: 'Vazirmatn', sans-serif;
-         /* Ensure font is loaded if used */
-         background-color: #111827; /* Equivalent to dark-bg */
-         color: #d1d5db; /* Equivalent to dark-text */
+         background-color: #111827; /* dark-bg */
+         color: #d1d5db; /* dark-text */
       }
-      /* Custom scrollbar (optional but nice) */
       ::-webkit-scrollbar { width: 8px; height: 8px; }
       ::-webkit-scrollbar-track { background: #1f2937; /* dark-card */ }
       ::-webkit-scrollbar-thumb { background-color: #4b5563; /* secondary */ border-radius: 10px; border: 2px solid #1f2937; }
       ::-webkit-scrollbar-thumb:hover { background-color: #6b7280; /* gray-500 */ }
-      /* Style for Plotly modal background */
-      .modal-backdrop.show {
-            opacity: 0.7;
-            background-color: #000;
-      }
-      /* Make Plotly modal content bg dark */
-      #plotModal .bg-gray-800 {
-          background-color: #1f2937 !important; /* Override potentially conflicting styles */
-      }
-      /* Custom scrollbar styles */
-      ::-webkit-scrollbar { width: 8px; }
-      ::-webkit-scrollbar-track { background: #1f2937; /* bg-gray-800 */ }
-      ::-webkit-scrollbar-thumb { background: #4b5563; /* bg-gray-600 */ border-radius: 4px;}
-      ::-webkit-scrollbar-thumb:hover { background: #6b7280; /* bg-gray-500 */ }
-
-      /* Ensure body takes full height */
+      .modal-backdrop.show { opacity: 0.7; background-color: #000; }
+      #plotModal .bg-gray-800 { background-color: #1f2937 !important; }
       html, body { height: 100%; margin: 0; }
-      body { display: flex; flex-direction: column; background-color: #111827; /* bg-gray-900 */}
+      body { display: flex; flex-direction: column; }
       main { flex-grow: 1; }
-
-      /* Style for plot modal */
       .modal-backdrop { background-color: rgba(0, 0, 0, 0.7); }
-
-      /* Improve focus visibility for accessibility */
-      *:focus-visible {
-          outline: 2px solid #60a5fa; /* blue-400 */
-          outline-offset: 2px;
-          box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.4); /* blue-400 with opacity */
-      }
-      /* Remove default outline when focus-visible is supported */
-      *:focus:not(:focus-visible) {
-          outline: none;
-      }
-       /* SweetAlert2 Dark Theme adjustments (Optional but recommended) */
-       body.swal2-shown:not(.swal2-no-backdrop) {
-           overflow-y: hidden !important; /* Prevent double scrollbars - !important needed due to specificity */
-       }
-       .swal2-popup {
-           background-color: #1f2937 !important; /* bg-gray-800 */
-           color: #d1d5db !important; /* text-gray-300 */
-           border-radius: 0.5rem !important; /* rounded-lg */
-           border: 1px solid #374151 !important; /* border-gray-700 */
-       }
-       .swal2-title {
-           color: #e5e7eb !important; /* text-gray-200 */
-       }
-       .swal2-html-container {
-           color: #d1d5db !important; /* text-gray-300 */
-           text-align: justify !important; /* Justify text in popup */
-           line-height: 1.7 !important;
-       }
-       .swal2-confirm {
-           background-color: #3b82f6 !important; /* bg-blue-500 */
-           color: white !important;
-           border-radius: 0.375rem !important; /* rounded-md */
-       }
-       .swal2-confirm:focus {
-           box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5) !important;
-       }
-       .swal2-close {
-            color: #9ca3af !important; /* text-gray-400 */
-       }
-       .swal2-close:hover {
-            color: #e5e7eb !important; /* text-gray-200 */
-       }
-       .swal2-close:focus {
-            box-shadow: none !important; /* Remove default focus ring on close */
-       }
-       /* Style for drag-over state on drop zone */
-      .drag-over-active {
-        outline: 3px dashed #3b82f6 !important; /* blue-500, Tailwind's primary color */
-        background-color: rgba(59, 130, 246, 0.1) !important; /* semi-transparent blue */
-        transition: background-color 0.2s ease-in-out, outline 0.2s ease-in-out;
-      }
-      #data-input-drop-zone::before, 
-      #data-input-drop-zone.drag-over-active::before, 
-      #data-input-drop-zone.empty-drop-zone::before {
-        display: none; /* Hide the pseudo-element prompt */
-      }
-
-      /* Styling for the new dedicated file drop area */
-      #dedicated-file-drop-area {
-        border: 2px dashed #4b5563; /* secondary/gray-600 */
-        border-radius: 0.375rem; /* rounded-md */
-        padding: 1.5rem; /* p-6 */
-        text-align: center;
-        color: #9ca3af; /* dark-text-muted/gray-400 */
-        transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
-        min-height: 100px; /* Ensure it has some height */
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-      }
-      #dedicated-file-drop-area.drag-over-active {
-        border-color: #3b82f6; /* primary/blue-500 */
-        background-color: rgba(59, 130, 246, 0.1); /* semi-transparent blue */
-      }
-      #dedicated-file-drop-area p {
-        font-size: 0.875rem; /* text-sm */
-        margin-top: 0.5rem; /* mt-2 */
-      }
-      #dedicated-file-drop-area .drop-icon {
-        font-size: 2rem; /* text-3xl or similar */
-        color: #6b7280; /* gray-500 */
-        margin-bottom: 0.5rem; /* mb-2 */
-      }
-
+      *:focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.4); }
+      *:focus:not(:focus-visible) { outline: none; }
+       body.swal2-shown:not(.swal2-no-backdrop) { overflow-y: hidden !important; }
+       .swal2-popup { background-color: #1f2937 !important; color: #d1d5db !important; border-radius: 0.5rem !important; border: 1px solid #374151 !important; }
+       .swal2-title { color: #e5e7eb !important; }
+       .swal2-html-container { color: #d1d5db !important; text-align: justify !important; line-height: 1.7 !important; }
+       .swal2-confirm { background-color: #3b82f6 !important; color: white !important; border-radius: 0.375rem !important; }
+       .swal2-confirm:focus { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5) !important; }
+       .swal2-close { color: #9ca3af !important; }
+       .swal2-close:hover { color: #e5e7eb !important; }
+       .swal2-close:focus { box-shadow: none !important; }
+      .drag-over-active { outline: 3px dashed #3b82f6 !important; background-color: rgba(59, 130, 246, 0.1) !important; transition: background-color 0.2s ease-in-out, outline 0.2s ease-in-out; }
+      #dedicated-file-drop-area { border: 2px dashed #4b5563; border-radius: 0.375rem; padding: 1.5rem; text-align: center; color: #9ca3af; transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out; min-height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      #dedicated-file-drop-area.drag-over-active { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
+      #dedicated-file-drop-area p { font-size: 0.875rem; margin-top: 0.5rem; }
+      #dedicated-file-drop-area .drop-icon { font-size: 2rem; color: #6b7280; margin-bottom: 0.5rem; }
     </style>
 </head>
-<body class="dark"> <!-- Ensure dark mode is active -->
+<body class="dark">
 
     <div class="container mx-auto p-4 max-w-7xl space-y-6">
-
-        <!-- Header -->
         <header class="flex flex-wrap justify-between items-center gap-4 border-b border-dark-border pb-4">
             <h1 class="text-2xl md:text-3xl font-bold text-white" data-translate="app_title">تحلیلگر پیشرفته ریسک و بازده</h1>
             <div class="flex items-center gap-3">
-                
                 <label for="lang-select" class="sr-only" data-translate="lang_select_label">زبان:</label>
                 <select id="lang-select" class="bg-dark-card text-dark-text border border-dark-border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="fa">فارسی</option>
@@ -191,12 +93,9 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            <!-- Results Panel -->
             <aside class="lg:col-span-1 order-last lg:order-first bg-dark-card p-4 rounded-lg shadow-md flex flex-col h-fit space-y-3">
                 <h2 class="text-xl font-semibold mb-2 text-center border-b border-dark-border pb-2" data-translate="results_title">نتایج تحلیل</h2>
                 <div id="results-display" class="space-y-1.5 text-sm flex-grow">
-                    <!-- Results populated by JS. Use Flexbox for layout -->
                     <div class="flex justify-between items-center"><strong data-translate="data_count"></strong> <span id="result-count" class="font-mono text-dark-text-muted">-</span></div>
                     <div class="flex justify-between items-center">
                         <span><strong data-translate="mean_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="mean_tooltip">ⓘ</span></span>
@@ -246,6 +145,10 @@
                          <span><strong data-translate="var_95_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="var_95_tooltip">ⓘ</span></span>
                          <span id="result-var95" class="font-mono font-semibold text-highlight-pos">-</span>
                     </div>
+                     <div class="flex justify-between items-center">
+                        <span><strong data-translate="cvar_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="cvar_tooltip">ⓘ</span></span>
+                        <span id="result-cvar5" class="font-mono font-semibold text-highlight-neg">-</span>
+                    </div>
                     <div class="flex justify-between items-center">
                          <span><strong data-translate="max_gain_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="max_gain_tooltip">ⓘ</span></span>
                          <span id="result-max-gain" class="font-mono font-semibold text-highlight-pos">-</span>
@@ -259,16 +162,24 @@
                          <span id="result-sortino" class="font-mono font-semibold text-highlight-neutral">-</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span><strong data-translate="cvar_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="cvar_tooltip">ⓘ</span></span>
-                        <span id="result-cvar5" class="font-mono font-semibold text-highlight-neg">-</span>
-                    </div>
-                    <div class="flex justify-between items-center">
                         <span><strong data-translate="omega_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="omega_tooltip">ⓘ</span></span>
                         <span id="result-omega" class="font-mono font-semibold text-highlight-neutral">-</span>
                     </div>
-                    <!-- Regression Results Added Here -->
+
                     <div class="border-t border-dark-border mt-3 pt-3">
-                        <h3 class="text-md font-semibold mb-1 text-center" data-translate="regression_results_title">نتایج رگرسیون (بتا)</h3>
+                        <h3 class="text-md font-semibold mb-1 text-center" data-translate="benchmark_analysis_title">تحلیل معیار</h3>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="tracking_error_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="tracking_error_tooltip">ⓘ</span></span>
+                            <span id="result-tracking-error" class="font-mono text-dark-text-muted">-</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="information_ratio_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="information_ratio_tooltip">ⓘ</span></span>
+                            <span id="result-information-ratio" class="font-mono text-dark-text-muted">-</span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-dark-border mt-3 pt-3">
+                        <h3 class="text-md font-semibold mb-1 text-center" data-translate="regression_results_title">تحلیل رگرسیون (CAPM)</h3>
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="beta_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="beta_tooltip">ⓘ</span></span>
                             <span id="result-beta" class="font-mono text-dark-text-muted">-</span>
@@ -280,6 +191,10 @@
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="rsquared_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="rsquared_tooltip">ⓘ</span></span>
                             <span id="result-rsquared" class="font-mono text-dark-text-muted">-</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="capm_expected_return_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="capm_expected_return_tooltip">ⓘ</span></span>
+                            <span id="result-capm-er" class="font-mono text-dark-text-muted">-</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="reg_stderr_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="reg_stderr_tooltip">ⓘ</span></span>
@@ -303,20 +218,14 @@
                         </div>
                     </div>
                 </div>
-                 <!-- Data Management Buttons -->
                  <div class="mt-auto pt-4 space-y-2 border-t border-dark-border">
                     <button id="export-results-button" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="save_results_button_unified" disabled>ذخیره نتایج</button>
                 </div>
             </aside>
 
-            <!-- Main Content Area -->
             <main class="lg:col-span-2 order-first lg:order-last space-y-6">
-
-                <!-- Input Section - Renaming ID and removing drop prompt attribute -->
-                <section id="data-input-methods-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
+                <section id="asset-data-input-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
                     <h2 class="text-lg font-semibold mb-3" data-translate="add_data_title">۱. افزودن داده بازده دارایی (%)</h2>
-                    
-                    <!-- Manual Data Input Area -->
                     <div class="mb-6">
                         <p class="text-sm text-dark-text-muted mb-3" data-translate="add_data_hint">راهنما...</p>
                         <div class="flex flex-col sm:flex-row gap-2">
@@ -324,46 +233,50 @@
                             <button id="add-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_button">افزودن</button>
                         </div>
                     </div>
-
-                    <!-- Divider Text (Optional) -->
                     <div class="relative my-4">
-                        <div class="absolute inset-0 flex items-center" aria-hidden="true">
-                            <div class="w-full border-t border-dark-border"></div>
-                        </div>
-                        <div class="relative flex justify-center">
-                            <span class="bg-dark-card px-2 text-sm text-dark-text-muted" data-translate="or_divider_text">یا</span>
-                        </div>
+                        <div class="absolute inset-0 flex items-center" aria-hidden="true"><div class="w-full border-t border-dark-border"></div></div>
+                        <div class="relative flex justify-center"><span class="bg-dark-card px-2 text-sm text-dark-text-muted" data-translate="or_divider_text">یا</span></div>
                     </div>
-
-                    <!-- Dedicated File Drop Area -->
                     <div id="dedicated-file-drop-area" class="cursor-pointer">
                         <i class="fas fa-file-arrow-down drop-icon"></i>
-                        <p data-translate="drop_zone_prompt_dedicated">فایل CSV/Excel/TXT خود را اینجا بکشید و رها کنید</p>
-                        <input type="file" id="file-importer-input" accept=".csv, .xlsx, .xls, .txt" style="display: none;">
+                        <p data-translate="drop_zone_prompt_dedicated_asset">فایل CSV/Excel/TXT بازده دارایی را اینجا بکشید</p>
+                        <input type="file" id="file-importer-input-asset" accept=".csv, .xlsx, .xls, .txt" style="display: none;">
                     </div>
                 </section>
 
-                <!-- Market Data Input Section -->
-                <section id="market-data-input-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
-                    <h2 class="text-lg font-semibold mb-3" data-translate="add_market_data_title">۲. افزودن داده‌های بازده بازار (%)</h2>
-                    <p class="text-sm text-dark-text-muted mb-3" data-translate="add_market_data_hint">(برای محاسبه بتا، تعداد داده‌های بازده بازار باید با داده‌های بازده دارایی یکسان باشد)</p>
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <textarea id="market-value-entry" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="2" data-translate-placeholder="add_market_data_placeholder" placeholder="مقادیر بازده بازار..."></textarea>
-                        <button id="add-market-data-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_market_data_button">افزودن داده بازار</button>
+                <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div id="market-data-input-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
+                        <h2 class="text-lg font-semibold mb-3" data-translate="add_market_data_title">۲. داده بازده بازار (%) (برای CAPM)</h2>
+                        <p class="text-sm text-dark-text-muted mb-3" data-translate="add_market_data_hint_short">تعداد باید با داده دارایی یکسان باشد.</p>
+                        <div class="flex flex-col sm:flex-row gap-2 mb-2">
+                            <textarea id="market-value-entry" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="2" data-translate-placeholder="add_market_data_placeholder" placeholder="مقادیر بازده بازار..."></textarea>
+                            <button id="add-market-data-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_market_data_button">افزودن</button>
+                        </div>
+                        <div id="market-data-display" class="bg-[#2b2b2b] p-2 rounded border border-dark-border overflow-y-auto h-20 text-sm mb-2">
+                            <p class="text-dark-text-muted text-center p-1 market-data-placeholder" data-translate="market_list_empty_option">لیست خالی.</p>
+                        </div>
+                        <button id="clear-market-data-button" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs disabled:opacity-50" data-translate="clear_market_data_button" disabled>پاک کردن</button>
                     </div>
-                    <div id="market-data-display" class="mt-3 bg-[#2b2b2b] p-2 rounded border border-dark-border overflow-y-auto h-24 text-sm">
-                        <p class="text-dark-text-muted text-center p-2 market-data-placeholder" data-translate="market_list_empty_option">لیست داده‌های بازار خالی است.</p>
+
+                    <div id="benchmark-data-input-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
+                        <h2 class="text-lg font-semibold mb-3" data-translate="add_benchmark_data_title">۳. داده بازده معیار (%) (برای تحلیل معیار)</h2>
+                        <p class="text-sm text-dark-text-muted mb-3" data-translate="add_benchmark_data_hint_short">تعداد باید با داده دارایی یکسان باشد.</p>
+                        <div class="flex flex-col sm:flex-row gap-2 mb-2">
+                            <textarea id="benchmark-value-entry" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="2" data-translate-placeholder="add_benchmark_data_placeholder" placeholder="مقادیر بازده معیار..."></textarea>
+                            <button id="add-benchmark-data-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_benchmark_data_button">افزودن</button>
+                        </div>
+                        <div id="benchmark-data-display" class="bg-[#2b2b2b] p-2 rounded border border-dark-border overflow-y-auto h-20 text-sm mb-2">
+                            <p class="text-dark-text-muted text-center p-1 benchmark-data-placeholder" data-translate="benchmark_list_empty_option">لیست خالی.</p>
+                        </div>
+                        <button id="clear-benchmark-data-button" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs disabled:opacity-50" data-translate="clear_benchmark_data_button" disabled>پاک کردن</button>
                     </div>
-                     <button id="clear-market-data-button" class="mt-2 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="clear_market_data_button" disabled>پاک کردن داده‌های بازار</button>
                 </section>
 
-                <!-- Edit/Delete Section -->
                 <section class="bg-dark-card p-4 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold mb-3" data-translate="edit_delete_title">۳. ویرایش / حذف داده دارایی</h2>
+                    <h2 class="text-xl font-semibold mb-3" data-translate="edit_delete_title">۴. ویرایش / حذف داده دارایی</h2>
                     <div class="flex flex-col sm:flex-row flex-wrap gap-2 items-center">
                         <select id="edit-select" title="انتخاب داده برای ویرایش یا حذف" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 w-full sm:w-auto mb-2 sm:mb-0" disabled>
                             <option value="" data-translate="select_option">انتخاب...</option>
-                            <!-- Options populated by JS -->
                         </select>
                         <input type="text" id="edit-value-entry" class="w-full sm:w-32 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 mb-2 sm:mb-0" data-translate-placeholder="edit_placeholder" placeholder="مقدار جدید" disabled>
                         <div class="flex gap-2 w-full sm:w-auto">
@@ -373,30 +286,31 @@
                     </div>
                 </section>
 
-                <!-- RF Rate Section -->
-                <section class="bg-dark-card p-4 rounded-lg shadow-md">
-                     <div class="flex flex-wrap items-center gap-2">
-                        <label for="rf-rate" class="text-base font-semibold whitespace-nowrap" data-translate="rf_title">۴. نرخ بازده بدون ریسک (% سالانه):</label>
+                <section class="bg-dark-card p-4 rounded-lg shadow-md grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="rf-rate" class="text-base font-semibold whitespace-nowrap" data-translate="rf_title">۵. نرخ بازده بدون ریسک (% سالانه):</label>
                         <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="rf_tooltip">ⓘ</span>
-                        <input type="text" id="rf-rate" class="w-24 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" value="2.0" data-translate-placeholder="rf_placeholder" placeholder="مثلا 2.5">
+                        <input type="text" id="rf-rate" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" value="2.0" data-translate-placeholder="rf_placeholder" placeholder="مثلا 2.5">
+                    </div>
+                    <div>
+                        <label for="expected-market-return" class="text-base font-semibold whitespace-nowrap" data-translate="expected_market_return_title">۶. بازده مورد انتظار بازار (% سالانه):</label>
+                        <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="expected_market_return_tooltip">ⓘ</span>
+                        <input type="text" id="expected-market-return" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" value="8.0" data-translate-placeholder="expected_market_return_placeholder" placeholder="مثلا 8.0">
                     </div>
                 </section>
 
-                <!-- Data List Section -->
                 <section class="bg-dark-card p-4 rounded-lg shadow-md flex flex-col" style="min-height: 200px;">
                     <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-xl font-semibold" data-translate="data_list_title">۵. لیست داده‌های دارایی</h2>
+                        <h2 class="text-xl font-semibold" data-translate="data_list_title">۷. لیست داده‌های دارایی</h2>
                         <button id="clear-list-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="clear_list_button" disabled>پاک کردن</button>
                     </div>
                     <div id="data-display" class="flex-grow bg-[#2b2b2b] p-2 rounded border border-dark-border overflow-y-auto h-40 text-sm">
-                        <!-- Data items populated by JS -->
                          <p class="text-dark-text-muted text-center p-4 data-placeholder" data-translate="list_empty_option">لیست خالی است.</p>
                     </div>
                 </section>
 
-                <!-- Action Buttons Section -->
                 <section class="bg-dark-card p-4 rounded-lg shadow-md space-y-4">
-                     <button id="calculate-button" class="w-full bg-highlight-neutral hover:bg-amber-600 text-gray-900 font-bold py-3 px-4 rounded text-lg transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="calculate_button">۶. محاسبه معیارها</button>
+                     <button id="calculate-button" class="w-full bg-highlight-neutral hover:bg-amber-600 text-gray-900 font-bold py-3 px-4 rounded text-lg transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="calculate_button">۸. محاسبه معیارها</button>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <button id="plot-hist-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_hist_button" disabled>هیستوگرام</button>
                         <button id="plot-box-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_box_button" disabled>جعبه‌ای</button>
@@ -405,38 +319,25 @@
                         <button id="plot-regression-button" class="col-span-2 md:col-span-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_regression_button" disabled>نمودار رگرسیون</button>
                     </div>
                 </section>
-
             </main>
         </div>
 
-         <!-- Status Bar -->
         <footer class="mt-6 py-2 px-4 text-center text-sm text-dark-text-muted border-t border-dark-border">
             <span id="status-bar" data-translate="status_ready">آماده.</span>
         </footer>
 
-         <!-- Plot Modal -->
         <div id="plotModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-black/70" aria-labelledby="plotModalLabel" aria-modal="true" role="dialog">
-            <!-- Modal Dialog -->
             <div class="bg-dark-card text-dark-text rounded-lg shadow-xl max-w-4xl w-full mx-4 p-1 flex flex-col" style="max-height: 90vh;">
-                 <!-- Modal Header -->
                  <div class="flex justify-between items-center border-b border-dark-border pb-2 mb-1 px-4 pt-2">
                     <h5 class="text-xl font-semibold" id="plotModalLabel" data-translate="plot_modal_title">نمودار</h5>
                     <button type="button" id="plotModalCloseButton" class="text-dark-text-muted hover:text-white text-2xl font-bold" aria-label="Close">&times;</button>
                  </div>
-                 <!-- Modal Body -->
                  <div class="p-1 flex-grow overflow-hidden">
-                    <!-- Plotly container -->
-                    <div id="plot-container" class="w-full h-full min-h-[300px] md:min-h-[400px] lg:min-h-[450px]"></div> <!-- Ensure w-full h-full and responsive min-height -->
-                 </div>
+                    <div id="plot-container" class="w-full h-full min-h-[300px] md:min-h-[400px] lg:min-h-[450px]"></div> </div>
             </div>
         </div>
-
-    </div> <!-- End Container -->
-
-    <!-- Custom JS -->
-    <script src="script.js"></script>
-    <!-- Add SweetAlert2 JS (before your script.js) -->
+    </div> <script src="script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
 </body>
-</html> 
+</html>
