@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com https://cdn.plot.ly https://cdn.jsdelivr.net https://data.cline.bot 'unsafe-inline'; style-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net 'unsafe-inline'; connect-src 'self' https://data.cline.bot; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;">
     <title data-translate="app_title">تحلیلگر پیشرفته ریسک و بازده</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src='https://cdn.plot.ly/plotly-2.32.0.min.js'></script>
@@ -50,6 +51,58 @@
          background-color: #111827; /* dark-bg */
          color: #d1d5db; /* dark-text */
       }
+
+      /* RTL/LTR Support */
+      .rtl {
+          direction: rtl;
+          text-align: right;
+      }
+
+      .ltr {
+          direction: ltr;
+          text-align: left;
+      }
+
+      /* RTL/LTR specific styles */
+      .rtl .tooltip-icon {
+          margin-right: 0.25rem;
+          margin-left: 0;
+      }
+
+      .ltr .tooltip-icon {
+          margin-left: 0.25rem;
+          margin-right: 0;
+      }
+
+      .rtl .tab-button {
+          border-right: none;
+          border-left: 3px solid transparent;
+      }
+
+      .ltr .tab-button {
+          border-left: none;
+          border-right: 3px solid transparent;
+      }
+
+      .rtl .tab-button.active {
+          border-right: none;
+          border-left: 3px solid #3b82f6;
+      }
+
+      .ltr .tab-button.active {
+          border-left: none;
+          border-right: 3px solid #3b82f6;
+      }
+
+      /* Number formatting */
+      .rtl .font-mono {
+          font-family: 'Vazirmatn', monospace;
+      }
+
+      .ltr .font-mono {
+          font-family: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+      }
+
       ::-webkit-scrollbar { width: 8px; height: 8px; }
       ::-webkit-scrollbar-track { background: #1f2937; /* dark-card */ }
       ::-webkit-scrollbar-thumb { background-color: #4b5563; /* secondary */ border-radius: 10px; border: 2px solid #1f2937; }
@@ -76,13 +129,36 @@
       #dedicated-file-drop-area.drag-over-active { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.1); }
       #dedicated-file-drop-area p { font-size: 0.875rem; margin-top: 0.5rem; }
       #dedicated-file-drop-area .drop-icon { font-size: 2rem; color: #6b7280; margin-bottom: 0.5rem; }
+
+      /* Tab specific styles */
+      .tab-button {
+          padding: 0.75rem 1.25rem;
+          border-bottom: 3px solid transparent;
+          color: #9ca3af; /* dark-text-muted */
+          font-weight: 600;
+          transition: all 0.2s ease-in-out;
+      }
+      .tab-button:hover {
+          color: #d1d5db; /* dark-text */
+          border-color: #4b5563; /* secondary */
+      }
+      .tab-button.active {
+          color: #3b82f6; /* dark-primary */
+          border-color: #3b82f6; /* dark-primary */
+      }
+      .tab-content {
+          display: none;
+      }
+      .tab-content.active {
+          display: block;
+      }
     </style>
 </head>
 <body class="dark">
 
     <div class="container mx-auto p-4 max-w-7xl space-y-6">
         <header class="flex flex-wrap justify-between items-center gap-4 border-b border-dark-border pb-4">
-            <h1 class="text-2xl md:text-3xl font-bold text-white" data-translate="app_title">تحلیلگر پیشرفته ریسک و بازده</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-white" data-translate="app_title">Advanced Risk & Return Analyzer</h1>
             <div class="flex items-center gap-3">
                 <label for="lang-select" class="sr-only" data-translate="lang_select_label">زبان:</label>
                 <select id="lang-select" class="bg-dark-card text-dark-text border border-dark-border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
@@ -92,129 +168,162 @@
             </div>
         </header>
 
+        <!-- Tab Navigation -->
+        <nav class="flex border-b border-dark-border">
+            <button class="tab-button active" data-tab="asset-analysis" data-translate="دارایی" title="تحلیل دارایی">Asset Analysis</button>
+            <button class="tab-button" data-tab="equity-valuation" data-translate="سهام" title="ارزش‌گذاری سهام">Equity Valuation</button>
+            <button class="tab-button" data-tab="fixed-income" data-translate="اوراق" title="اوراق قرضه">Fixed Income</button>
+            <button class="tab-button" data-tab="portfolio-management" data-translate="پورتفوایو منیج" title="مدیریت پورتفولیو">Portfolio Management</button>
+        </nav>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Results Sidebar (remains outside tabs for global visibility) -->
             <aside class="lg:col-span-1 order-last lg:order-first bg-dark-card p-4 rounded-lg shadow-md flex flex-col h-fit space-y-3">
-                <h2 class="text-xl font-semibold mb-2 text-center border-b border-dark-border pb-2" data-translate="results_title">نتایج تحلیل</h2>
+                <h2 class="text-xl font-semibold mb-2 text-center border-b border-dark-border pb-2" data-translate="results_title">Analysis Results</h2>
                 <div id="results-display" class="space-y-1.5 text-sm flex-grow">
-                    <div class="flex justify-between items-center"><strong data-translate="data_count"></strong> <span id="result-count" class="font-mono text-dark-text-muted">-</span></div>
+                    <div class="flex justify-between items-center"><strong data-translate="data_count"></strong> <span id="result-count" class="font-mono text-dark-text-muted">N/A</span></div>
                     <div class="flex justify-between items-center">
                         <span><strong data-translate="mean_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="mean_tooltip">ⓘ</span></span>
-                        <span id="result-mean" class="font-mono text-dark-text-muted">-</span>
+                        <span id="result-mean" class="font-mono text-dark-text-muted">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span><strong data-translate="geo_mean_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="geo_mean_tooltip">ⓘ</span></span>
-                        <span id="result-gm" class="font-mono text-dark-text-muted">-</span>
+                        <span id="result-gm" class="font-mono text-dark-text-muted">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                          <span><strong data-translate="std_dev_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="std_dev_tooltip">ⓘ</span></span>
-                         <span id="result-std" class="font-mono font-semibold text-highlight-neutral">-</span>
+                         <span id="result-std" class="font-mono font-semibold text-highlight-neutral">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                          <span><strong data-translate="downside_dev_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="downside_dev_tooltip">ⓘ</span></span>
-                         <span id="result-dsd" class="font-mono text-dark-text-muted">-</span>
+                         <span id="result-dsd" class="font-mono text-dark-text-muted">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                          <span><strong data-translate="variance_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="variance_tooltip">ⓘ</span></span>
-                         <span id="result-var" class="font-mono text-dark-text-muted">-</span>
+                         <span id="result-var" class="font-mono text-dark-text-muted">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                          <span><strong data-translate="cv_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="cv_tooltip">ⓘ</span></span>
-                         <span id="result-cv" class="font-mono text-dark-text-muted">-</span>
+                         <span id="result-cv" class="font-mono text-dark-text-muted">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                          <span><strong data-translate="mdd_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="mdd_tooltip">ⓘ</span></span>
-                         <span id="result-mdd" class="font-mono font-semibold text-highlight-neg">-</span>
+                         <span id="result-mdd" class="font-mono font-semibold text-highlight-neg">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                          <span><strong data-translate="mdd_period_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="mdd_period_tooltip">ⓘ</span></span>
-                         <span id="result-mdd-period" class="font-mono text-dark-text-muted">-</span>
+                         <span id="result-mdd-period" class="font-mono text-dark-text-muted">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                          <span><strong data-translate="skewness_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="skewness_tooltip">ⓘ</span></span>
-                         <span id="result-skew" class="font-mono text-dark-text-muted">-</span>
+                         <span id="result-skew" class="font-mono text-dark-text-muted">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                          <span><strong data-translate="kurtosis_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="kurtosis_tooltip">ⓘ</span></span>
-                         <span id="result-kurt" class="font-mono text-dark-text-muted">-</span>
+                         <span id="result-kurt" class="font-mono text-dark-text-muted">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                          <span><strong data-translate="var_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="var_tooltip">ⓘ</span></span>
-                         <span id="result-var5" class="font-mono font-semibold text-highlight-neg">-</span>
+                         <span id="result-var5" class="font-mono font-semibold text-highlight-neg">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                          <span><strong data-translate="var_95_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="var_95_tooltip">ⓘ</span></span>
-                         <span id="result-var95" class="font-mono font-semibold text-highlight-pos">-</span>
+                         <span id="result-var95" class="font-mono font-semibold text-highlight-pos">N/A</span>
                     </div>
                      <div class="flex justify-between items-center">
                         <span><strong data-translate="cvar_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="cvar_tooltip">ⓘ</span></span>
-                        <span id="result-cvar5" class="font-mono font-semibold text-highlight-neg">-</span>
+                        <span id="result-cvar5" class="font-mono font-semibold text-highlight-neg">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                          <span><strong data-translate="max_gain_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="max_gain_tooltip">ⓘ</span></span>
-                         <span id="result-max-gain" class="font-mono font-semibold text-highlight-pos">-</span>
+                         <span id="result-max-gain" class="font-mono font-semibold text-highlight-pos">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                          <span><strong data-translate="sharpe_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="sharpe_tooltip">ⓘ</span></span>
-                         <span id="result-sharpe" class="font-mono font-semibold text-highlight-neutral">-</span>
+                         <span id="result-sharpe" class="font-mono font-semibold text-highlight-neutral">N/A</span>
                     </div>
                      <div class="flex justify-between items-center">
                          <span><strong data-translate="sortino_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="sortino_tooltip">ⓘ</span></span>
-                         <span id="result-sortino" class="font-mono font-semibold text-highlight-neutral">-</span>
+                         <span id="result-sortino" class="font-mono font-semibold text-highlight-neutral">N/A</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span><strong data-translate="omega_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="omega_tooltip">ⓘ</span></span>
-                        <span id="result-omega" class="font-mono font-semibold text-highlight-neutral">-</span>
+                        <span id="result-omega" class="font-mono font-semibold text-highlight-neutral">N/A</span>
                     </div>
 
                     <div class="border-t border-dark-border mt-3 pt-3">
-                        <h3 class="text-md font-semibold mb-1 text-center" data-translate="benchmark_analysis_title">تحلیل معیار</h3>
+                        <h3 class="text-md font-semibold mb-1 text-center" data-translate="benchmark_analysis_title">Benchmark Analysis</h3>
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="tracking_error_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="tracking_error_tooltip">ⓘ</span></span>
-                            <span id="result-tracking-error" class="font-mono text-dark-text-muted">-</span>
+                            <span id="result-tracking-error" class="font-mono text-dark-text-muted">N/A</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="information_ratio_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="information_ratio_tooltip">ⓘ</span></span>
-                            <span id="result-information-ratio" class="font-mono text-dark-text-muted">-</span>
+                            <span id="result-information-ratio" class="font-mono text-dark-text-muted">N/A</span>
                         </div>
                     </div>
 
                     <div class="border-t border-dark-border mt-3 pt-3">
-                        <h3 class="text-md font-semibold mb-1 text-center" data-translate="regression_results_title">تحلیل رگرسیون (CAPM)</h3>
+                        <h3 class="text-md font-semibold mb-1 text-center" data-translate="regression_results_title">Regression Results (CAPM)</h3>
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="beta_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="beta_tooltip">ⓘ</span></span>
-                            <span id="result-beta" class="font-mono text-dark-text-muted">-</span>
+                            <span id="result-beta" class="font-mono text-dark-text-muted">N/A</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="alpha_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="alpha_tooltip">ⓘ</span></span>
-                            <span id="result-alpha" class="font-mono text-dark-text-muted">-</span>
+                            <span id="result-alpha" class="font-mono text-dark-text-muted">N/A</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="rsquared_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="rsquared_tooltip">ⓘ</span></span>
-                            <span id="result-rsquared" class="font-mono text-dark-text-muted">-</span>
+                            <span id="result-rsquared" class="font-mono text-dark-text-muted">N/A</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="capm_expected_return_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="capm_expected_return_tooltip">ⓘ</span></span>
-                            <span id="result-capm-er" class="font-mono text-dark-text-muted">-</span>
+                            <span id="result-capm-er" class="font-mono text-dark-text-muted">N/A</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="reg_stderr_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="reg_stderr_tooltip">ⓘ</span></span>
-                            <span id="result-reg-stderr" class="font-mono text-dark-text-muted">-</span>
+                            <span id="result-reg-stderr" class="font-mono text-dark-text-muted">N/A</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="beta_t_stat_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="beta_t_stat_tooltip">ⓘ</span></span>
-                            <span id="result-beta-tstat" class="font-mono text-dark-text-muted">-</span>
+                            <span id="result-beta-tstat" class="font-mono text-dark-text-muted">N/A</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="beta_p_value_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="beta_p_value_tooltip">ⓘ</span></span>
-                            <span id="result-beta-pvalue" class="font-mono text-dark-text-muted">-</span>
+                            <span id="result-beta-pvalue" class="font-mono text-dark-text-muted">N/A</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="alpha_t_stat_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="alpha_t_stat_tooltip">ⓘ</span></span>
-                            <span id="result-alpha-tstat" class="font-mono text-dark-text-muted">-</span>
+                            <span id="result-alpha-tstat" class="font-mono text-dark-text-muted">N/A</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span><strong data-translate="alpha_p_value_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="alpha_p_value_tooltip">ⓘ</span></span>
-                            <span id="result-alpha-pvalue" class="font-mono text-dark-text-muted">-</span>
+                            <span id="result-alpha-pvalue" class="font-mono text-dark-text-muted">N/A</span>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-dark-border mt-3 pt-3">
+                        <h3 class="text-md font-semibold mb-1 text-center" data-translate="advanced_metrics_title">Advanced CFA Metrics</h3>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="treynor_ratio_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="treynor_ratio_tooltip">ⓘ</span></span>
+                            <span id="result-treynor" class="font-mono text-dark-text-muted">N/A</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="calmar_ratio_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="calmar_ratio_tooltip">ⓘ</span></span>
+                            <span id="result-calmar" class="font-mono text-dark-text-muted">N/A</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="jensen_alpha_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="jensen_alpha_tooltip">ⓘ</span></span>
+                            <span id="result-jensen-alpha" class="font-mono text-dark-text-muted">N/A</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="m2_measure_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="m2_measure_tooltip">ⓘ</span></span>
+                            <span id="result-m2" class="font-mono text-dark-text-muted">N/A</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span><strong data-translate="alpha_t_stat_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="alpha_t_stat_tooltip">ⓘ</span></span>
+                            <span id="result-alpha-t-stat" class="font-mono text-dark-text-muted">N/A</span>
                         </div>
                     </div>
                 </div>
@@ -224,101 +333,274 @@
             </aside>
 
             <main class="lg:col-span-2 order-first lg:order-last space-y-6">
-                <section id="asset-data-input-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
-                    <h2 class="text-lg font-semibold mb-3" data-translate="add_data_title">۱. افزودن داده بازده دارایی (%)</h2>
-                    <div class="mb-6">
-                        <p class="text-sm text-dark-text-muted mb-3" data-translate="add_data_hint">راهنما...</p>
-                        <div class="flex flex-col sm:flex-row gap-2">
-                            <textarea id="value-entry" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="2" data-translate-placeholder="add_data_placeholder" placeholder="مقادیر..."></textarea>
-                            <button id="add-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_button">افزودن</button>
+                <!-- Tab Content Containers -->
+                <div id="asset-analysis-tab" class="tab-content active space-y-6">
+                    <section id="asset-data-input-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
+                        <h2 class="text-lg font-semibold mb-3" data-translate="add_data_title">1. Add Asset Return Data (%)</h2>
+                        <div class="mb-6">
+                            <p class="text-sm text-dark-text-muted mb-3" data-translate="add_data_hint">Enter values separated by commas or new lines. Example: 1.5, 2.0, -0.5</p>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <textarea id="value-entry" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="2" data-translate-placeholder="add_data_placeholder" placeholder="Values..."></textarea>
+                                <button id="add-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_button">Add</button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="relative my-4">
-                        <div class="absolute inset-0 flex items-center" aria-hidden="true"><div class="w-full border-t border-dark-border"></div></div>
-                        <div class="relative flex justify-center"><span class="bg-dark-card px-2 text-sm text-dark-text-muted" data-translate="or_divider_text">یا</span></div>
-                    </div>
-                    <div id="dedicated-file-drop-area" class="cursor-pointer">
-                        <i class="fas fa-file-arrow-down drop-icon"></i>
-                        <p data-translate="drop_zone_prompt_dedicated_asset">فایل CSV/Excel/TXT بازده دارایی را اینجا بکشید</p>
-                        <input type="file" id="file-importer-input-asset" accept=".csv, .xlsx, .xls, .txt" style="display: none;">
-                    </div>
-                </section>
-
-                <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div id="market-data-input-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
-                        <h2 class="text-lg font-semibold mb-3" data-translate="add_market_data_title">۲. داده بازده بازار (%) (برای CAPM)</h2>
-                        <p class="text-sm text-dark-text-muted mb-3" data-translate="add_market_data_hint_short">تعداد باید با داده دارایی یکسان باشد.</p>
-                        <div class="flex flex-col sm:flex-row gap-2 mb-2">
-                            <textarea id="market-value-entry" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="2" data-translate-placeholder="add_market_data_placeholder" placeholder="مقادیر بازده بازار..."></textarea>
-                            <button id="add-market-data-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_market_data_button">افزودن</button>
+                        <div class="relative my-4">
+                            <div class="absolute inset-0 flex items-center" aria-hidden="true"><div class="w-full border-t border-dark-border"></div></div>
+                            <div class="relative flex justify-center"><span class="bg-dark-card px-2 text-sm text-dark-text-muted" data-translate="or_divider_text">OR</span></div>
                         </div>
-                        <div id="market-data-display" class="bg-[#2b2b2b] p-2 rounded border border-dark-border overflow-y-auto h-20 text-sm mb-2">
-                            <p class="text-dark-text-muted text-center p-1 market-data-placeholder" data-translate="market_list_empty_option">لیست خالی.</p>
+                        <div id="dedicated-file-drop-area" class="cursor-pointer">
+                            <i class="fas fa-file-arrow-down drop-icon"></i>
+                            <p data-translate="drop_zone_prompt_dedicated_asset">Drag & drop asset return CSV/Excel/TXT file here</p>
+                            <input type="file" id="file-importer-input-asset" accept=".csv, .xlsx, .xls, .txt" style="display: none;">
                         </div>
-                        <button id="clear-market-data-button" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs disabled:opacity-50" data-translate="clear_market_data_button" disabled>پاک کردن</button>
-                    </div>
+                    </section>
 
-                    <div id="benchmark-data-input-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
-                        <h2 class="text-lg font-semibold mb-3" data-translate="add_benchmark_data_title">۳. داده بازده معیار (%) (برای تحلیل معیار)</h2>
-                        <p class="text-sm text-dark-text-muted mb-3" data-translate="add_benchmark_data_hint_short">تعداد باید با داده دارایی یکسان باشد.</p>
-                        <div class="flex flex-col sm:flex-row gap-2 mb-2">
-                            <textarea id="benchmark-value-entry" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="2" data-translate-placeholder="add_benchmark_data_placeholder" placeholder="مقادیر بازده معیار..."></textarea>
-                            <button id="add-benchmark-data-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_benchmark_data_button">افزودن</button>
+                    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div id="market-data-input-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
+                            <h2 class="text-lg font-semibold mb-3" data-translate="add_market_data_title">2. Market Return Data (%) (for CAPM)</h2>
+                            <p class="text-sm text-dark-text-muted mb-3" data-translate="add_market_data_hint_short">Count must match asset data.</p>
+                            <div class="flex flex-col sm:flex-row gap-2 mb-2">
+                                <textarea id="market-value-entry" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="2" data-translate-placeholder="add_market_data_placeholder" placeholder="Market return values..."></textarea>
+                                <button id="add-market-data-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_market_data_button">Add</button>
+                            </div>
+                            <div id="market-data-display" class="bg-[#2b2b2b] p-2 rounded border border-dark-border overflow-y-auto h-20 text-sm mb-2">
+                                <p class="text-dark-text-muted text-center p-1 market-data-placeholder" data-translate="market_list_empty_option">List empty.</p>
+                            </div>
+                            <button id="clear-market-data-button" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs disabled:opacity-50" data-translate="clear_market_data_button" disabled>Clear</button>
                         </div>
-                        <div id="benchmark-data-display" class="bg-[#2b2b2b] p-2 rounded border border-dark-border overflow-y-auto h-20 text-sm mb-2">
-                            <p class="text-dark-text-muted text-center p-1 benchmark-data-placeholder" data-translate="benchmark_list_empty_option">لیست خالی.</p>
+
+                        <div id="benchmark-data-input-section" class="bg-dark-card p-4 rounded-lg shadow-md z-10 relative">
+                            <h2 class="text-lg font-semibold mb-3" data-translate="add_benchmark_data_title">3. Benchmark Return Data (%) (for Benchmark Analysis)</h2>
+                            <p class="text-sm text-dark-text-muted mb-3" data-translate="add_benchmark_data_hint_short">Count must match asset data.</p>
+                            <div class="flex flex-col sm:flex-row gap-2 mb-2">
+                                <textarea id="benchmark-value-entry" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary resize-none" rows="2" data-translate-placeholder="add_benchmark_data_placeholder" placeholder="Benchmark return values..."></textarea>
+                                <button id="add-benchmark-data-button" class="bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 sm:self-end" data-translate="add_benchmark_data_button">Add</button>
+                            </div>
+                            <div id="benchmark-data-display" class="bg-[#2b2b2b] p-2 rounded border border-dark-border overflow-y-auto h-20 text-sm mb-2">
+                                <p class="text-dark-text-muted text-center p-1 benchmark-data-placeholder" data-translate="benchmark_list_empty_option">List empty.</p>
+                            </div>
+                            <button id="clear-benchmark-data-button" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs disabled:opacity-50" data-translate="clear_benchmark_data_button" disabled>Clear</button>
                         </div>
-                        <button id="clear-benchmark-data-button" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs disabled:opacity-50" data-translate="clear_benchmark_data_button" disabled>پاک کردن</button>
-                    </div>
-                </section>
+                    </section>
 
-                <section class="bg-dark-card p-4 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold mb-3" data-translate="edit_delete_title">۴. ویرایش / حذف داده دارایی</h2>
-                    <div class="flex flex-col sm:flex-row flex-wrap gap-2 items-center">
-                        <select id="edit-select" title="انتخاب داده برای ویرایش یا حذف" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 w-full sm:w-auto mb-2 sm:mb-0" disabled>
-                            <option value="" data-translate="select_option">انتخاب...</option>
-                        </select>
-                        <input type="text" id="edit-value-entry" class="w-full sm:w-32 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 mb-2 sm:mb-0" data-translate-placeholder="edit_placeholder" placeholder="مقدار جدید" disabled>
-                        <div class="flex gap-2 w-full sm:w-auto">
-                            <button id="save-edit-button" class="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="save_button" disabled>ذخیره</button>
-                            <button id="delete-button" class="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="delete_button" disabled>حذف</button>
+                    <section class="bg-dark-card p-4 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-3" data-translate="edit_delete_title">4. Edit / Delete Asset Data</h2>
+                        <div class="flex flex-col sm:flex-row flex-wrap gap-2 items-center">
+                            <select id="edit-select" title="انتخاب داده برای ویرایش یا حذف" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 w-full sm:w-auto mb-2 sm:mb-0" disabled>
+                                <option value="" data-translate="select_option">Select...</option>
+                            </select>
+                            <input type="text" id="edit-value-entry" class="w-full sm:w-32 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 mb-2 sm:mb-0" data-translate-placeholder="edit_placeholder" placeholder="New value" disabled>
+                            <div class="flex gap-2 w-full sm:w-auto">
+                                <button id="save-edit-button" class="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="save_button" disabled>Save</button>
+                                <button id="delete-button" class="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="delete_button" disabled>Delete</button>
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
 
-                <section class="bg-dark-card p-4 rounded-lg shadow-md grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="rf-rate" class="text-base font-semibold whitespace-nowrap" data-translate="rf_title">۵. نرخ بازده بدون ریسک (% سالانه):</label>
-                        <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="rf_tooltip">ⓘ</span>
-                        <input type="text" id="rf-rate" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" value="2.0" data-translate-placeholder="rf_placeholder" placeholder="مثلا 2.5">
-                    </div>
-                    <div>
-                        <label for="expected-market-return" class="text-base font-semibold whitespace-nowrap" data-translate="expected_market_return_title">۶. بازده مورد انتظار بازار (% سالانه):</label>
-                        <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="expected_market_return_tooltip">ⓘ</span>
-                        <input type="text" id="expected-market-return" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" value="8.0" data-translate-placeholder="expected_market_return_placeholder" placeholder="مثلا 8.0">
-                    </div>
-                </section>
+                    <section class="bg-dark-card p-4 rounded-lg shadow-md grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="rf-rate" class="text-base font-semibold whitespace-nowrap" data-translate="rf_title">5. Risk-Free Rate (% Annually):</label>
+                            <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="rf_tooltip">ⓘ</span>
+                            <input type="text" id="rf-rate" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" value="2.0" data-translate-placeholder="rf_placeholder" placeholder="e.g. 2.5">
+                        </div>
+                        <div>
+                            <label for="expected-market-return" class="text-base font-semibold whitespace-nowrap" data-translate="expected_market_return_title">6. Expected Market Return (% Annually):</label>
+                            <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="expected_market_return_tooltip">ⓘ</span>
+                            <input type="text" id="expected-market-return" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" value="8.0" data-translate-placeholder="expected_market_return_placeholder" placeholder="e.g. 8.0">
+                        </div>
+                    </section>
 
-                <section class="bg-dark-card p-4 rounded-lg shadow-md flex flex-col" style="min-height: 200px;">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-xl font-semibold" data-translate="data_list_title">۷. لیست داده‌های دارایی</h2>
-                        <button id="clear-list-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="clear_list_button" disabled>پاک کردن</button>
-                    </div>
-                    <div id="data-display" class="flex-grow bg-[#2b2b2b] p-2 rounded border border-dark-border overflow-y-auto h-40 text-sm">
-                         <p class="text-dark-text-muted text-center p-4 data-placeholder" data-translate="list_empty_option">لیست خالی است.</p>
-                    </div>
-                </section>
+                    <section class="bg-dark-card p-4 rounded-lg shadow-md flex flex-col" style="min-height: 200px;">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-xl font-semibold" data-translate="data_list_title">7. Asset Data List</h2>
+                            <button id="clear-list-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed transition duration-150" data-translate="clear_list_button" disabled>Clear List</button>
+                        </div>
+                        <div id="data-display" class="flex-grow bg-[#2b2b2b] p-2 rounded border border-dark-border overflow-y-auto h-40 text-sm">
+                             <p class="text-dark-text-muted text-center p-4 data-placeholder" data-translate="list_empty_option">List is empty.</p>
+                        </div>
+                    </section>
 
-                <section class="bg-dark-card p-4 rounded-lg shadow-md space-y-4">
-                     <button id="calculate-button" class="w-full bg-highlight-neutral hover:bg-amber-600 text-gray-900 font-bold py-3 px-4 rounded text-lg transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="calculate_button">۸. محاسبه معیارها</button>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <button id="plot-hist-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_hist_button" disabled>هیستوگرام</button>
-                        <button id="plot-box-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_box_button" disabled>جعبه‌ای</button>
-                        <button id="plot-equity-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_equity_button" disabled>تجمعی</button>
-                        <button id="plot-qq-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_qq_button" disabled>QQ</button>
-                        <button id="plot-regression-button" class="col-span-2 md:col-span-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_regression_button" disabled>نمودار رگرسیون</button>
-                    </div>
-                </section>
+                    <section class="bg-dark-card p-4 rounded-lg shadow-md space-y-4">
+                         <button id="calculate-button" class="w-full bg-highlight-neutral hover:bg-amber-600 text-gray-900 font-bold py-3 px-4 rounded text-lg transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="calculate_button">8. Calculate Metrics</button>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <button id="plot-hist-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_hist_button" disabled>Histogram</button>
+                            <button id="plot-box-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_box_button" disabled>Box Plot</button>
+                            <button id="plot-equity-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_equity_button" disabled>Cumulative Return</button>
+                            <button id="plot-qq-button" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_qq_button" disabled>QQ Plot</button>
+                            <button id="plot-regression-button" class="col-span-2 md:col-span-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_regression_button" disabled>Regression Plot</button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- New Tab Content: Equity Valuation -->
+                <div id="equity-valuation-tab" class="tab-content space-y-6">
+                    <section class="bg-dark-card p-4 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-3" data-translate="equity_valuation_title">Equity Valuation</h2>
+                        <p class="text-sm text-dark-text-muted mb-4" data-translate="equity_valuation_hint">Calculations related to equity valuation and fundamental analysis.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="current-dividend" class="text-base font-semibold" data-translate="current_dividend_label">سود نقدی فعلی (D0):</label>
+                                <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="current_dividend_tooltip">ⓘ</span>
+                                <input type="number" id="current-dividend" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. 1.5">
+                            </div>
+                            <div>
+                                <label for="dividend-growth-rate" class="text-base font-semibold" data-translate="dividend_growth_rate_label">نرخ رشد سود نقدی (g) %:</label>
+                                <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="dividend_growth_rate_tooltip">ⓘ</span>
+                                <input type="number" id="dividend-growth-rate" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. 5">
+                            </div>
+                            <div>
+                                <label for="required-return-equity" class="text-base font-semibold" data-translate="required_return_equity_label">نرخ بازده مورد نیاز (r) %:</label>
+                                <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="required_return_equity_tooltip">ⓘ</span>
+                                <input type="number" id="required-return-equity" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. 10">
+                            </div>
+                            <div>
+                                <label for="earnings-per-share" class="text-base font-semibold" data-translate="earnings_per_share_label">سود هر سهم (EPS):</label>
+                                <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="earnings_per_share_tooltip">ⓘ</span>
+                                <input type="number" id="earnings-per-share" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. 3.0">
+                            </div>
+                            <div>
+                                <label for="current-share-price" class="text-base font-semibold" data-translate="current_share_price_label">قیمت فعلی سهم:</label>
+                                <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="current_share_price_tooltip">ⓘ</span>
+                                <input type="number" id="current-share-price" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. 50">
+                            </div>
+                        </div>
+                        <button id="calculate-equity-button" class="w-full bg-highlight-neutral hover:bg-amber-600 text-gray-900 font-bold py-2 px-4 rounded text-lg transition duration-150" data-translate="calculate_equity_button">Calculate Equity Valuation</button>
+                    </section>
+
+                    <section class="bg-dark-card p-4 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-3" data-translate="equity_results_title">Equity Valuation Results</h2>
+                        <div id="equity-results-display" class="space-y-1.5 text-sm">
+                            <div class="flex justify-between items-center">
+                                <span><strong data-translate="ddm_value_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="ddm_value_tooltip">ⓘ</span></span>
+                                <span id="result-ddm-value" class="font-mono text-dark-text-muted">N/A</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span><strong data-translate="ggm_value_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="ggm_value_tooltip">ⓘ</span></span>
+                                <span id="result-ggm-value" class="font-mono text-dark-text-muted">N/A</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span><strong data-translate="pe_ratio_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="pe_ratio_tooltip">ⓘ</span></span>
+                                <span id="result-pe-ratio" class="font-mono text-dark-text-muted">N/A</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- New Tab Content: Fixed Income -->
+                <div id="fixed-income-tab" class="tab-content space-y-6">
+                    <section class="bg-dark-card p-4 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-3" data-translate="fixed_income_title">Fixed Income & Bonds</h2>
+                        <p class="text-sm text-dark-text-muted mb-4" data-translate="fixed_income_hint">Calculations related to bonds, including yield to maturity, duration, and valuation.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="face-value" class="text-base font-semibold" data-translate="face_value_label">ارزش اسمی (Face Value):</label>
+                                <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="face_value_tooltip">ⓘ</span>
+                                <input type="number" id="face-value" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" value="1000" placeholder="e.g. 1000">
+                            </div>
+                            <div>
+                                <label for="coupon-rate" class="text-base font-semibold" data-translate="coupon_rate_label">نرخ کوپن (% سالانه):</label>
+                                <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="coupon_rate_tooltip">ⓘ</span>
+                                <input type="number" id="coupon-rate" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. 5">
+                            </div>
+                            <div>
+                                <label for="years-to-maturity" class="text-base font-semibold" data-translate="years_to_maturity_label">سال تا سررسید:</label>
+                                <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="years_to_maturity_tooltip">ⓘ</span>
+                                <input type="number" id="years-to-maturity" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. 10">
+                            </div>
+                            <div>
+                                <label for="market-price-bond" class="text-base font-semibold" data-translate="market_price_bond_label">قیمت بازار فعلی:</label>
+                                <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="market_price_bond_tooltip">ⓘ</span>
+                                <input type="number" id="market-price-bond" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. 950">
+                            </div>
+                            <div>
+                                <label for="ytm-input" class="text-base font-semibold" data-translate="ytm_input_label">بازده تا سررسید (YTM) %:</label>
+                                <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="ytm_input_tooltip">ⓘ</span>
+                                <input type="number" id="ytm-input" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. 6">
+                            </div>
+                            <div>
+                                <label for="coupon-frequency" class="text-base font-semibold" data-translate="coupon_frequency_label">دفعات پرداخت کوپن:</label>
+                                <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="coupon_frequency_tooltip">ⓘ</span>
+                                <select id="coupon-frequency" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary">
+                                    <option value="1" data-translate="annual">سالانه</option>
+                                    <option value="2" data-translate="semi_annual">نیمه سالانه</option>
+                                    <option value="4" data-translate="quarterly">فصلی</option>
+                                    <option value="12" data-translate="monthly">ماهانه</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button id="calculate-bond-button" class="w-full bg-highlight-neutral hover:bg-amber-600 text-gray-900 font-bold py-2 px-4 rounded text-lg transition duration-150" data-translate="calculate_bond_button">Calculate Bond Metrics</button>
+                    </section>
+
+                    <section class="bg-dark-card p-4 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-3" data-translate="fixed_income_results_title">Fixed Income Results</h2>
+                        <div id="fixed-income-results-display" class="space-y-1.5 text-sm">
+                            <div class="flex justify-between items-center">
+                                <span><strong data-translate="bond_price_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="bond_price_tooltip">ⓘ</span></span>
+                                <span id="result-bond-price" class="font-mono text-dark-text-muted">N/A</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span><strong data-translate="ytm_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="ytm_tooltip">ⓘ</span></span>
+                                <span id="result-ytm" class="font-mono text-dark-text-muted">N/A</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span><strong data-translate="macaulay_duration_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="macaulay_duration_tooltip">ⓘ</span></span>
+                                <span id="result-macaulay-duration" class="font-mono text-dark-text-muted">N/A</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span><strong data-translate="modified_duration_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="modified_duration_tooltip">ⓘ</span></span>
+                                <span id="result-modified-duration" class="font-mono text-dark-text-muted">N/A</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span><strong data-translate="convexity_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="convexity_tooltip">ⓘ</span></span>
+                                <span id="result-convexity" class="font-mono text-dark-text-muted">N/A</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button id="plot-bond-price-yield-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed" data-translate="plot_bond_price_yield_button" disabled>Plot Bond Price-Yield Curve</button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- New Tab Content: Portfolio Management -->
+                <div id="portfolio-management-tab" class="tab-content space-y-6">
+                    <section class="bg-dark-card p-4 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-3" data-translate="portfolio_management_title">Portfolio Management</h2>
+                        <p class="text-sm text-dark-text-muted mb-4" data-translate="portfolio_management_hint">Calculations related to portfolio, including return, risk, and correlation.</p>
+
+                        <div id="portfolio-assets-container" class="space-y-4 mb-4">
+                            <!-- Asset input fields will be dynamically added here -->
+                        </div>
+                        <button id="add-portfolio-asset-button" class="w-full bg-primary hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-150 mb-4" data-translate="add_portfolio_asset_button">Add Asset to Portfolio</button>
+
+                        <div class="md:col-span-2">
+                            <label for="portfolio-rf-rate" class="text-base font-semibold whitespace-nowrap" data-translate="rf_title">Risk-Free Rate (% Annually):</label>
+                            <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="rf_tooltip">ⓘ</span>
+                            <input type="text" id="portfolio-rf-rate" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" value="2.0" data-translate-placeholder="rf_placeholder" placeholder="e.g. 2.5">
+                        </div>
+
+                        <button id="calculate-portfolio-button" class="w-full bg-highlight-neutral hover:bg-amber-600 text-gray-900 font-bold py-2 px-4 rounded text-lg transition duration-150" data-translate="calculate_portfolio_button">Calculate Portfolio</button>
+                    </section>
+
+                    <section class="bg-dark-card p-4 rounded-lg shadow-md">
+                        <h2 class="text-xl font-semibold mb-3" data-translate="portfolio_results_title">Portfolio Results</h2>
+                        <div id="portfolio-results-display" class="space-y-1.5 text-sm">
+                            <div class="flex justify-between items-center">
+                                <span><strong data-translate="portfolio_expected_return_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="portfolio_expected_return_tooltip">ⓘ</span></span>
+                                <span id="result-portfolio-expected-return" class="font-mono text-dark-text-muted">N/A</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span><strong data-translate="portfolio_stddev_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="portfolio_stddev_tooltip">ⓘ</span></span>
+                                <span id="result-portfolio-stddev" class="font-mono text-dark-text-muted">N/A</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span><strong data-translate="portfolio_variance_label"></strong> <span class="tooltip-icon cursor-help text-xs text-dark-text-muted" data-tooltip-key="portfolio_variance_tooltip">ⓘ</span></span>
+                                <span id="result-portfolio-variance" class="font-mono text-dark-text-muted">N/A</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
             </main>
         </div>
 

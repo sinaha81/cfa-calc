@@ -3,11 +3,186 @@ let currentLang = 'fa';
 let dataPoints = []; // Array to hold numerical data points for the asset
 let marketDataPoints = []; // Array to hold market return data points
 let benchmarkDataPoints = []; // Array to hold benchmark return data points
-let calculatedResults = {};
+let calculatedResults = {}; // Asset analysis results
 let selectedEditIndex = -1;
+let equityCalculatedResults = {}; // New: Store equity valuation results
+let fixedIncomeCalculatedResults = {}; // New: Store fixed income results
+let portfolioCalculatedResults = {}; // New: Store portfolio results
+let portfolioAssets = []; // Array to store portfolio assets {id, return, stdDev, weight, correlations: {id: correlation}}
+let nextAssetId = 1; // For unique IDs for portfolio assets
 
 // --- Translations Dictionary ---
 const texts = {
+    'app_title': {
+        'en': 'Advanced Risk and Return Analyzer',
+        'fa': 'تحلیلگر پیشرفته ریسک و بازده'
+    },
+    'results_title': {
+        'en': 'Analysis Results',
+        'fa': 'نتایج تحلیل'
+    },
+    'advanced_metrics_title': {
+        'en': 'Advanced CFA Metrics',
+        'fa': 'معیارهای پیشرفته CFA'
+    },
+
+    'mean_label': {
+        'en': 'Mean Return',
+        'fa': 'میانگین بازده'
+    },
+    'geo_mean_label': {
+        'en': 'Geometric Mean',
+        'fa': 'میانگین هندسی'
+    },
+    'std_dev_label': {
+        'en': 'Standard Deviation',
+        'fa': 'انحراف معیار'
+    },
+    'downside_dev_label': {
+        'en': 'Downside Deviation',
+        'fa': 'انحراف نزولی'
+    },
+    'variance_label': {
+        'en': 'Variance',
+        'fa': 'واریانس'
+    },
+    'cv_label': {
+        'en': 'Coefficient of Variation',
+        'fa': 'ضریب تغییرات'
+    },
+    'mdd_label': {
+        'en': 'Maximum Drawdown',
+        'fa': 'حداکثر افت'
+    },
+    'skewness_label': {
+        'en': 'Skewness',
+        'fa': 'چولگی'
+    },
+    'kurtosis_label': {
+        'en': 'Kurtosis',
+        'fa': 'کشیدگی'
+    },
+
+    'var_label': {
+        'en': 'Value at Risk (5%)',
+        'fa': 'ارزش در معرض ریسک (۵٪)'
+    },
+    'var_95_label': {
+        'en': 'Value at Risk (95%)',
+        'fa': 'ارزش در معرض ریسک (۹۵٪)'
+    },
+    'cvar_label': {
+        'en': 'Conditional VaR (5%)',
+        'fa': 'ارزش در معرض ریسک شرطی (۵٪)'
+    },
+    'max_gain_label': {
+        'en': 'Maximum Gain',
+        'fa': 'حداکثر سود'
+    },
+
+    'sharpe_label': {
+        'en': 'Sharpe Ratio',
+        'fa': 'نسبت شارپ'
+    },
+    'sortino_label': {
+        'en': 'Sortino Ratio',
+        'fa': 'نسبت سورتینو'
+    },
+    'omega_label': {
+        'en': 'Omega Ratio',
+        'fa': 'نسبت اومگا'
+    },
+
+    'treynor_ratio_label': {
+        'en': 'Treynor Ratio',
+        'fa': 'نسبت ترینور'
+    },
+    'calmar_ratio_label': {
+        'en': 'Calmar Ratio',
+        'fa': 'نسبت کالمر'
+    },
+    'jensen_alpha_label': {
+        'en': 'Jensen\'s Alpha',
+        'fa': 'آلفای جنسن'
+    },
+    'm2_measure_label': {
+        'en': 'M2 Measure',
+        'fa': 'معیار M2'
+    },
+    'beta_label': {
+        'en': 'Beta',
+        'fa': 'بتا'
+    },
+    'alpha_label': {
+        'en': 'Alpha',
+        'fa': 'آلفا'
+    },
+    'rsquared_label': {
+        'en': 'R-Squared',
+        'fa': 'ضریب تعیین'
+    },
+    'capm_expected_return_label': {
+        'en': 'CAPM Expected Return',
+        'fa': 'بازده مورد انتظار CAPM'
+    },
+    'reg_stderr_label': {
+        'en': 'Regression Standard Error',
+        'fa': 'خطای استاندارد رگرسیون'
+    },
+    'beta_t_stat_label': {
+        'en': 'Beta T-Statistic',
+        'fa': 'آماره t بتا'
+    },
+    'beta_p_value_label': {
+        'en': 'Beta P-Value',
+        'fa': 'مقدار P بتا'
+    },
+    'alpha_p_value_label': {
+        'en': 'Alpha P-Value',
+        'fa': 'مقدار P آلفا'
+    },
+
+    'tracking_error_label': {
+        'en': 'Tracking Error',
+        'fa': 'خطای ردیابی'
+    },
+    'information_ratio_label': {
+        'en': 'Information Ratio',
+        'fa': 'نسبت اطلاعاتی'
+    },
+
+    'mean_tooltip': {
+        'en': 'Average return of the investment',
+        'fa': 'میانگین بازده سرمایه‌گذاری'
+    },
+    'geo_mean_tooltip': {
+        'en': 'Geometric mean return, accounting for compounding effects',
+        'fa': 'میانگین هندسی بازده، با در نظر گرفتن اثرات مرکب'
+    },
+    'std_dev_tooltip': {
+        'en': 'Standard deviation of returns, measuring total risk',
+        'fa': 'انحراف معیار بازده‌ها، اندازه‌گیری ریسک کل'
+    },
+    'downside_dev_tooltip': {
+        'en': 'Standard deviation of negative returns only',
+        'fa': 'انحراف معیار بازده‌های منفی'
+    },
+    'var_tooltip': {
+        'en': 'Value at Risk at 5% confidence level',
+        'fa': 'ارزش در معرض ریسک در سطح اطمینان ۵٪'
+    },
+    'cvar_tooltip': {
+        'en': 'Conditional Value at Risk, expected loss beyond VaR',
+        'fa': 'ارزش در معرض ریسک شرطی، زیان مورد انتظار فراتر از VaR'
+    },
+    'sharpe_tooltip': {
+        'en': 'Risk-adjusted return measure using total risk',
+        'fa': 'معیار بازده تعدیل شده با ریسک با استفاده از ریسک کل'
+    },
+    'sortino_tooltip': {
+        'en': 'Risk-adjusted return measure using downside risk',
+        'fa': 'معیار بازده تعدیل شده با ریسک با استفاده از ریسک نزولی'
+    },
     'app_title': {'en': "Advanced Risk & Return Analyzer", 'fa': "تحلیلگر پیشرفته ریسک و بازده"},
     'status_ready': {'en': "Ready.", 'fa': "آماده"},
     'status_calculating': {'en': "Calculating metrics...", 'fa': "در حال محاسبه معیارها..."},
@@ -75,6 +250,12 @@ const texts = {
     'sortino_label': {'en': "Sortino Ratio", 'fa': "نسبت سورتینو"},
     'cvar_label': { 'fa': "CVaR ۵٪ (کسری مورد انتظار)", 'en': "CVaR 5% (Expected Shortfall)"},
     'omega_label': { 'fa': "نسبت اُمگا (آستانه: RF)", 'en': "Omega Ratio (Threshold: RF)"},
+
+    // Tab Names
+    'tab_asset_analysis': {'en': "Asset Analysis", 'fa': "تحلیل دارایی"},
+    'tab_equity_valuation': {'en': "Equity Valuation", 'fa': "ارزش‌گذاری سهام"},
+    'tab_fixed_income': {'en': "Fixed Income", 'fa': "اوراق قرضه"},
+    'tab_portfolio_management': {'en': "Portfolio Management", 'fa': "مدیریت پورتفولیو"},
 
     'add_data_title': {'en': "Asset Return Data (%)", 'fa': "داده بازده دارایی (%)"}, // Updated title
     'add_data_hint': {'en': "(Enter multiple values separated by comma, space, or newline)", 'fa': "(مقادیر متعدد را با کاما، فاصله یا خط جدید وارد کنید)"},
@@ -251,9 +432,114 @@ const texts = {
     'scatter_plot_legend_regression_line': { 'en': "Regression Line (α={alpha}%, β={beta})", 'fa': "خط رگرسیون (α={alpha}٪، β={beta})"}, // Added % to alpha
     'plot_axis_market_returns': { 'en': "Market Returns (%)", 'fa': "بازده بازار (%)" },
     'plot_axis_asset_returns': { 'en': "Asset Returns (%)", 'fa': "بازده دارایی (%)" },
+
+    // Equity Valuation
+    'equity_valuation_title': {'en': "Equity Valuation", 'fa': "ارزش‌گذاری سهام"},
+    'equity_valuation_hint': {'en': "Calculations related to equity valuation and fundamental analysis.", 'fa': "محاسبات مربوط به ارزش‌گذاری سهام و تحلیل بنیادی."},
+    'current_dividend_label': {'en': "Current Dividend (D0):", 'fa': "سود نقدی فعلی (D0):"},
+    'current_dividend_tooltip': {'en': "The most recently paid dividend per share.", 'fa': "آخرین سود نقدی پرداخت شده به ازای هر سهم."},
+    'dividend_growth_rate_label': {'en': "Dividend Growth Rate (g) %:", 'fa': "نرخ رشد سود نقدی (g) %:"},
+    'dividend_growth_rate_tooltip': {'en': "Expected constant growth rate of dividends.", 'fa': "نرخ رشد ثابت مورد انتظار سود نقدی."},
+    'required_return_equity_label': {'en': "Required Rate of Return (r) %:", 'fa': "نرخ بازده مورد نیاز (r) %:"},
+    'required_return_equity_tooltip': {'en': "The minimum rate of return an investor expects to receive.", 'fa': "حداقل نرخ بازدهی که یک سرمایه‌گذار انتظار دارد دریافت کند."},
+    'earnings_per_share_label': {'en': "Earnings Per Share (EPS):", 'fa': "سود هر سهم (EPS):"},
+    'earnings_per_share_tooltip': {'en': "A company's profit allocated to each outstanding share of common stock.", 'fa': "سود شرکت تخصیص یافته به هر سهم عادی در گردش."},
+    'current_share_price_label': {'en': "Current Share Price:", 'fa': "قیمت فعلی سهم:"},
+    'current_share_price_tooltip': {'en': "The current market price of one share of the company's stock.", 'fa': "قیمت فعلی بازار یک سهم از سهام شرکت."},
+    'calculate_equity_button': {'en': "Calculate Equity Valuation", 'fa': "محاسبه ارزش‌گذاری سهام"},
+    'equity_results_title': {'en': "Equity Valuation Results", 'fa': "نتایج ارزش‌گذاری سهام"},
+    'ddm_value_label': {'en': "DDM Value (P0):", 'fa': "ارزش مدل DDM (P0):"},
+    'ddm_value_tooltip': {'en': "Value per share using the Dividend Discount Model (D0 * (1+g) / (r-g)).", 'fa': "ارزش هر سهم با استفاده از مدل تنزیل سود نقدی (D0 * (1+g) / (r-g))."},
+    'ggm_value_label': {'en': "GGM Value (P0):", 'fa': "ارزش مدل GGM (P0):"},
+    'ggm_value_tooltip': {'en': "Value per share using the Gordon Growth Model (D1 / (r-g)). Assumes constant growth.", 'fa': "ارزش هر سهم با استفاده از مدل رشد گوردون (D1 / (r-g)). فرض بر رشد ثابت است."},
+    'pe_ratio_label': {'en': "P/E Ratio:", 'fa': "نسبت P/E:"},
+    'pe_ratio_tooltip': {'en': "Price-to-Earnings Ratio (Current Share Price / EPS).", 'fa': "نسبت قیمت به سود (قیمت فعلی سهم / EPS)."},
+    'equity_input_error': {'en': "Please enter valid numeric values for all equity valuation inputs.", 'fa': "لطفاً مقادیر عددی معتبر برای تمام ورودی‌های ارزش‌گذاری سهام وارد کنید."},
+    'ddm_ggm_error': {'en': "Required return (r) must be greater than dividend growth rate (g) for DDM/GGM.", 'fa': "نرخ بازده مورد نیاز (r) باید بزرگتر از نرخ رشد سود نقدی (g) برای DDM/GGM باشد."},
+    'eps_price_error': {'en': "EPS and Current Share Price must be positive for P/E Ratio.", 'fa': "EPS و قیمت فعلی سهم برای نسبت P/E باید مثبت باشند."},
+
+    // Fixed Income
+    'fixed_income_title': {'en': "Fixed Income & Bonds", 'fa': "اوراق قرضه و درآمد ثابت"},
+    'fixed_income_hint': {'en': "Calculations related to bonds, including yield to maturity, duration, and valuation.", 'fa': "محاسبات مربوط به اوراق قرضه، شامل بازده تا سررسید، مدت زمان و ارزش‌گذاری."},
+    'face_value_label': {'en': "Face Value:", 'fa': "ارزش اسمی (Face Value):"},
+    'face_value_tooltip': {'en': "The nominal value or par value of the bond, paid at maturity.", 'fa': "ارزش اسمی یا ارزش اسمی اوراق قرضه که در سررسید پرداخت می‌شود."},
+    'coupon_rate_label': {'en': "Coupon Rate (% Annually):", 'fa': "نرخ کوپن (% سالانه):"},
+    'coupon_rate_tooltip': {'en': "The annual interest rate paid on the bond's face value.", 'fa': "نرخ بهره سالانه پرداخت شده بر اساس ارزش اسمی اوراق قرضه."},
+    'years_to_maturity_label': {'en': "Years to Maturity:", 'fa': "سال تا سررسید:"},
+    'years_to_maturity_tooltip': {'en': "The number of years remaining until the bond matures.", 'fa': "تعداد سال‌های باقی‌مانده تا سررسید اوراق قرضه."},
+    'market_price_bond_label': {'en': "Current Market Price:", 'fa': "قیمت بازار فعلی:"},
+    'market_price_bond_tooltip': {'en': "The current price at which the bond is trading in the market.", 'fa': "قیمت فعلی که اوراق قرضه در بازار معامله می‌شود."},
+    'ytm_input_label': {'en': "Yield to Maturity (YTM) %:", 'fa': "بازده تا سررسید (YTM) %:"},
+    'ytm_input_tooltip': {'en': "The total return an investor can expect to receive if they hold the bond until maturity.", 'fa': "کل بازدهی که یک سرمایه‌گذار می‌تواند انتظار داشته باشد در صورت نگهداری اوراق قرضه تا سررسید دریافت کند."},
+    'coupon_frequency_label': {'en': "Coupon Frequency:", 'fa': "دفعات پرداخت کوپن:"},
+    'coupon_frequency_tooltip': {'en': "How many times per year the coupon is paid.", 'fa': "تعداد دفعات پرداخت کوپن در سال."},
+    'annual': {'en': "Annual", 'fa': "سالانه"},
+    'semi_annual': {'en': "Semi-Annual", 'fa': "نیمه سالانه"},
+    'quarterly': {'en': "Quarterly", 'fa': "فصلی"},
+    'monthly': {'en': "Monthly", 'fa': "ماهانه"},
+    'calculate_bond_button': {'en': "Calculate Bond Metrics", 'fa': "محاسبه اوراق قرضه"},
+    'fixed_income_results_title': {'en': "Fixed Income Results", 'fa': "نتایج اوراق قرضه"},
+    'bond_price_label': {'en': "Bond Price:", 'fa': "قیمت اوراق قرضه:"},
+    'bond_price_tooltip': {'en': "The calculated present value of the bond's future cash flows.", 'fa': "ارزش فعلی محاسبه شده جریان‌های نقدی آتی اوراق قرضه."},
+    'ytm_label': {'en': "Yield to Maturity (YTM):", 'fa': "بازده تا سررسید (YTM):"},
+    'ytm_tooltip': {'en': "The calculated yield to maturity of the bond.", 'fa': "بازده تا سررسید محاسبه شده اوراق قرضه."},
+    'macaulay_duration_label': {'en': "Macaulay Duration:", 'fa': "مدت زمان مکالی:"},
+    'macaulay_duration_tooltip': {'en': "The weighted average time until a bond's cash flows are received.", 'fa': "میانگین وزنی زمان تا دریافت جریان‌های نقدی اوراق قرضه."},
+    'modified_duration_label': {'en': "Modified Duration:", 'fa': "مدت زمان تعدیل شده:"},
+    'modified_duration_tooltip': {'en': "Measures the percentage change in a bond's price for a 1% change in yield.", 'fa': "تغییر درصدی قیمت اوراق قرضه به ازای ۱٪ تغییر در بازده را اندازه‌گیری می‌کند."},
+    'convexity_label': {'en': "Convexity:", 'fa': "کانوکسیتی:"},
+    'convexity_tooltip': {'en': "Measures the curvature of a bond's price-yield relationship.", 'fa': "انحنای رابطه قیمت-بازده اوراق قرضه را اندازه‌گیری می‌کند."},
+    'plot_bond_price_yield_button': {'en': "Plot Bond Price-Yield Curve", 'fa': "نمودار قیمت-بازده اوراق قرضه"},
+    'bond_input_error': {'en': "Please enter valid numeric values for all bond inputs.", 'fa': "لطفاً مقادیر عددی معتبر برای تمام ورودی‌های اوراق قرضه وارد کنید."},
+    'bond_price_yield_plot_title': {'en': "Bond Price-Yield Relationship", 'fa': "رابطه قیمت-بازده اوراق قرضه"},
+    'plot_axis_yield': {'en': "Yield to Maturity (%)", 'fa': "بازده تا سررسید (%)"},
+    'plot_axis_bond_price': {'en': "Bond Price", 'fa': "قیمت اوراق قرضه"},
+
+    // Portfolio Management
+    'portfolio_management_title': {'en': "Portfolio Management", 'fa': "مدیریت پورتفولیو"},
+    'portfolio_management_hint': {'en': "Calculations related to portfolio returns, risk, and correlation.", 'fa': "محاسبات مربوط به پورتفولیو، شامل بازده، ریسک و همبستگی."},
+    'add_portfolio_asset_button': {'en': "Add Asset to Portfolio", 'fa': "افزودن دارایی به پورتفولیو"},
+    'portfolio_asset_name_label': {'en': "Asset Name:", 'fa': "نام دارایی:"},
+    'portfolio_asset_return_label': {'en': "Expected Return (%):", 'fa': "بازده مورد انتظار (%):"},
+    'portfolio_asset_stddev_label': {'en': "Standard Deviation (%):", 'fa': "انحراف معیار (%):"},
+    'portfolio_asset_weight_label': {'en': "Weight (%):", 'fa': "وزن (%):"},
+    'portfolio_asset_correlation_label': {'en': "Correlation with Asset {id} (ρ):", 'fa': "همبستگی با دارایی {id} (ρ):"},
+    'remove_asset_button': {'en': "Remove", 'fa': "حذف"},
+    'calculate_portfolio_button': {'en': "Calculate Portfolio Metrics", 'fa': "محاسبه پورتفولیو"},
+    'portfolio_results_title': {'en': "Portfolio Results", 'fa': "نتایج پورتفولیو"},
+    'portfolio_expected_return_label': {'en': "Portfolio Expected Return:", 'fa': "بازده مورد انتظار پورتفولیو:"},
+    'portfolio_expected_return_tooltip': {'en': "The weighted average of the expected returns of the individual assets in the portfolio.", 'fa': "میانگین وزنی بازده‌های مورد انتظار دارایی‌های منفرد در پورتفولیو."},
+    'portfolio_stddev_label': {'en': "Portfolio Standard Deviation:", 'fa': "انحراف معیار پورتفولیو:"},
+    'portfolio_stddev_tooltip': {'en': "Measures the total risk of the portfolio, considering asset volatilities and their correlation.", 'fa': "ریسک کل پورتفولیو را با در نظر گرفتن نوسانات دارایی‌ها و همبستگی آن‌ها اندازه‌گیری می‌کند."},
+    'portfolio_variance_label': {'en': "Portfolio Variance:", 'fa': "واریانس پورتفولیو:"},
+    'portfolio_variance_tooltip': {'en': "The total variance of the portfolio, considering asset volatilities and their correlations.", 'fa': "واریانس کل پورتفولیو، با در نظر گرفتن نوسانات دارایی‌ها و همبستگی‌های آن‌ها."},
+    'portfolio_variance_label': {'en': "Portfolio Variance:", 'fa': "واریانس پورتفولیو:"},
+    'portfolio_variance_tooltip': {'en': "The total variance of the portfolio, considering asset volatilities and their correlations.", 'fa': "واریانس کل پورتفولیو، با در نظر گرفتن نوسانات دارایی‌ها و همبستگی‌های آن‌ها."},
+    'covariance_label': {'en': "Covariance (Pairwise):", 'fa': "کوواریانس (جفتی):"}, // Keep for potential future use or if needed elsewhere
+    'covariance_tooltip': {'en': "Measures the directional relationship between the returns of two assets.", 'fa': "رابطه جهت‌دار بین بازده دو دارایی را اندازه‌گیری می‌کند."}, // Keep for potential future use or if needed elsewhere
+    'portfolio_input_error': {'en': "Please enter valid numeric values for all portfolio inputs.", 'fa': "لطفاً مقادیر عددی معتبر برای تمام ورودی‌های پورتفولیو وارد کنید."},
+    'portfolio_weights_error': {'en': "Asset weights must sum to 100%.", 'fa': "مجموع وزن‌های دارایی باید ۱۰۰٪ باشد."},
+    'correlation_range_error': {'en': "Correlation must be between -1 and 1.", 'fa': "همبستگی باید بین -۱ و ۱ باشد."},
+    'portfolio_min_assets_error': {'en': "Please add at least two assets to calculate portfolio metrics.", 'fa': "لطفاً حداقل دو دارایی برای محاسبه معیارهای پورتفولیو اضافه کنید."},
+    'portfolio_asset_removed': {'en': "Asset '{name}' removed from portfolio.", 'fa': "دارایی '{name}' از پورتفولیو حذف شد."},
+    'portfolio_asset_added': {'en': "Asset '{name}' added to portfolio.", 'fa': "دارایی '{name}' به پورتفولیو اضافه شد."},
+    'portfolio_asset_updated': {'en': "Asset '{name}' updated.", 'fa': "دارایی '{name}' به‌روزرسانی شد."},
+    'portfolio_asset_default_name': {'en': "Asset {id}", 'fa': "دارایی {id}"},
+    'portfolio_asset_name_placeholder': {'en': "e.g., Stock A", 'fa': "مثلا سهام الف"},
+    'portfolio_asset_return_placeholder': {'en': "e.g., 10", 'fa': "مثلا ۱۰"},
+    'portfolio_asset_stddev_placeholder': {'en': "e.g., 15", 'fa': "مثلا ۱۵"},
+    'portfolio_asset_weight_placeholder': {'en': "e.g., 50", 'fa': "مثلا ۵۰"},
+    'portfolio_asset_correlation_placeholder': {'en': "e.g., 0.5", 'fa': "مثلا ۰.۵"},
+    'portfolio_rf_rate_label': {'en': "Risk-Free Rate (% Annually):", 'fa': "نرخ بازده بدون ریسک (% سالانه):"},
+
+
 };
 
 // --- DOM Element Selectors ---
+// Tab Navigation
+const tabButtons = document.querySelectorAll('.tab-button');
+const tabContents = document.querySelectorAll('.tab-content');
+
 // Asset Data
 const valueEntry = document.getElementById('value-entry');
 const addButton = document.getElementById('add-button');
@@ -263,7 +549,7 @@ const saveEditButton = document.getElementById('save-edit-button');
 const deleteButton = document.getElementById('delete-button');
 const dataDisplay = document.getElementById('data-display');
 const clearListButton = document.getElementById('clear-list-button');
-const dedicatedFileDropAreaAsset = document.getElementById('dedicated-file-drop-area'); // Assuming this is for asset
+const dedicatedFileDropAreaAsset = document.getElementById('dedicated-file-drop-area');
 const fileImporterInputAsset = document.getElementById('file-importer-input-asset');
 
 // Market Data
@@ -278,9 +564,37 @@ const addBenchmarkDataButton = document.getElementById('add-benchmark-data-butto
 const benchmarkDataDisplay = document.getElementById('benchmark-data-display');
 const clearBenchmarkDataButton = document.getElementById('clear-benchmark-data-button');
 
+// Equity Valuation
+const currentDividendInput = document.getElementById('current-dividend');
+const dividendGrowthRateInput = document.getElementById('dividend-growth-rate');
+const requiredReturnEquityInput = document.getElementById('required-return-equity');
+const earningsPerShareInput = document.getElementById('earnings-per-share');
+const currentSharePriceInput = document.getElementById('current-share-price');
+const calculateEquityButton = document.getElementById('calculate-equity-button');
+const equityResultsDisplay = document.getElementById('equity-results-display');
+
+// Fixed Income
+const faceValueInput = document.getElementById('face-value');
+const couponRateInput = document.getElementById('coupon-rate');
+const yearsToMaturityInput = document.getElementById('years-to-maturity');
+const marketPriceBondInput = document.getElementById('market-price-bond');
+const ytmInputBond = document.getElementById('ytm-input');
+const couponFrequencySelect = document.getElementById('coupon-frequency');
+const calculateBondButton = document.getElementById('calculate-bond-button');
+const fixedIncomeResultsDisplay = document.getElementById('fixed-income-results-display');
+const plotBondPriceYieldButton = document.getElementById('plot-bond-price-yield-button');
+
+// Portfolio Management
+const portfolioAssetsContainer = document.getElementById('portfolio-assets-container');
+const addPortfolioAssetButton = document.getElementById('add-portfolio-asset-button');
+const portfolioRfRateInput = document.getElementById('portfolio-rf-rate');
+const calculatePortfolioButton = document.getElementById('calculate-portfolio-button');
+const portfolioResultsDisplay = document.getElementById('portfolio-results-display');
+
+
 // General & Controls
 const langSelect = document.getElementById('lang-select');
-const rfRateInput = document.getElementById('rf-rate');
+const rfRateInput = document.getElementById('rf-rate'); // This is for Asset Analysis tab
 const expectedMarketReturnInput = document.getElementById('expected-market-return');
 const calculateButton = document.getElementById('calculate-button');
 const plotHistButton = document.getElementById('plot-hist-button');
@@ -331,33 +645,50 @@ function updateStatus(key, args = {}, type = 'info') {
 }
 
 function updateLanguageUI() {
-    currentLang = langSelect.value;
-    document.documentElement.lang = currentLang;
+    const currentLang = document.documentElement.lang;
+    document.querySelectorAll('[data-translate]').forEach(element => {
+        const key = element.getAttribute('data-translate');
+        if (texts[key] && texts[key][currentLang]) {
+            element.textContent = texts[key][currentLang];
+        }
+    });
+
+    // به‌روزرسانی placeholder‌ها
+    document.querySelectorAll('[data-translate-placeholder]').forEach(element => {
+        const key = element.getAttribute('data-translate-placeholder');
+        if (texts[key] && texts[key][currentLang]) {
+            element.placeholder = texts[key][currentLang];
+        }
+    });
+
+    // به‌روزرسانی tooltip‌ها
+    document.querySelectorAll('[data-tooltip-key]').forEach(element => {
+        const key = element.getAttribute('data-tooltip-key');
+        if (texts[key] && texts[key][currentLang]) {
+            element.title = texts[key][currentLang];
+        }
+    });
+
+    // به‌روزرسانی جهت متن
     document.documentElement.dir = currentLang === 'fa' ? 'rtl' : 'ltr';
-    document.title = _t('app_title');
+    document.documentElement.lang = currentLang;
 
-    document.querySelectorAll('[data-translate]').forEach(el => {
-        const key = el.getAttribute('data-translate');
-        el.textContent = _t(key);
-    });
+    // به‌روزرسانی کلاس‌های RTL/LTR
+    document.body.classList.toggle('rtl', currentLang === 'fa');
+    document.body.classList.toggle('ltr', currentLang === 'en');
 
-    document.querySelectorAll('[data-translate-placeholder]').forEach(el => {
-         const key = el.getAttribute('data-translate-placeholder');
-         if(key) el.placeholder = _t(key);
-    });
-
-    updateEditOptions();
-    updateDataDisplay(); // For asset data
-    updateMarketDataDisplay();
-    updateBenchmarkDataDisplay();
-
-    if (Object.keys(calculatedResults).length > 0) {
-        updateResultsUI();
-    } else {
-        resetResultsDisplay(); // Ensure results are reset if no calculations yet
-    }
-    updateStatus('status_ready');
+    // به‌روزرسانی فونت
+    document.body.style.fontFamily = currentLang === 'fa' ? 'Vazirmatn, sans-serif' : 'sans-serif';
 }
+
+// اضافه کردن event listener برای تغییر زبان
+document.getElementById('lang-select').addEventListener('change', function(e) {
+    document.documentElement.lang = e.target.value;
+    updateLanguageUI();
+});
+
+// فراخوانی اولیه برای تنظیم زبان پیش‌فرض
+updateLanguageUI();
 
 function formatNumber(value, digits = 2, addPercent = false) {
     if (value === Infinity) return "∞";
@@ -839,7 +1170,50 @@ function calculateGeometricMean(data) { if (!data || data.length === 0) return N
     return (Math.pow(product, 1.0 / data.length) - 1.0) * 100.0;
 }
 function calculateDownsideDeviation(data, target = 0) { if (!data || data.length < 2) return NaN; const n = data.length; const downsideReturns = data.filter(r => r < target); if (downsideReturns.length === 0) return 0.0; const sumSqDev = downsideReturns.reduce((acc, r) => acc + Math.pow(r - target, 2), 0); return Math.sqrt(sumSqDev / (n - 1)); } // Using n-1 for sample
-function calculateMaxDrawdown(returnsPerc) { if (!returnsPerc || returnsPerc.length === 0) return { maxDrawdown: 0.0, duration: 0, peakIndex: 0, troughIndex: 0 }; const dataArr = returnsPerc.filter(p => isFinite(p)); if (dataArr.length === 0) return { maxDrawdown: 0.0, duration: 0, peakIndex: 0, troughIndex: 0 }; let cumulative = [1.0]; dataArr.forEach(r => { cumulative.push(cumulative[cumulative.length - 1] * (1 + r / 100.0)); }); let maxDd = 0.0; let peakIndexOriginal = 0; let troughIndexOriginal = 0; let currentPeakValue = cumulative[0]; let currentPeakIndexCumulative = 0; for (let i = 1; i < cumulative.length; i++) { if (cumulative[i] > currentPeakValue) { currentPeakValue = cumulative[i]; currentPeakIndexCumulative = i; } else { const currentDrawdown = (currentPeakValue <= 1e-9) ? 0 : (cumulative[i] / currentPeakValue - 1.0) * 100.0; if (currentDrawdown < maxDd) { maxDd = currentDrawdown; peakIndexOriginal = currentPeakIndexCumulative; troughIndexOriginal = i; }}} const duration = troughIndexOriginal - peakIndexOriginal; return { maxDrawdown: isFinite(maxDd) ? maxDd : 0.0, duration: isFinite(duration) ? duration : 0, peakIndex: peakIndexOriginal, troughIndex: troughIndexOriginal -1 };} // troughIndex for data is one less
+function calculateMaxDrawdown(returnsPerc) {
+    if (!returnsPerc || returnsPerc.length === 0) return { maxDrawdown: 0.0, duration: 0, peakIndex: 0, troughIndex: 0 };
+    const dataArr = returnsPerc.filter(p => isFinite(p));
+    if (dataArr.length === 0) return { maxDrawdown: 0.0, duration: 0, peakIndex: 0, troughIndex: 0 };
+
+    let cumulative = [1.0];
+    dataArr.forEach(r => {
+        cumulative.push(cumulative[cumulative.length - 1] * (1 + r / 100.0));
+    });
+
+    let maxDd = 0.0;
+    let peakIndexOriginal = 0;
+    let troughIndexOriginal = 0;
+    let currentPeakValue = cumulative[0];
+    let currentPeakIndexCumulative = 0;
+
+    for (let i = 1; i < cumulative.length; i++) {
+        if (cumulative[i] > currentPeakValue) {
+            currentPeakValue = cumulative[i];
+            currentPeakIndexCumulative = i;
+        } else {
+            // Handle division by zero if currentPeakValue is 0
+            const currentDrawdown = (currentPeakValue === 0) ? -100.0 : (cumulative[i] / currentPeakValue - 1.0) * 100.0;
+            if (currentDrawdown < maxDd) {
+                maxDd = currentDrawdown;
+                peakIndexOriginal = currentPeakIndexCumulative;
+                troughIndexOriginal = i;
+            }
+        }
+    }
+    // Duration is from peak to trough (inclusive of trough, exclusive of peak)
+    // troughIndexOriginal is the index in the cumulative array.
+    // If data points are 0-indexed, and cumulative has an initial 1.0 at index 0,
+    // then the actual data point index for trough is troughIndexOriginal - 1.
+    // The duration is simply the difference in indices in the cumulative array.
+    const duration = troughIndexOriginal - peakIndexOriginal;
+
+    return {
+        maxDrawdown: isFinite(maxDd) ? maxDd : 0.0,
+        duration: isFinite(duration) ? duration : 0,
+        peakIndex: peakIndexOriginal, // Index in cumulative array
+        troughIndex: troughIndexOriginal // Index in cumulative array
+    };
+}
 
 function calculateRegression(assetReturns, marketReturns) {
     if (!assetReturns || !marketReturns || assetReturns.length !== marketReturns.length || assetReturns.length < 2) {
@@ -860,7 +1234,7 @@ function calculateRegression(assetReturns, marketReturns) {
         const lineFunc = ss.linearRegressionLine(regression);
         const rSquared = ss.rSquared(pairedData, lineFunc);
 
-        if (n <= 2) { // Not enough data for significance tests
+        if (n <= 2) { // Not enough data for significance tests (df = n-2)
             return { beta, alpha, rSquared, stdErrRegression: NaN, tStatBeta: NaN, pValBeta: NaN, tStatAlpha: NaN, pValAlpha: NaN };
         }
         const residuals = assetReturns.map((y, i) => y - lineFunc(marketReturns[i]));
@@ -870,14 +1244,17 @@ function calculateRegression(assetReturns, marketReturns) {
         const meanMarket = ss.mean(marketReturns);
         const sumSqDevMarket = marketReturns.reduce((sum, x) => sum + Math.pow(x - meanMarket, 2), 0);
 
-        if (sumSqDevMarket < 1e-9) { // Avoid division by zero
+        if (sumSqDevMarket < 1e-9) { // Avoid division by zero if market returns are constant
             return { beta, alpha, rSquared, stdErrRegression, tStatBeta: NaN, pValBeta: NaN, tStatAlpha: NaN, pValAlpha: NaN };
         }
         const stdErrBeta = stdErrRegression / Math.sqrt(sumSqDevMarket);
         const tStatBeta = beta / stdErrBeta;
         const stdErrAlpha = stdErrRegression * Math.sqrt((1/n) + (Math.pow(meanMarket, 2) / sumSqDevMarket));
         const tStatAlpha = alpha / stdErrAlpha;
-        // P-values are complex, returning NaN. For actual use, a stats library for t-distribution CDF is needed.
+
+        // P-values require a t-distribution CDF. Simple-statistics doesn't provide this directly.
+        // For a more complete solution, a dedicated statistics library (e.g., jStat, numeric.js) would be needed.
+        // Keeping them as NaN for now, as per original code.
         return { beta, alpha, rSquared, stdErrRegression, tStatBeta, pValBeta: NaN, tStatAlpha, pValAlpha: NaN };
     } catch (e) {
         console.error("Error during regression calculation:", e);
@@ -906,125 +1283,585 @@ function calculateCAPMExpectedReturn(rf, beta, expectedMarketReturn) {
     return rf + beta * (expectedMarketReturn - rf);
 }
 
+// --- Equity Valuation Calculations ---
+function calculateDDM(D0, g, r) {
+    // D0: Current Dividend, g: Growth Rate (%), r: Required Return (%), all as percentages
+    // Convert g and r to decimals
+    const g_dec = g / 100;
+    const r_dec = r / 100;
+
+    if (r_dec <= g_dec) {
+        return NaN; // Required return must be greater than growth rate
+    }
+    if (D0 < 0) return NaN; // Dividend cannot be negative for this model
+    return D0 * (1 + g_dec) / (r_dec - g_dec);
+}
+
+function calculateGGM(D1, r, g) {
+    // D1: Next Expected Dividend, r: Required Return (%), g: Growth Rate (%), all as percentages
+    // Convert r and g to decimals
+    const r_dec = r / 100;
+    const g_dec = g / 100;
+
+    if (r_dec <= g_dec) {
+        return NaN; // Required return must be greater than growth rate
+    }
+    if (D1 < 0) return NaN; // Dividend cannot be negative for this model
+    return D1 / (r_dec - g_dec);
+}
+
+function calculatePERatio(currentSharePrice, EPS) {
+    if (EPS <= 0 || currentSharePrice <= 0) {
+        return NaN; // EPS must be positive for a meaningful P/E ratio
+    }
+    return currentSharePrice / EPS;
+}
+
+// --- Fixed Income Calculations ---
+function calculateBondPrice(faceValue, couponRate, yearsToMaturity, ytm, couponFrequency) {
+    // faceValue: bond's face value
+    // couponRate: annual coupon rate as percentage
+    // yearsToMaturity: years
+    // ytm: yield to maturity as percentage
+    // couponFrequency: payments per year (1, 2, 4, 12)
+
+    if (faceValue <= 0 || couponRate < 0 || yearsToMaturity <= 0 || ytm < 0 || couponFrequency <= 0) {
+        return NaN;
+    }
+
+    const couponRate_dec = couponRate / 100;
+    const ytm_dec = ytm / 100;
+    const numPeriods = yearsToMaturity * couponFrequency;
+    const couponPayment = (faceValue * couponRate_dec) / couponFrequency;
+    const ratePerPeriod = ytm_dec / couponFrequency;
+
+    let bondPrice = 0;
+
+    // Present value of coupon payments (annuity)
+    if (ratePerPeriod === 0) { // Handle zero interest rate
+        bondPrice += couponPayment * numPeriods;
+    } else {
+        bondPrice += couponPayment * (1 - Math.pow(1 + ratePerPeriod, -numPeriods)) / ratePerPeriod;
+    }
+
+    // Present value of face value (lump sum)
+    bondPrice += faceValue / Math.pow(1 + ratePerPeriod, numPeriods);
+
+    return bondPrice;
+}
+
+function calculateYTM(faceValue, couponRate, yearsToMaturity, marketPrice, couponFrequency) {
+    // Iterative approach (Newton-Raphson or bisection)
+    // This is a simplified bisection method.
+    const maxIterations = 1000;
+    const tolerance = 0.0001; // 0.01% difference in price
+
+    let lowYTM = 0.0001; // 0.01%
+    let highYTM = 1.0; // 100%
+    let currentYTM = 0.05; // 5% starting guess
+
+    for (let i = 0; i < maxIterations; i++) {
+        const priceAtCurrentYTM = calculateBondPrice(faceValue, couponRate, yearsToMaturity, currentYTM * 100, couponFrequency);
+        const diff = priceAtCurrentYTM - marketPrice;
+
+        if (Math.abs(diff) < tolerance) {
+            return currentYTM * 100; // Return as percentage
+        }
+
+        if (diff > 0) { // Price at current YTM is too high, so YTM must be higher
+            lowYTM = currentYTM;
+        } else { // Price at current YTM is too low, so YTM must be lower
+            highYTM = currentYTM;
+        }
+        currentYTM = (lowYTM + highYTM) / 2;
+
+        if (lowYTM >= highYTM - 1e-9) { // Prevent infinite loop if bounds converge too slowly
+            break;
+        }
+    }
+    return NaN; // Could not converge
+}
+
+function calculateMacaulayDuration(faceValue, couponRate, yearsToMaturity, ytm, couponFrequency) {
+    if (faceValue <= 0 || couponRate < 0 || yearsToMaturity <= 0 || ytm < 0 || couponFrequency <= 0) {
+        return NaN;
+    }
+
+    const couponRate_dec = couponRate / 100;
+    const ytm_dec = ytm / 100;
+    const numPeriods = yearsToMaturity * couponFrequency;
+    const couponPayment = (faceValue * couponRate_dec) / couponFrequency;
+    const ratePerPeriod = ytm_dec / couponFrequency;
+
+    let sumPVofCF_times_t = 0;
+    let bondPrice = 0;
+
+    for (let t = 1; t <= numPeriods; t++) {
+        const cashFlow = (t === numPeriods) ? (couponPayment + faceValue) : couponPayment;
+        const pv_cf = cashFlow / Math.pow(1 + ratePerPeriod, t);
+        sumPVofCF_times_t += pv_cf * t;
+        bondPrice += pv_cf; // Summing up PVs to get bond price
+    }
+
+    if (bondPrice === 0) return NaN;
+    return (sumPVofCF_times_t / bondPrice) / couponFrequency; // Convert back to years
+}
+
+function calculateModifiedDuration(macaulayDuration, ytm, couponFrequency) {
+    if (isNaN(macaulayDuration) || ytm < 0 || couponFrequency <= 0) return NaN;
+    const ytm_dec = ytm / 100;
+    return macaulayDuration / (1 + (ytm_dec / couponFrequency));
+}
+
+function calculateConvexity(faceValue, couponRate, yearsToMaturity, ytm, couponFrequency) {
+    if (faceValue <= 0 || couponRate < 0 || yearsToMaturity <= 0 || ytm < 0 || couponFrequency <= 0) {
+        return NaN;
+    }
+
+    const couponRate_dec = couponRate / 100;
+    const ytm_dec = ytm / 100;
+    const numPeriods = yearsToMaturity * couponFrequency;
+    const couponPayment = (faceValue * couponRate_dec) / couponFrequency;
+    const ratePerPeriod = ytm_dec / couponFrequency;
+
+    let sum_t_tplus1_PVofCF = 0;
+    let bondPrice = 0;
+
+    for (let t = 1; t <= numPeriods; t++) {
+        const cashFlow = (t === numPeriods) ? (couponPayment + faceValue) : couponPayment;
+        const pv_cf = cashFlow / Math.pow(1 + ratePerPeriod, t);
+        sum_t_tplus1_PVofCF += pv_cf * t * (t + 1);
+        bondPrice += pv_cf;
+    }
+
+    if (bondPrice === 0) return NaN;
+    return (sum_t_tplus1_PVofCF / (bondPrice * Math.pow(1 + ratePerPeriod, 2))) / Math.pow(couponFrequency, 2);
+}
+
+// --- Portfolio Management Calculations ---
+// --- Portfolio Management Specific Functions ---
+
+function addPortfolioAsset() {
+    const newAsset = {
+        id: nextAssetId++,
+        name: _t('portfolio_asset_default_name', { id: nextAssetId - 1 }),
+        return: NaN,
+        stdDev: NaN,
+        weight: NaN,
+        correlations: {} // Store correlations with other assets by their ID
+    };
+    portfolioAssets.push(newAsset);
+    updatePortfolioAssetUI();
+    updateStatus('portfolio_asset_added', { name: newAsset.name }, 'success');
+    resetPortfolioResultsDisplay();
+}
+
+function removePortfolioAsset(assetId) {
+    Swal.fire({
+        title: _t('confirm_delete_text'),
+        text: _t('portfolio_asset_removed', { name: portfolioAssets.find(a => a.id === assetId)?.name || `ID ${assetId}` }),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: _t('delete_button'),
+        cancelButtonText: _t('cancel_button'),
+        customClass: { popup: 'swal2-popup', title: 'swal2-title', htmlContainer: 'swal2-html-container', confirmButton: 'swal2-confirm', cancelButton: 'swal2-cancel'}
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const initialLength = portfolioAssets.length;
+            portfolioAssets = portfolioAssets.filter(asset => asset.id !== assetId);
+            // Also remove correlations involving the deleted asset
+            portfolioAssets.forEach(asset => {
+                delete asset.correlations[assetId];
+            });
+            if (portfolioAssets.length < initialLength) {
+                updatePortfolioAssetUI();
+                resetPortfolioResultsDisplay();
+                updateStatus('portfolio_asset_removed', { name: `ID ${assetId}` }, 'success');
+            }
+        }
+    });
+}
+
+function updatePortfolioAssetUI() {
+    if (!portfolioAssetsContainer) return;
+    portfolioAssetsContainer.innerHTML = ''; // Clear existing assets
+
+    portfolioAssets.forEach((asset, index) => {
+        const assetDiv = document.createElement('div');
+        assetDiv.id = `portfolio-asset-${asset.id}`;
+        assetDiv.className = 'bg-dark-card p-4 rounded-lg shadow-md border border-dark-border relative';
+        assetDiv.innerHTML = `
+            <h3 class="text-lg font-semibold mb-3 text-primary">${_t('portfolio_asset_default_name', { id: index + 1 })}</h3>
+            <button class="absolute top-2 left-2 text-red-500 hover:text-red-700 text-xl" onclick="removePortfolioAsset(${asset.id})">&times;</button>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="asset-${asset.id}-name" class="text-base font-semibold" data-translate="portfolio_asset_name_label"></label>
+                    <input type="text" id="asset-${asset.id}-name" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" value="${asset.name}" data-translate-placeholder="portfolio_asset_name_placeholder" onchange="updatePortfolioAssetData(${asset.id}, 'name', this.value)">
+                </div>
+                <div>
+                    <label for="asset-${asset.id}-return" class="text-base font-semibold" data-translate="portfolio_asset_return_label"></label>
+                    <input type="number" id="asset-${asset.id}-return" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="${_t('portfolio_asset_return_placeholder')}" value="${isNaN(asset.return) ? '' : asset.return}" onchange="updatePortfolioAssetData(${asset.id}, 'return', this.value)">
+                </div>
+                <div>
+                    <label for="asset-${asset.id}-stddev" class="text-base font-semibold" data-translate="portfolio_asset_stddev_label"></label>
+                    <input type="number" id="asset-${asset.id}-stddev" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="${_t('portfolio_asset_stddev_placeholder')}" value="${isNaN(asset.stdDev) ? '' : asset.stdDev}" onchange="updatePortfolioAssetData(${asset.id}, 'stdDev', this.value)">
+                </div>
+                <div class="md:col-span-3">
+                    <label for="asset-${asset.id}-weight" class="text-base font-semibold" data-translate="portfolio_asset_weight_label"></label>
+                    <input type="number" id="asset-${asset.id}-weight" class="w-full mt-1 bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-primary" placeholder="${_t('portfolio_asset_weight_placeholder')}" value="${isNaN(asset.weight) ? '' : asset.weight}" onchange="updatePortfolioAssetData(${asset.id}, 'weight', this.value)">
+                </div>
+            </div>
+            <div class="mt-4 border-t border-dark-border pt-4">
+                <h4 class="text-md font-semibold mb-2" data-translate="correlations_title"></h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="asset-${asset.id}-correlations-container">
+                    <!-- Correlations will be added here -->
+                </div>
+            </div>
+        `;
+        portfolioAssetsContainer.appendChild(assetDiv);
+
+        const correlationsContainer = assetDiv.querySelector(`#asset-${asset.id}-correlations-container`);
+        portfolioAssets.forEach(otherAsset => {
+            if (otherAsset.id !== asset.id) {
+                const correlationDiv = document.createElement('div');
+                correlationDiv.className = 'flex items-center gap-2';
+                correlationDiv.innerHTML = `
+                    <label for="corr-${asset.id}-with-${otherAsset.id}" class="text-sm text-dark-text-muted whitespace-nowrap" data-translate="portfolio_asset_correlation_label"></label>
+                    <input type="number" id="corr-${asset.id}-with-${otherAsset.id}" class="flex-grow bg-[#2b2b2b] text-dark-text border border-dark-border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary" step="0.01" min="-1" max="1" placeholder="${_t('portfolio_asset_correlation_placeholder')}" value="${isNaN(asset.correlations[otherAsset.id]) ? '' : asset.correlations[otherAsset.id]}" onchange="updatePortfolioAssetCorrelation(${asset.id}, ${otherAsset.id}, this.value)">
+                `;
+                correlationsContainer.appendChild(correlationDiv);
+            }
+        });
+    });
+    updateLanguageUI(); // Re-apply translations for new elements
+}
+
+function updatePortfolioAssetData(assetId, field, value) {
+    const asset = portfolioAssets.find(a => a.id === assetId);
+    if (asset) {
+        if (field === 'name') {
+            asset[field] = value;
+        } else {
+            const parsedValue = parseFloat(value);
+            asset[field] = isNaN(parsedValue) ? NaN : parsedValue;
+        }
+        // updateStatus('portfolio_asset_updated', { name: asset.name }, 'info'); // Too chatty
+        resetPortfolioResultsDisplay();
+    }
+}
+
+function updatePortfolioAssetCorrelation(assetId1, assetId2, value) {
+    const asset1 = portfolioAssets.find(a => a.id === assetId1);
+    const asset2 = portfolioAssets.find(a => a.id === assetId2);
+    if (asset1 && asset2) {
+        const parsedValue = parseFloat(value);
+        const correlation = isNaN(parsedValue) ? NaN : parsedValue;
+
+        if (correlation < -1 || correlation > 1) {
+            Swal.fire(_t('error_title'), _t('correlation_range_error'), 'error');
+            // Reset input field if invalid
+            document.getElementById(`corr-${assetId1}-with-${assetId2}`).value = isNaN(asset1.correlations[assetId2]) ? '' : asset1.correlations[assetId2];
+            return;
+        }
+
+        asset1.correlations[asset2.id] = correlation;
+        asset2.correlations[asset1.id] = correlation; // Ensure symmetry
+        // updateStatus('portfolio_asset_updated', { name: `${asset1.name}-${asset2.name} correlation` }, 'info'); // Too chatty
+        resetPortfolioResultsDisplay();
+    }
+}
 
 // --- Main Calculation Orchestration ---
 function calculateMetrics() {
+    updateStatus('status_calculating', { dataType: _t('tab_asset_analysis') }, 'info');
+    calculatedResults = {}; // Reset results
+
+    if (dataPoints.length === 0) {
+        Swal.fire(_t('warning_title'), _t('status_need_data_calc'), 'warning');
+        updateStatus('status_need_data_calc', {}, 'warning');
+        resetResultsDisplay();
+        updateActionButtonsState();
+        return;
+    }
     if (dataPoints.length < 2) {
         Swal.fire(_t('warning_title'), _t('status_need_data_calc'), 'warning');
         updateStatus('status_need_data_calc', {}, 'warning');
         resetResultsDisplay();
-        if(document.getElementById('result-count')) document.getElementById('result-count').textContent = formatNumber(dataPoints.length, 0);
         updateActionButtonsState();
         return;
     }
-    updateStatus('status_calculating', {}, 'info');
-    calculatedResults = {};
 
-    try {
-        const rfStr = rfRateInput.value.trim().replace(/%/g, '');
-        const rfRaw = parseFloat(rfStr.replace(',', '.')) || 0.0;
-        if (isNaN(rfRaw) || !isFinite(rfRaw)) {
-            Swal.fire(_t('error_title'), _t('status_rf_error'), 'error');
-            updateStatus('status_rf_error', {}, 'error'); return;
-        }
-        calculatedResults['rf'] = rfRaw;
+    const rfRate = parseFloat(rfRateInput.value);
+    const expectedMarketReturn = parseFloat(expectedMarketReturnInput.value);
 
-        const emrStr = expectedMarketReturnInput.value.trim().replace(/%/g, '');
-        const emrRaw = parseFloat(emrStr.replace(',', '.')) || 0.0;
-         if (isNaN(emrRaw) || !isFinite(emrRaw)) {
-            Swal.fire(_t('error_title'), _t('status_expected_market_return_error'), 'error');
-            updateStatus('status_expected_market_return_error', {}, 'error'); return;
-        }
-        calculatedResults['expectedMarketReturn'] = emrRaw;
-
-
-        const data = dataPoints.filter(p => isFinite(p));
-        const n = data.length;
-        calculatedResults['n'] = n;
-        calculatedResults['data'] = data;
-
-        if (n < 2) { /* Redundant check, but safe */ throw new Error(_t('status_need_data_calc')); }
-
-        calculatedResults['mean'] = calculateMean(data);
-        calculatedResults['std'] = calculateStdDev(data);
-        calculatedResults['var'] = Math.pow(calculatedResults.std, 2);
-        calculatedResults['median'] = calculatePercentile(data, 50);
-        calculatedResults['gm'] = calculateGeometricMean(data);
-        calculatedResults['dsd'] = calculateDownsideDeviation(data, 0); // Target 0
-        calculatedResults['cv'] = (Math.abs(calculatedResults.mean) > 1e-9) ? calculatedResults.std / Math.abs(calculatedResults.mean) : NaN;
-        const mddResult = calculateMaxDrawdown(data);
-        calculatedResults['mdd'] = mddResult.maxDrawdown;
-        calculatedResults['mdd_period'] = mddResult.duration;
-
-        let sk = NaN, ku = NaN;
-        if (typeof ss !== 'undefined' && n >=3 && !isNaN(calculatedResults.std) && calculatedResults.std > 1e-9) {
-            try { sk = ss.sampleSkewness(data); } catch (e) { console.warn("Skewness calc failed:", e); }
-            try { ku = ss.sampleKurtosis(data); } catch (e) { console.warn("Kurtosis calc failed:", e); } // This is excess kurtosis
-        } else if (n > 0 && (!isNaN(calculatedResults.std) && calculatedResults.std <= 1e-9)) { sk = 0.0; ku = -3.0; } // Constant data
-        calculatedResults['skew'] = sk;
-        calculatedResults['kurt'] = ku;
-
-        calculatedResults['var5'] = calculatePercentile(data, 5);
-        calculatedResults['var95'] = calculatePercentile(data, 95);
-        calculatedResults['max_gain'] = (n > 0) ? Math.max(...data) : NaN;
-        calculatedResults['sh'] = (Math.abs(calculatedResults.std) > 1e-9) ? (calculatedResults.mean - rfRaw) / calculatedResults.std : NaN;
-        let sortino = NaN;
-        if (Math.abs(calculatedResults.dsd) > 1e-9) {
-            sortino = (calculatedResults.mean - rfRaw) / calculatedResults.dsd;
-        } else if (calculatedResults.dsd === 0) {
-            sortino = (calculatedResults.mean - rfRaw > 1e-9) ? Infinity : ((calculatedResults.mean - rfRaw < -1e-9) ? -Infinity : 0);
-        }
-        calculatedResults['so'] = sortino;
-
-        let cvar5 = NaN;
-        if (!isNaN(calculatedResults.var5) && n > 0) {
-            const shortfallReturns = data.filter(r => r <= calculatedResults.var5);
-            if (shortfallReturns.length > 0) cvar5 = calculateMean(shortfallReturns);
-            else cvar5 = calculatedResults.var5;
-        }
-        calculatedResults['cvar5'] = cvar5;
-
-        let omega = NaN;
-        if (n > 0) {
-            const gains = data.filter(r => r > rfRaw).reduce((sum, r) => sum + (r - rfRaw), 0);
-            const losses = data.filter(r => r < rfRaw).reduce((sum, r) => sum + (rfRaw - r), 0);
-            if (losses === 0) omega = (gains > 0) ? Infinity : 1;
-            else omega = gains / losses;
-        }
-        calculatedResults['omega'] = omega;
-
-        // Regression & CAPM
-        const marketDataFiltered = marketDataPoints.filter(p => isFinite(p));
-        if (marketDataFiltered.length === data.length && data.length >= 2) {
-            const regResults = calculateRegression(data, marketDataFiltered);
-            calculatedResults = { ...calculatedResults, ...regResults }; // Merge regression results
-            calculatedResults['capmExpectedReturn'] = calculateCAPMExpectedReturn(rfRaw, regResults.beta, emrRaw);
-        } else {
-            ['beta', 'alpha', 'rSquared', 'regStdErr', 'betaTStat', 'betaPValue', 'alphaTStat', 'alphaPValue', 'capmExpectedReturn'].forEach(k => calculatedResults[k] = NaN);
-        }
-
-        // Benchmark Analysis
-        const benchmarkDataFiltered = benchmarkDataPoints.filter(p => isFinite(p));
-        if (benchmarkDataFiltered.length === data.length && data.length > 0) {
-            calculatedResults['trackingError'] = calculateTrackingError(data, benchmarkDataFiltered);
-            calculatedResults['informationRatio'] = calculateInformationRatio(data, benchmarkDataFiltered);
-        } else {
-            calculatedResults['trackingError'] = NaN;
-            calculatedResults['informationRatio'] = NaN;
-        }
-
-        updateResultsUI();
-        updateActionButtonsState();
-        updateStatus('status_calc_done', {}, 'success');
-
-    } catch (error) {
-        console.error("Error during calculation:", error);
-        Swal.fire(_t('error_title'), _t('status_calc_error', { error: error.message || 'Unknown error' }), 'error');
-        updateStatus('status_calc_error', { error: error.message || 'Unknown error' }, 'error');
+    if (isNaN(rfRate)) {
+        Swal.fire(_t('error_title'), _t('status_rf_error'), 'error');
+        updateStatus('status_rf_error', {}, 'error');
         resetResultsDisplay();
         updateActionButtonsState();
+        return;
     }
+    if (isNaN(expectedMarketReturn)) {
+        Swal.fire(_t('error_title'), _t('status_expected_market_return_error'), 'error');
+        updateStatus('status_expected_market_return_error', {}, 'error');
+        resetResultsDisplay();
+        updateActionButtonsState();
+        return;
+    }
+
+    const n = dataPoints.length;
+    const mean = calculateMean(dataPoints);
+    const stdDev = calculateStdDev(dataPoints);
+    const geoMean = calculateGeometricMean(dataPoints);
+    const downsideDev = calculateDownsideDeviation(dataPoints);
+    const variance = Math.pow(stdDev, 2);
+    const cv = mean === 0 ? NaN : stdDev / Math.abs(mean);
+    const mddResult = calculateMaxDrawdown(dataPoints);
+    const skewness = calculateSkewness(dataPoints);
+    const kurtosis = calculateKurtosis(dataPoints);
+    const var5 = calculatePercentile(dataPoints, 5);
+    const var95 = calculatePercentile(dataPoints, 95);
+    const cvar5 = calculateCVaR(dataPoints, 5);
+    const maxGain = Math.max(...dataPoints);
+
+    // Regression Analysis (CAPM)
+    let regressionParams = { beta: NaN, alpha: NaN, rSquared: NaN, stdErrRegression: NaN, tStatBeta: NaN, pValBeta: NaN, tStatAlpha: NaN, pValAlpha: NaN };
+    if (marketDataPoints.length === dataPoints.length && dataPoints.length >= 2) {
+        regressionParams = calculateRegression(dataPoints, marketDataPoints);
+    }
+    const capmExpectedReturn = calculateCAPMExpectedReturn(rfRate, regressionParams.beta, expectedMarketReturn);
+
+    // Benchmark Analysis
+    let trackingError = NaN;
+    let informationRatio = NaN;
+    if (benchmarkDataPoints.length === dataPoints.length && dataPoints.length >= 2) {
+        trackingError = calculateTrackingError(dataPoints, benchmarkDataPoints);
+        informationRatio = calculateInformationRatio(dataPoints, benchmarkDataPoints);
+    }
+
+    // CFA Metrics
+    const sharpeRatio = calculateSharpeRatio(dataPoints, rfRate);
+    const sortinoRatio = calculateSortinoRatio(dataPoints, rfRate);
+    const omegaRatio = calculateOmegaRatio(dataPoints, rfRate); // Using RF as threshold for Omega
+
+    const treynorRatio = calculateTreynorRatio(mean, rfRate, regressionParams.beta);
+    const calmarRatio = calculateCalmarRatio(mean, mddResult.maxDrawdown);
+    const jensenAlpha = calculateJensenAlpha(mean, rfRate, expectedMarketReturn, regressionParams.beta);
+    const m2Measure = calculateM2Measure(mean, stdDev, calculateStdDev(marketDataPoints), rfRate); // Assuming marketDataPoints stdDev is market risk
+    const alphaTStat = calculateAlphaTStat(jensenAlpha, trackingError, n); // Using tracking error for alpha t-stat
+
+    calculatedResults = {
+        n: n,
+        data: dataPoints, // Store data for plotting
+        rf: rfRate,
+        expectedMarketReturn: expectedMarketReturn,
+        mean: mean,
+        stdDev: stdDev,
+        geoMean: geoMean,
+        downsideDev: downsideDev,
+        variance: variance,
+        cv: cv,
+        mdd: mddResult.maxDrawdown,
+        mdd_period: mddResult.duration,
+        skewness: skewness,
+        kurtosis: kurtosis,
+        var5: var5,
+        var95: var95,
+        cvar5: cvar5,
+        maxGain: maxGain,
+        sharpeRatio: sharpeRatio,
+        sortinoRatio: sortinoRatio,
+        omegaRatio: omegaRatio,
+        treynorRatio: treynorRatio,
+        calmarRatio: calmarRatio,
+        jensenAlpha: jensenAlpha,
+        m2Measure: m2Measure,
+        alphaTStat: alphaTStat,
+        beta: regressionParams.beta,
+        alpha: regressionParams.alpha,
+        rSquared: regressionParams.rSquared,
+        capmExpectedReturn: capmExpectedReturn,
+        regStdErr: regressionParams.stdErrRegression,
+        betaTStat: regressionParams.tStatBeta,
+        betaPValue: regressionParams.pValBeta,
+        alphaPValue: regressionParams.pValAlpha,
+        trackingError: trackingError,
+        informationRatio: informationRatio
+    };
+
+    updateResultsUI(calculatedResults);
+    updateActionButtonsState();
+    updateStatus('status_calc_done', { dataType: _t('tab_asset_analysis') }, 'success');
 }
+
+// --- Equity Valuation Orchestration ---
+function calculateEquityValuation() {
+    updateStatus('status_calculating', { dataType: _t('equity_valuation_title') }, 'info');
+    equityCalculatedResults = {};
+
+    const D0 = parseFloat(currentDividendInput.value);
+    const g = parseFloat(dividendGrowthRateInput.value);
+    const r = parseFloat(requiredReturnEquityInput.value);
+    const EPS = parseFloat(earningsPerShareInput.value);
+    const currentPrice = parseFloat(currentSharePriceInput.value);
+
+    if (isNaN(D0) || isNaN(g) || isNaN(r) || isNaN(EPS) || isNaN(currentPrice)) {
+        Swal.fire(_t('error_title'), _t('equity_input_error'), 'error');
+        updateStatus('status_calc_error', { error: _t('equity_input_error') }, 'error');
+        resetEquityResultsDisplay();
+        return;
+    }
+
+    // DDM / GGM
+    if (r <= g) {
+        equityCalculatedResults['ddm'] = NaN;
+        equityCalculatedResults['ggm'] = NaN;
+        Swal.fire(_t('warning_title'), _t('ddm_ggm_error'), 'warning');
+    } else {
+        equityCalculatedResults['ddm'] = calculateDDM(D0, g, r);
+        equityCalculatedResults['ggm'] = calculateGGM(D0 * (1 + g / 100), r, g); // D1 = D0 * (1+g)
+    }
+
+    // P/E Ratio
+    if (EPS <= 0 || currentPrice <= 0) {
+        equityCalculatedResults['peRatio'] = NaN;
+        Swal.fire(_t('warning_title'), _t('eps_price_error'), 'warning');
+    } else {
+        equityCalculatedResults['peRatio'] = calculatePERatio(currentPrice, EPS);
+    }
+
+    updateEquityResultsUI();
+    updateStatus('status_calc_done', { dataType: _t('equity_valuation_title') }, 'success');
+}
+
+// --- Fixed Income Orchestration ---
+function calculateFixedIncome() {
+    updateStatus('status_calculating', { dataType: _t('fixed_income_title') }, 'info');
+    fixedIncomeCalculatedResults = {};
+
+    const faceValue = parseFloat(faceValueInput.value);
+    const couponRate = parseFloat(couponRateInput.value);
+    const yearsToMaturity = parseFloat(yearsToMaturityInput.value);
+    const marketPrice = parseFloat(marketPriceBondInput.value);
+    const ytmInput = parseFloat(ytmInputBond.value);
+    const couponFrequency = parseInt(couponFrequencySelect.value);
+
+    if (isNaN(faceValue) || isNaN(couponRate) || isNaN(yearsToMaturity) || isNaN(marketPrice) || isNaN(ytmInput) || isNaN(couponFrequency)) {
+        Swal.fire(_t('error_title'), _t('bond_input_error'), 'error');
+        updateStatus('status_calc_error', { error: _t('bond_input_error') }, 'error');
+        resetFixedIncomeResultsDisplay();
+        return;
+    }
+
+    // Calculate Bond Price (using YTM input)
+    fixedIncomeCalculatedResults['bondPrice'] = calculateBondPrice(faceValue, couponRate, yearsToMaturity, ytmInput, couponFrequency);
+
+    // Calculate YTM (using market price input)
+    fixedIncomeCalculatedResults['ytm'] = calculateYTM(faceValue, couponRate, yearsToMaturity, marketPrice, couponFrequency);
+
+    // Calculate Duration and Convexity (using calculated YTM if available, otherwise YTM input)
+    const ytmForDuration = isFinite(fixedIncomeCalculatedResults['ytm']) ? fixedIncomeCalculatedResults['ytm'] : ytmInput;
+
+    fixedIncomeCalculatedResults['macaulayDuration'] = calculateMacaulayDuration(faceValue, couponRate, yearsToMaturity, ytmForDuration, couponFrequency);
+    fixedIncomeCalculatedResults['modifiedDuration'] = calculateModifiedDuration(fixedIncomeCalculatedResults['macaulayDuration'], ytmForDuration, couponFrequency);
+    fixedIncomeCalculatedResults['convexity'] = calculateConvexity(faceValue, couponRate, yearsToMaturity, ytmForDuration, couponFrequency);
+
+    updateFixedIncomeResultsUI();
+    if (plotBondPriceYieldButton) plotBondPriceYieldButton.disabled = false;
+    updateStatus('status_calc_done', { dataType: _t('fixed_income_title') }, 'success');
+}
+
+// --- Portfolio Management Orchestration ---
+function calculatePortfolioManagement() {
+    updateStatus('status_calculating', { dataType: _t('portfolio_management_title') }, 'info');
+    portfolioCalculatedResults = {};
+
+    if (portfolioAssets.length < 2) {
+        Swal.fire(_t('error_title'), _t('portfolio_min_assets_error'), 'error');
+        updateStatus('status_calc_error', { error: _t('portfolio_min_assets_error') }, 'error');
+        resetPortfolioResultsDisplay();
+        return;
+    }
+
+    let totalWeight = 0;
+    let hasError = false;
+    const validAssets = [];
+
+    portfolioAssets.forEach(asset => {
+        const r = parseFloat(asset.return);
+        const std = parseFloat(asset.stdDev);
+        const w = parseFloat(asset.weight);
+
+        if (isNaN(r) || isNaN(std) || isNaN(w) || w < 0) {
+            Swal.fire(_t('error_title'), _t('portfolio_input_error'), 'error');
+            updateStatus('status_calc_error', { error: _t('portfolio_input_error') }, 'error');
+            hasError = true;
+            return;
+        }
+        validAssets.push({ ...asset, return: r, stdDev: std, weight: w });
+        totalWeight += w;
+    });
+
+    if (hasError) {
+        resetPortfolioResultsDisplay();
+        return;
+    }
+
+    if (Math.abs(totalWeight - 100) > 0.01) { // Allow for minor floating point inaccuracies
+        Swal.fire(_t('warning_title'), _t('portfolio_weights_error'), 'warning');
+        // Do not return, proceed with calculation but highlight potential issue
+    }
+
+    // Calculate Expected Portfolio Return
+    let portfolioExpectedReturn = 0;
+    validAssets.forEach(asset => {
+        portfolioExpectedReturn += (asset.return / 100) * (asset.weight / 100);
+    });
+    portfolioExpectedReturn *= 100; // Convert back to percentage
+
+    // Calculate Portfolio Variance and Standard Deviation
+    let portfolioVariance = 0;
+    let covarianceSum = 0;
+
+    for (let i = 0; i < validAssets.length; i++) {
+        const asset_i = validAssets[i];
+        const w_i = asset_i.weight / 100;
+        const std_i = asset_i.stdDev / 100;
+
+        // Add own variance component
+        portfolioVariance += Math.pow(w_i, 2) * Math.pow(std_i, 2);
+
+        // Add covariance components
+        for (let j = i + 1; j < validAssets.length; j++) {
+            const asset_j = validAssets[j];
+            const w_j = asset_j.weight / 100;
+            const std_j = asset_j.stdDev / 100;
+            const correlation = asset_i.correlations[asset_j.id];
+
+            if (isNaN(correlation) || correlation < -1 || correlation > 1) {
+                Swal.fire(_t('error_title'), _t('correlation_range_error'), 'error');
+                updateStatus('status_calc_error', { error: _t('correlation_range_error') }, 'error');
+                resetPortfolioResultsDisplay();
+                return;
+            }
+            const covariance_ij = std_i * std_j * correlation;
+            covarianceSum += 2 * w_i * w_j * covariance_ij;
+        }
+    }
+    portfolioVariance += covarianceSum;
+
+    const portfolioStdDev = Math.sqrt(portfolioVariance) * 100; // Convert back to percentage
+
+    portfolioCalculatedResults['expectedReturn'] = portfolioExpectedReturn;
+    portfolioCalculatedResults['stdDev'] = portfolioStdDev;
+    // For covariance, we can show the average or sum of pairwise covariances, but for now, let's just show the portfolio variance.
+    // Or, we can show the sum of all covariance terms (2 * wi * wj * cov_ij)
+    portfolioCalculatedResults['portfolioVariance'] = portfolioVariance; // Store portfolio variance here for display, as it's the direct result of the sum.
+
+    updatePortfolioResultsUI();
+    updateStatus('status_calc_done', { dataType: _t('portfolio_management_title') }, 'success');
+}
+
 
 // --- UI Update Functions ---
 function resetResultsDisplay() {
@@ -1038,18 +1875,88 @@ function resetResultsDisplay() {
     if (countSpan) countSpan.textContent = formatNumber(dataPoints.length, 0);
 }
 
-function updateResultsUI() {
-    if (!resultsDisplayDiv || Object.keys(calculatedResults).length === 0) {
-        resetResultsDisplay(); // Call reset if no results
+function updateResultsUI(results) {
+    const updateSpan = (id, value, options = {}, highlightType = 'neutral') => {
+        const element = document.getElementById(id);
+        if (!element) return;
+        
+        let displayValue = '-';
+        if (!isNaN(value) && isFinite(value)) {
+            displayValue = formatNumber(value, options.digits || 2, options.addPercent || false);
+        }
+        
+        element.textContent = displayValue;
+        element.className = `font-mono ${highlightType === 'pos' ? 'text-highlight-pos' : 
+            highlightType === 'neg' ? 'text-highlight-neg' : 'text-highlight-neutral'}`;
+    };
+
+    // معیارهای پایه
+    updateSpan('result-count', results.n, { digits: 0 });
+    updateSpan('result-mean', results.mean, { addPercent: true });
+    updateSpan('result-gm', results.geoMean, { addPercent: true });
+    updateSpan('result-std', results.stdDev, { addPercent: true });
+    updateSpan('result-dsd', results.downsideDev, { addPercent: true });
+    updateSpan('result-var', results.variance, { addPercent: true });
+    updateSpan('result-cv', results.cv);
+    updateSpan('result-mdd', results.mdd, { addPercent: true }, 'neg');
+    updateSpan('result-mdd-period', results.mdd_period, { digits: 0 }); // Added mdd_period
+    updateSpan('result-skew', results.skewness);
+    updateSpan('result-kurt', results.kurtosis);
+    updateSpan('result-var5', results.var5, { addPercent: true }, 'neg');
+    updateSpan('result-var95', results.var95, { addPercent: true }, 'pos');
+    updateSpan('result-cvar5', results.cvar5, { addPercent: true }, 'neg');
+    updateSpan('result-max-gain', results.maxGain, { addPercent: true }, 'pos');
+    updateSpan('result-sharpe', results.sharpeRatio);
+    updateSpan('result-sortino', results.sortinoRatio);
+    updateSpan('result-omega', results.omegaRatio);
+
+    // معیارهای جدید CFA
+    updateSpan('result-treynor', results.treynorRatio);
+    updateSpan('result-calmar', results.calmarRatio);
+    updateSpan('result-jensen-alpha', results.jensenAlpha, { addPercent: true });
+    updateSpan('result-m2', results.m2Measure, { addPercent: true });
+    updateSpan('result-alpha-t-stat', results.alphaTStat);
+
+    // معیارهای رگرسیون
+    if (results.beta !== undefined) {
+        updateSpan('result-beta', results.beta);
+        updateSpan('result-alpha', results.alpha, { addPercent: true });
+        updateSpan('result-rsquared', results.rSquared);
+        updateSpan('result-capm-er', results.capmExpectedReturn, { addPercent: true });
+        updateSpan('result-reg-stderr', results.regStdErr);
+        updateSpan('result-beta-tstat', results.betaTStat);
+        updateSpan('result-beta-pvalue', results.betaPValue);
+        updateSpan('result-alpha-tstat', results.alphaTStat);
+        updateSpan('result-alpha-pvalue', results.alphaPValue);
+    }
+
+    // معیارهای معیار
+    if (results.trackingError !== undefined) {
+        updateSpan('result-tracking-error', results.trackingError, { addPercent: true });
+        updateSpan('result-information-ratio', results.informationRatio);
+    }
+}
+
+function resetEquityResultsDisplay() {
+    if (!equityResultsDisplay) return;
+    equityResultsDisplay.querySelectorAll('span[id^="result-"]').forEach(span => {
+        span.textContent = _t('value_invalid');
+        span.className = 'font-mono text-dark-text-muted';
+    });
+}
+
+function updateEquityResultsUI() {
+    if (!equityResultsDisplay || Object.keys(equityCalculatedResults).length === 0) {
+        resetEquityResultsDisplay();
         return;
     }
-    const results = calculatedResults;
+    const results = equityCalculatedResults;
     const updateSpan = (id, value, options, highlightType = 'neutral') => {
         const span = document.getElementById(id);
         if (span) {
             const formattedValue = formatNumber(value, options?.digits, options?.addPercent);
             span.textContent = formattedValue;
-            span.className = 'font-mono '; // Base class
+            span.className = 'font-mono ';
 
             if (formattedValue !== _t('value_invalid')) {
                 if (highlightType === 'pos' && value > 0) span.classList.add('text-highlight-pos');
@@ -1063,40 +1970,92 @@ function updateResultsUI() {
         }
     };
 
-    updateSpan('result-count', results.n, {digits:0});
-    updateSpan('result-mean', results.mean, {digits:2, addPercent:true}, 'posneg');
-    updateSpan('result-gm', results.gm, {digits:2, addPercent:true}, 'posneg');
-    updateSpan('result-std', results.std, {digits:2, addPercent:true}, 'neutral');
-    updateSpan('result-dsd', results.dsd, {digits:2, addPercent:true}, 'neutral');
-    updateSpan('result-var', results.var, {digits:4});
-    updateSpan('result-cv', results.cv, {digits:3}, 'neutral');
-    updateSpan('result-mdd', results.mdd, {digits:2, addPercent:true}, 'neg');
-    updateSpan('result-mdd-period', results.mdd_period, {digits:0});
-    updateSpan('result-skew', results.skew, {digits:3}, 'posneg');
-    updateSpan('result-kurt', results.kurt, {digits:3}, 'neutral');
-    updateSpan('result-var5', results.var5, {digits:2, addPercent:true}, 'neg');
-    updateSpan('result-var95', results.var95, {digits:2, addPercent:true}, 'pos');
-    updateSpan('result-cvar5', results.cvar5, {digits:2, addPercent:true}, 'neg');
-    updateSpan('result-max-gain', results.max_gain, {digits:2, addPercent:true}, 'pos');
-    updateSpan('result-sharpe', results.sh, {digits:3}, 'neutral');
-    updateSpan('result-sortino', results.so, {digits:3}, 'neutral');
-    updateSpan('result-omega', results.omega, {digits:3}, 'neutral');
-
-    // Benchmark Analysis
-    updateSpan('result-tracking-error', results.trackingError, {digits:2, addPercent:true}, 'neutral');
-    updateSpan('result-information-ratio', results.informationRatio, {digits:3}, 'neutral');
-
-    // Regression (CAPM)
-    updateSpan('result-beta', results.beta, {digits:3}, 'neutral');
-    updateSpan('result-alpha', results.alpha, {digits:3, addPercent:true}, 'posneg'); // Alpha often shown as %
-    updateSpan('result-rsquared', results.rSquared, {digits:3});
-    updateSpan('result-capm-er', results.capmExpectedReturn, {digits:2, addPercent:true}, 'posneg');
-    updateSpan('result-reg-stderr', results.regStdErr, {digits:3, addPercent:true}, 'neutral');
-    updateSpan('result-beta-tstat', results.betaTStat, {digits:2}, 'neutral');
-    updateSpan('result-beta-pvalue', results.betaPValue, {digits:3});
-    updateSpan('result-alpha-tstat', results.alphaTStat, {digits:2}, 'neutral');
-    updateSpan('result-alpha-pvalue', results.alphaPValue, {digits:3});
+    updateSpan('result-ddm-value', results.ddm, {digits:2});
+    updateSpan('result-ggm-value', results.ggm, {digits:2});
+    updateSpan('result-pe-ratio', results.peRatio, {digits:2});
 }
+
+function resetFixedIncomeResultsDisplay() {
+    if (!fixedIncomeResultsDisplay) return;
+    fixedIncomeResultsDisplay.querySelectorAll('span[id^="result-"]').forEach(span => {
+        span.textContent = _t('value_invalid');
+        span.className = 'font-mono text-dark-text-muted';
+    });
+    if (plotBondPriceYieldButton) plotBondPriceYieldButton.disabled = true;
+}
+
+function updateFixedIncomeResultsUI() {
+    if (!fixedIncomeResultsDisplay || Object.keys(fixedIncomeCalculatedResults).length === 0) {
+        resetFixedIncomeResultsDisplay();
+        return;
+    }
+    const results = fixedIncomeCalculatedResults;
+    const updateSpan = (id, value, options, highlightType = 'neutral') => {
+        const span = document.getElementById(id);
+        if (span) {
+            const formattedValue = formatNumber(value, options?.digits, options?.addPercent);
+            span.textContent = formattedValue;
+            span.className = 'font-mono ';
+
+            if (formattedValue !== _t('value_invalid')) {
+                if (highlightType === 'pos' && value > 0) span.classList.add('text-highlight-pos');
+                else if (highlightType === 'neg' && value < 0) span.classList.add('text-highlight-neg');
+                else if (highlightType === 'neutral' && value !== 0) span.classList.add('text-highlight-neutral');
+                else if (highlightType === 'posneg') span.classList.add(value >= 0 ? 'text-highlight-pos' : 'text-highlight-neg');
+                else span.classList.add('text-dark-text');
+            } else {
+                span.classList.add('text-dark-text-muted');
+            }
+        }
+    };
+
+    updateSpan('result-bond-price', results.bondPrice, {digits:2});
+    updateSpan('result-ytm', results.ytm, {digits:3, addPercent:true});
+    updateSpan('result-macaulay-duration', results.macaulayDuration, {digits:3});
+    updateSpan('result-modified-duration', results.modifiedDuration, {digits:3});
+    updateSpan('result-convexity', results.convexity, {digits:4});
+
+    if (plotBondPriceYieldButton) plotBondPriceYieldButton.disabled = false;
+}
+
+function resetPortfolioResultsDisplay() {
+    if (!portfolioResultsDisplay) return;
+    portfolioResultsDisplay.querySelectorAll('span[id^="result-"]').forEach(span => {
+        span.textContent = _t('value_invalid');
+        span.className = 'font-mono text-dark-text-muted';
+    });
+}
+
+function updatePortfolioResultsUI() {
+    if (!portfolioResultsDisplay || Object.keys(portfolioCalculatedResults).length === 0) {
+        resetPortfolioResultsDisplay();
+        return;
+    }
+    const results = portfolioCalculatedResults;
+    const updateSpan = (id, value, options, highlightType = 'neutral') => {
+        const span = document.getElementById(id);
+        if (span) {
+            const formattedValue = formatNumber(value, options?.digits, options?.addPercent);
+            span.textContent = formattedValue;
+            span.className = 'font-mono ';
+
+            if (formattedValue !== _t('value_invalid')) {
+                if (highlightType === 'pos' && value > 0) span.classList.add('text-highlight-pos');
+                else if (highlightType === 'neg' && value < 0) span.classList.add('text-highlight-neg');
+                else if (highlightType === 'neutral' && value !== 0) span.classList.add('text-highlight-neutral');
+                else if (highlightType === 'posneg') span.classList.add(value >= 0 ? 'text-highlight-pos' : 'text-highlight-neg');
+                else span.classList.add('text-dark-text');
+            } else {
+                span.classList.add('text-dark-text-muted');
+            }
+        }
+    };
+
+    updateSpan('result-portfolio-expected-return', results.expectedReturn, {digits:2, addPercent:true}, 'posneg');
+    updateSpan('result-portfolio-stddev', results.stdDev, {digits:2, addPercent:true}, 'neutral');
+    updateSpan('result-portfolio-variance', results.portfolioVariance, {digits:4, addPercent:true}, 'neutral'); // Display portfolio variance
+}
+
 
 function updateActionButtonsState() {
     const hasAssetData = dataPoints.length > 0;
@@ -1112,6 +2071,9 @@ function updateActionButtonsState() {
     if (plotRegressionButton) plotRegressionButton.disabled = !hasRegressionParams;
     if (exportResultsButton) exportResultsButton.disabled = !hasResults;
     if (clearListButton) clearListButton.disabled = !hasAssetData;
+
+    // Portfolio Management specific button state
+    if (calculatePortfolioButton) calculatePortfolioButton.disabled = portfolioAssets.length < 2;
 }
 
 // --- Plotting (Placeholders, actual implementation in previous responses) ---
@@ -1134,6 +2096,52 @@ function getResponsiveLayoutParams() { /* ... from previous script ... */
 }
 
 function plotActionWrapper(plotFunc, titleKey) {
+    // Special handling for bond price-yield curve plot
+    if (plotFunc.name === 'plotBondPriceYieldCurveLogic') {
+        if (Object.keys(fixedIncomeCalculatedResults).length === 0 || isNaN(fixedIncomeCalculatedResults.bondPrice)) {
+            Swal.fire(_t('warning_title'), _t('status_need_data_plot'), 'warning');
+            updateStatus('status_need_data_plot', {}, 'warning');
+            return;
+        }
+        // For bond plot, we need the original inputs, not just calculated results
+        const faceValue = parseFloat(faceValueInput.value);
+        const couponRate = parseFloat(couponRateInput.value);
+        const yearsToMaturity = parseFloat(yearsToMaturityInput.value);
+        const couponFrequency = parseInt(couponFrequencySelect.value);
+
+        if (isNaN(faceValue) || isNaN(couponRate) || isNaN(yearsToMaturity) || isNaN(couponFrequency)) {
+            Swal.fire(_t('error_title'), _t('bond_input_error'), 'error');
+            updateStatus('status_calc_error', { error: _t('bond_input_error') }, 'error');
+            return;
+        }
+        updateStatus(texts[titleKey] ? `status_plotting_${titleKey.split('_')[1]}` : 'status_plotting_hist', {}, 'info');
+        try {
+            const plotDefinition = plotFunc(faceValue, couponRate, yearsToMaturity, couponFrequency);
+            if (!plotDefinition || !plotDefinition.plotData || !plotDefinition.layout) throw new Error(_t('plotFailed'));
+            const { plotData, layout } = plotDefinition;
+
+            layout.autosize = true; layout.uirevision = 'dataset';
+            if(plotModalLabel) plotModalLabel.textContent = _t(titleKey);
+            if(plotContainer) Plotly.purge(plotContainer); else throw new Error("Plot container missing.");
+
+            Plotly.newPlot(plotContainer, plotData, layout, {responsive: true, displaylogo: false, modeBarButtonsToRemove: ['sendDataToCloud', 'editInChartStudio']})
+            .then(() => {
+                if (plotModal) {
+                     plotModal.classList.remove('hidden'); plotModal.classList.add('flex'); document.body.style.overflow = 'hidden';
+                }
+                updateStatus('status_plot_done', {}, 'success');
+            }).catch(err => { throw err; });
+        } catch (error) {
+            console.error("Plotting Error:", error);
+            Swal.fire(_t('error_title'), _t('status_plot_error', { error: error.message }), 'error');
+            updateStatus('status_plot_error', { error: error.message }, 'error');
+            if(plotModal) { plotModal.classList.add('hidden'); plotModal.classList.remove('flex'); document.body.style.overflow = 'auto'; }
+        }
+        return;
+    }
+
+
+    // Original asset analysis plots
     if (dataPoints.length === 0 && plotFunc.name !== 'plotRegressionLogic') { // Regression might plot with only market/asset if params are there
         Swal.fire(_t('warning_title'), _t('status_need_data_plot'), 'warning');
         updateStatus('status_need_data_plot', {}, 'warning'); return;
@@ -1299,32 +2307,274 @@ function plotRegressionLogic(assetReturns, marketReturns, regressionParams) { /*
     return { plotData, layout };
 }
 
+function plotBondPriceYieldCurveLogic(faceValue, couponRate, yearsToMaturity, couponFrequency) {
+    const responsiveParams = getResponsiveLayoutParams();
+    const yields = [];
+    const prices = [];
+    // Generate yields from 0.1% to 20% (or more dynamically)
+    for (let y = 0.1; y <= 20.0; y += 0.1) {
+        yields.push(y);
+        prices.push(calculateBondPrice(faceValue, couponRate, yearsToMaturity, y, couponFrequency));
+    }
+
+    const trace = {
+        x: yields,
+        y: prices,
+        mode: 'lines',
+        type: 'scatter',
+        name: _t('bond_price_label'),
+        line: { color: PRIMARY_COLOR, width: responsiveParams.lineWidth }
+    };
+
+    const layout = {
+        title: { text: _t('bond_price_yield_plot_title'), font: { size: responsiveParams.titleFontSize, color: DARK_TEXT_COLOR }, x: 0.5, xanchor: 'center' },
+        xaxis: {
+            title: { text: _t('plot_axis_yield'), font: { size: responsiveParams.baseFontSize, color: DARK_TEXT_COLOR } },
+            color: DARK_TEXT_COLOR,
+            gridcolor: DARK_BORDER_COLOR,
+            zeroline: true,
+            zerolinecolor: DARK_MUTED_COLOR,
+            tickformat: ',.1f',
+            tickfont: { size: responsiveParams.baseFontSize - 1, color: DARK_TEXT_COLOR }
+        },
+        yaxis: {
+            title: { text: _t('plot_axis_bond_price'), font: { size: responsiveParams.baseFontSize, color: DARK_TEXT_COLOR } },
+            color: DARK_TEXT_COLOR,
+            gridcolor: DARK_BORDER_COLOR,
+            zeroline: true,
+            zerolinecolor: DARK_MUTED_COLOR,
+            tickformat: ',',
+            tickfont: { size: responsiveParams.baseFontSize - 1, color: DARK_TEXT_COLOR }
+        },
+        plot_bgcolor: DARK_CARD_COLOR,
+        paper_bgcolor: DARK_BACKGROUND_COLOR,
+        font: { color: DARK_TEXT_COLOR, size: responsiveParams.baseFontSize },
+        showlegend: false,
+        margin: responsiveParams.margin,
+        hovermode: 'closest'
+    };
+
+    return { plotData: [trace], layout };
+}
+
 
 // --- Export ---
 function downloadBlob(blob, filename) { const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); }
-function exportResultsToTxtFile() { /* ... from previous script, ensure all new results are included ... */
-    if (!calculatedResults || typeof calculatedResults.n !== 'number') { Swal.fire(_t('warning_title'), _t('status_no_results'), 'warning'); return; }
-    updateStatus('status_saving_results', {}, 'info'); const lines = []; const results = calculatedResults; const now = new Date();
-    lines.push(`========== ${_t('app_title')} ==========`); lines.push(`${_t('data_count')}: ${formatNumber(results.n, 0)}`); lines.push(`Date: ${now.toLocaleString(currentLang === 'fa' ? 'fa-IR' : 'en-US')}`);
-    lines.push(`Risk-Free Rate: ${formatNumber(results.rf, 2, true)}`); lines.push(`Expected Market Return: ${formatNumber(results.expectedMarketReturn, 2, true)}`);
-    lines.push("-".repeat(50)); lines.push(_t('results_title')); lines.push("-".repeat(50));
-    const resOrder = ['mean','gm','std','dsd','var','cv','mdd','mdd_period','skew','kurt','var5','var95','cvar5','max_gain','sh','so','omega', 'trackingError', 'informationRatio', 'beta','alpha','rSquared','capmExpectedReturn','regStdErr','betaTStat','betaPValue','alphaTStat','alphaPValue'];
-    const resLabels = {'mean':'mean_label', 'gm':'geo_mean_label', /*... map all keys to their label keys ...*/ 'capmExpectedReturn':'capm_expected_return_label', 'trackingError':'tracking_error_label', 'informationRatio':'information_ratio_label'}; // Add all mappings
-    resOrder.forEach(key => { if(results.hasOwnProperty(key)) lines.push(`${_t(resLabels[key] || key + '_label')}: ${formatNumber(results[key], (key==='var'||key==='rSquared'||key==='beta'||key==='alpha'||key==='cv'||key==='skew'||key==='kurt'||key==='sh'||key==='so'||key==='omega'||key==='informationRatio'||key==='regStdErr'||key==='betaTStat'||key==='alphaTStat'||key==='betaPValue'||key==='alphaPValue'?3:2), (key.includes('Return')||key==='mean'||key==='gm'||key==='std'||key==='dsd'||key==='mdd'||key==='var5'||key==='var95'||key==='cvar5'||key==='max_gain'||key==='alpha'||key==='trackingError'))}`); });
-    lines.push("\n" + "=".repeat(50)); lines.push(`Input Asset Data (${dataPoints.length} points):`); lines.push("-".repeat(50)); lines.push(...dataPoints.map((p, i) => `${formatNumber(i + 1, 0)}. ${formatNumber(p, 4)}%`));
-    if(marketDataPoints.length > 0) { lines.push("\nMarket Data:"); lines.push(...marketDataPoints.map((p, i) => `${formatNumber(i + 1, 0)}. ${formatNumber(p, 4)}%`));}
-    if(benchmarkDataPoints.length > 0) { lines.push("\nBenchmark Data:"); lines.push(...benchmarkDataPoints.map((p, i) => `${formatNumber(i + 1, 0)}. ${formatNumber(p, 4)}%`));}
-    lines.push("=".repeat(50));
-    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' }); downloadBlob(blob, `RiskAnalysisResults_${new Date().toISOString().slice(0,10)}.txt`);
-    updateStatus('status_saving_txt_success', { filename: `RiskAnalysisResults_${new Date().toISOString().slice(0,10)}.txt` }, 'success');
+function exportResultsToTxtFile() {
+    updateStatus('status_saving_results', {}, 'info');
+    const lines = [];
+    const now = new Date();
+
+    lines.push(`========== ${_t('app_title')} ==========`);
+    lines.push(`Date: ${now.toLocaleString(currentLang === 'fa' ? 'fa-IR' : 'en-US')}`);
+    lines.push("\n");
+
+    // Asset Analysis Results
+    if (Object.keys(calculatedResults).length > 0 && calculatedResults.n > 0) {
+        const results = calculatedResults;
+        lines.push(`--- ${_t('results_title')} (${_t('tab_asset_analysis')}) ---`);
+        lines.push(`${_t('data_count')}: ${formatNumber(results.n, 0)}`);
+        lines.push(`Risk-Free Rate: ${formatNumber(results.rf, 2, true)}`);
+        lines.push(`Expected Market Return: ${formatNumber(results.expectedMarketReturn, 2, true)}`);
+        lines.push("-".repeat(50));
+        const resOrder = [
+            'mean', 'gm', 'std', 'dsd', 'variance', 'cv', 'mdd', 'mdd_period', 'skewness', 'kurtosis',
+            'var5', 'var95', 'cvar5', 'maxGain', 'sharpeRatio', 'sortinoRatio', 'omegaRatio',
+            'treynorRatio', 'calmarRatio', 'jensenAlpha', 'm2Measure', 'alphaTStat',
+            'trackingError', 'informationRatio',
+            'beta', 'alpha', 'rSquared', 'capmExpectedReturn', 'regStdErr',
+            'betaTStat', 'betaPValue', 'alphaTStat', 'alphaPValue'
+        ];
+        const resLabels = {
+            'mean': 'mean_label', 'gm': 'geo_mean_label', 'std': 'std_dev_label', 'dsd': 'downside_dev_label',
+            'variance': 'variance_label', 'cv': 'cv_label', 'mdd': 'mdd_label', 'mdd_period': 'mdd_period_label',
+            'skewness': 'skewness_label', 'kurtosis': 'kurtosis_label', 'var5': 'var_label', 'var95': 'var_95_label',
+            'cvar5': 'cvar_label', 'maxGain': 'max_gain_label', 'sharpeRatio': 'sharpe_label', 'sortinoRatio': 'sortino_label',
+            'omegaRatio': 'omega_label',
+            'treynorRatio': 'treynor_ratio_label', 'calmarRatio': 'calmar_ratio_label', 'jensenAlpha': 'jensen_alpha_label',
+            'm2Measure': 'm2_measure_label', 'alphaTStat': 'alpha_t_stat_label',
+            'trackingError': 'tracking_error_label', 'informationRatio': 'information_ratio_label',
+            'beta': 'beta_label', 'alpha': 'alpha_label', 'rSquared': 'rsquared_label',
+            'capmExpectedReturn': 'capm_expected_return_label', 'regStdErr': 'reg_stderr_label',
+            'betaTStat': 'beta_t_stat_label', 'betaPValue': 'beta_p_value_label',
+            'alphaPValue': 'alpha_p_value_label'
+        };
+        resOrder.forEach(key => {
+            if(results.hasOwnProperty(key) && !isNaN(results[key])) {
+                let value = results[key];
+                let addPercent = false;
+                let digits = 2;
+
+                // Determine formatting based on key
+                if (['mean', 'gm', 'std', 'dsd', 'mdd', 'var5', 'var95', 'cvar5', 'maxGain', 'alpha', 'trackingError', 'capmExpectedReturn'].includes(key)) {
+                    addPercent = true;
+                    digits = 2;
+                } else if (['rSquared', 'beta', 'cv', 'skewness', 'kurtosis', 'sharpeRatio', 'sortinoRatio', 'omegaRatio', 'treynorRatio', 'calmarRatio', 'jensenAlpha', 'm2Measure', 'alphaTStat', 'informationRatio', 'regStdErr', 'betaTStat', 'betaPValue', 'alphaPValue'].includes(key)) {
+                    digits = 3; // More precision for ratios/stats
+                } else if (key === 'mdd_period' || key === 'n') {
+                    digits = 0;
+                } else if (key === 'variance') {
+                    addPercent = true;
+                    digits = 4; // Variance can be small
+                }
+
+                lines.push(`${_t(resLabels[key] || key)}: ${formatNumber(value, digits, addPercent)}`);
+            }
+        });
+        lines.push("\n" + "=".repeat(50));
+        lines.push(`Input Asset Data (${dataPoints.length} points):`);
+        lines.push("-".repeat(50));
+        lines.push(...dataPoints.map((p, i) => `${formatNumber(i + 1, 0)}. ${formatNumber(p, 4)}%`));
+        if(marketDataPoints.length > 0) { lines.push("\nMarket Data:"); lines.push(...marketDataPoints.map((p, i) => `${formatNumber(i + 1, 0)}. ${formatNumber(p, 4)}%`));}
+        if(benchmarkDataPoints.length > 0) { lines.push("\nBenchmark Data:"); lines.push(...benchmarkDataPoints.map((p, i) => `${formatNumber(i + 1, 0)}. ${formatNumber(p, 4)}%`));}
+        lines.push("=".repeat(50));
+        lines.push("\n");
+    }
+
+    // Equity Valuation Results
+    if (Object.keys(equityCalculatedResults).length > 0) {
+        const results = equityCalculatedResults;
+        lines.push(`--- ${_t('equity_results_title')} ---`);
+        lines.push("-".repeat(50));
+        lines.push(`${_t('ddm_value_label')}: ${formatNumber(results.ddm, 2)}`);
+        lines.push(`${_t('ggm_value_label')}: ${formatNumber(results.ggm, 2)}`);
+        lines.push(`${_t('pe_ratio_label')}: ${formatNumber(results.peRatio, 2)}`);
+        lines.push("=".repeat(50));
+        lines.push("\n");
+    }
+
+    // Fixed Income Results
+    if (Object.keys(fixedIncomeCalculatedResults).length > 0) {
+        const results = fixedIncomeCalculatedResults;
+        lines.push(`--- ${_t('fixed_income_results_title')} ---`);
+        lines.push("-".repeat(50));
+        lines.push(`${_t('bond_price_label')}: ${formatNumber(results.bondPrice, 2)}`);
+        lines.push(`${_t('ytm_label')}: ${formatNumber(results.ytm, 3, true)}`);
+        lines.push(`${_t('macaulay_duration_label')}: ${formatNumber(results.macaulayDuration, 3)}`);
+        lines.push(`${_t('modified_duration_label')}: ${formatNumber(results.modifiedDuration, 3)}`);
+        lines.push(`${_t('convexity_label')}: ${formatNumber(results.convexity, 4)}`);
+        lines.push("=".repeat(50));
+        lines.push("\n");
+    }
+
+    // Portfolio Management Results
+    if (Object.keys(portfolioCalculatedResults).length > 0) {
+        const results = portfolioCalculatedResults;
+        lines.push(`--- ${_t('portfolio_results_title')} ---`);
+        lines.push("-".repeat(50));
+        lines.push(`${_t('portfolio_expected_return_label')}: ${formatNumber(results.expectedReturn, 2, true)}`);
+        lines.push(`${_t('portfolio_stddev_label')}: ${formatNumber(results.stdDev, 2, true)}`);
+        lines.push(`${_t('portfolio_variance_label')}: ${formatNumber(results.portfolioVariance, 4, true)}`);
+        lines.push("=".repeat(50));
+        lines.push("\n");
+    }
+
+    if (lines.length <= 4) { // Only header and date means no actual results
+        Swal.fire(_t('warning_title'), _t('status_no_results'), 'warning');
+        return;
+    }
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const filename = `FinancialAnalysisResults_${new Date().toISOString().slice(0,10)}.txt`;
+    downloadBlob(blob, filename);
+    updateStatus('status_saving_txt_success', { filename }, 'success');
 }
-function exportResultsToExcelFile() { /* ... from previous script, ensure all new results are included ... */
-    if (!calculatedResults || typeof calculatedResults.n !== 'number') { Swal.fire(_t('warning_title'), _t('status_no_results'), 'warning'); return; }
-    updateStatus('status_saving_results', {}, 'info'); const results = calculatedResults; const now = new Date();
-    const rawDataSheetData = [[_t('col_return')]]; dataPoints.forEach(p => rawDataSheetData.push([p]));
-    const resultsSheetData = []; resultsSheetData.push([_t('app_title')]); resultsSheetData.push([`${_t('data_count')}:`, results.n]); /* ... add all results similar to TXT export ... */
-    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rawDataSheetData), _t('excel_sheet_raw_data_title')); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resultsSheetData), _t('excel_sheet_results_title'));
-    const filename = `RiskAnalysisResults_${now.toISOString().slice(0,10)}.xlsx`; XLSX.writeFile(wb, filename);
+
+function exportResultsToExcelFile() {
+    updateStatus('status_saving_results', {}, 'info');
+    const wb = XLSX.utils.book_new();
+    const now = new Date();
+
+    // Asset Analysis Sheet
+    if (Object.keys(calculatedResults).length > 0 && calculatedResults.n > 0) {
+        const results = calculatedResults;
+        const assetResultsData = [
+            [{ v: _t('app_title'), s: { font: { sz: 14, bold: true } } }],
+            [{ v: `Date: ${now.toLocaleString(currentLang === 'fa' ? 'fa-IR' : 'en-US')}` }],
+            [],
+            [{ v: _t('results_title') + ` (${_t('tab_asset_analysis')})`, s: { font: { bold: true } } }],
+            [_t('data_count'), results.n],
+            [_t('rf_title'), formatNumber(results.rf, 2, true)],
+            [_t('expected_market_return_title'), formatNumber(results.expectedMarketReturn, 2, true)],
+            [],
+        ];
+        const resOrder = ['mean','geoMean','stdDev','downsideDev','variance','cv','mdd','mdd_period','skewness','kurtosis','var5','var95','cvar5','maxGain','sharpeRatio','sortinoRatio','omegaRatio', 'treynorRatio', 'calmarRatio', 'jensenAlpha', 'm2Measure', 'alphaTStat', 'trackingError', 'informationRatio', 'beta','alpha','rSquared','capmExpectedReturn','regStdErr','betaTStat','betaPValue','alphaPValue'];
+        const resLabels = {
+            'mean':'mean_label', 'geoMean':'geo_mean_label', 'stdDev':'std_dev_label', 'downsideDev':'downside_dev_label',
+            'variance':'variance_label', 'cv':'cv_label', 'mdd':'mdd_label', 'mdd_period':'mdd_period_label',
+            'skewness':'skewness_label', 'kurtosis':'kurtosis_label', 'var5':'var_label', 'var95':'var_95_label',
+            'cvar5':'cvar_label', 'maxGain':'max_gain_label', 'sharpeRatio':'sharpe_label', 'sortinoRatio':'sortino_label',
+            'omegaRatio':'omega_label',
+            'treynorRatio':'treynor_ratio_label', 'calmarRatio':'calmar_ratio_label', 'jensenAlpha':'jensen_alpha_label',
+            'm2Measure':'m2_measure_label', 'alphaTStat':'alpha_t_stat_label',
+            'trackingError':'tracking_error_label', 'informationRatio':'information_ratio_label',
+            'beta':'beta_label', 'alpha':'alpha_label', 'rSquared':'rsquared_label',
+            'capmExpectedReturn':'capm_expected_return_label', 'regStdErr':'reg_stderr_label',
+            'betaTStat':'beta_t_stat_label', 'betaPValue':'beta_p_value_label',
+            'alphaPValue':'alpha_p_value_label'
+        };
+        resOrder.forEach(key => {
+            if(results.hasOwnProperty(key) && !isNaN(results[key])) {
+                assetResultsData.push([_t(resLabels[key] || key + '_label'), formatNumber(results[key], (key==='var'||key==='rSquared'||key==='beta'||key==='alpha'||key==='cv'||key==='skew'||key==='kurt'||key==='sh'||key==='so'||key==='omega'||key==='informationRatio'||key==='regStdErr'||key==='betaTStat'||key==='alphaTStat'||key==='betaPValue'||key==='alphaPValue'?3:2), (key.includes('Return')||key==='mean'||key==='gm'||key==='std'||key==='dsd'||key==='mdd'||key==='var5'||key==='var95'||key==='cvar5'||key==='max_gain'||key==='alpha'||key==='trackingError'))]);
+            }
+        });
+        assetResultsData.push([]);
+        assetResultsData.push([_t('excel_sheet_raw_data_title')]);
+        assetResultsData.push([_t('col_return')]);
+        dataPoints.forEach(p => assetResultsData.push([p]));
+        if(marketDataPoints.length > 0) { assetResultsData.push([]); assetResultsData.push(['Market Data']); marketDataPoints.forEach(p => assetResultsData.push([p]));}
+        if(benchmarkDataPoints.length > 0) { assetResultsData.push([]); assetResultsData.push(['Benchmark Data']); benchmarkDataPoints.forEach(p => assetResultsData.push([p]));}
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(assetResultsData), _t('tab_asset_analysis'));
+    }
+
+    // Equity Valuation Sheet
+    if (Object.keys(equityCalculatedResults).length > 0) {
+        const results = equityCalculatedResults;
+        const equityResultsData = [
+            [{ v: _t('equity_results_title'), s: { font: { bold: true } } }],
+            [],
+            [_t('ddm_value_label'), results.ddm],
+            [_t('ggm_value_label'), results.ggm],
+            [_t('pe_ratio_label'), results.peRatio],
+        ];
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(equityResultsData), _t('tab_equity_valuation'));
+    }
+
+    // Fixed Income Sheet
+    if (Object.keys(fixedIncomeCalculatedResults).length > 0) {
+        const results = fixedIncomeCalculatedResults;
+        const fixedIncomeResultsData = [
+            [{ v: _t('fixed_income_results_title'), s: { font: { bold: true } } }],
+            [],
+            [_t('bond_price_label'), results.bondPrice],
+            [_t('ytm_label'), results.ytm],
+            [_t('macaulay_duration_label'), results.macaulayDuration],
+            [_t('modified_duration_label'), results.modifiedDuration],
+            [_t('convexity_label'), results.convexity],
+        ];
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(fixedIncomeResultsData), _t('tab_fixed_income'));
+    }
+
+    // Portfolio Management Sheet
+    if (Object.keys(portfolioCalculatedResults).length > 0) {
+        const results = portfolioCalculatedResults;
+        const portfolioResultsData = [
+            [{ v: _t('portfolio_results_title'), s: { font: { bold: true } } }],
+            [],
+            [_t('portfolio_expected_return_label'), results.expectedReturn],
+            [_t('portfolio_stddev_label'), results.stdDev],
+            [_t('portfolio_variance_label'), results.portfolioVariance],
+        ];
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(portfolioResultsData), _t('tab_portfolio_management'));
+    }
+
+    if (wb.SheetNames.length === 0) {
+        Swal.fire(_t('warning_title'), _t('status_no_results'), 'warning');
+        return;
+    }
+
+    const filename = `FinancialAnalysisResults_${now.toISOString().slice(0,10)}.xlsx`;
+    XLSX.writeFile(wb, filename);
     updateStatus('status_saving_excel_success', { filename }, 'success');
 }
 
@@ -1335,6 +2585,19 @@ function closeModalHandler() { closeModal(); }
 function backdropClickHandler(event) { if (event.target === plotModal) closeModal(); }
 function escapeKeyHandler(event) { if (event.key === 'Escape') closeModal(); }
 
+// --- Tab Switching Logic ---
+function switchTab(tabId) {
+    tabContents.forEach(content => {
+        content.classList.remove('active');
+    });
+    tabButtons.forEach(button => {
+        button.classList.remove('active');
+    });
+
+    document.getElementById(`${tabId}-tab`).classList.add('active');
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+}
+
 
 // --- Event Listeners & Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -1344,6 +2607,14 @@ document.addEventListener('DOMContentLoaded', () => {
     currentLang = langSelect ? langSelect.value : 'fa';
     updateLanguageUI();
     if (langSelect) langSelect.addEventListener('change', () => { localStorage.setItem('preferredLang', langSelect.value); updateLanguageUI(); });
+
+    // Tab Navigation
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab');
+            switchTab(tabId);
+        });
+    });
 
     // Asset Data
     if (addButton) addButton.addEventListener('click', addAssetDataPoint);
@@ -1365,10 +2636,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (benchmarkValueEntry) benchmarkValueEntry.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); addBenchmarkDataPoint(); } });
     if (clearBenchmarkDataButton) clearBenchmarkDataButton.addEventListener('click', clearBenchmarkDataPoints);
 
-    // Calculate
+    // Equity Valuation
+    if (calculateEquityButton) calculateEquityButton.addEventListener('click', calculateEquityValuation);
+
+    // Fixed Income
+    if (calculateBondButton) calculateBondButton.addEventListener('click', calculateFixedIncome);
+    if (plotBondPriceYieldButton) plotBondPriceYieldButton.addEventListener('click', () => plotActionWrapper(plotBondPriceYieldCurveLogic, 'bond_price_yield_plot_title'));
+
+    // Portfolio Management
+    if (addPortfolioAssetButton) addPortfolioAssetButton.addEventListener('click', addPortfolioAsset);
+    if (calculatePortfolioButton) calculatePortfolioButton.addEventListener('click', calculatePortfolioManagement);
+
+    // Calculate (Asset Analysis)
     if (calculateButton) calculateButton.addEventListener('click', calculateMetrics);
 
-    // Plot Buttons
+    // Initial setup for Portfolio Management tab
+    if (portfolioAssets.length === 0) {
+        addPortfolioAsset(); // Add first asset
+        addPortfolioAsset(); // Add second asset
+    }
+    updatePortfolioAssetUI();
+
+    // Plot Buttons (Asset Analysis)
     const plotButtonConfigs = [
         { el: plotHistButton, func: plotHistogramLogic, title: 'plot_hist_title' },
         { el: plotBoxButton, func: plotBoxplotLogic, title: 'plot_box_title' },
@@ -1382,7 +2671,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Export
     if (exportResultsButton) exportResultsButton.addEventListener('click', async () => {
-        if (!calculatedResults || typeof calculatedResults.n !== 'number') { Swal.fire(_t('warning_title'), _t('status_no_results'), 'warning'); return; }
         const { value: format } = await Swal.fire({ title: _t('export_format_title'), input: 'select', inputOptions: { 'txt': _t('export_txt'), 'excel': _t('export_excel')}, inputPlaceholder: _t('select_option'), showCancelButton: true, confirmButtonText: _t('ok_button'), cancelButtonText: _t('cancel_button'),customClass: { popup: 'swal2-popup', title: 'swal2-title', input: 'swal2-input', confirmButton: 'swal2-confirm', cancelButton: 'swal2-cancel'} });
         if (format === 'txt') exportResultsToTxtFile();
         else if (format === 'excel') exportResultsToExcelFile();
@@ -1404,12 +2692,131 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDataDisplay(); // Show "List Empty" for asset data
     updateMarketDataDisplay(); // Show "List Empty" for market data
     updateBenchmarkDataDisplay(); // Show "List Empty" for benchmark data
+    resetEquityResultsDisplay();
+    resetFixedIncomeResultsDisplay();
+    resetPortfolioResultsDisplay();
     initializeSweetAlertTooltips();
     updateStatus('status_ready');
     console.log("Application initialized.");
 });
 
-// Add missing item prefix keys for generic display
-texts['market_data_item_prefix'] = { 'en': 'Market {index}:', 'fa': 'بازار {index}:' };
-texts['benchmark_data_item_prefix'] = { 'en': 'Benchmark {index}:', 'fa': 'معیار {index}:' };
+    // Add missing item prefix keys for generic display
+    texts['market_data_item_prefix'] = { 'en': 'Market {index}:', 'fa': 'بازار {index}:' };
+    texts['benchmark_data_item_prefix'] = { 'en': 'Benchmark {index}:', 'fa': 'معیار {index}:' };
+    texts['correlations_title'] = { 'en': 'Correlations:', 'fa': 'همبستگی‌ها:' };
+    texts['delete_data_point_confirm'] = { 'en': 'Delete data point {index}?', 'fa': 'داده {index} حذف شود؟' };
 
+// --- Advanced Statistical Functions (using simple-statistics) ---
+function calculateSkewness(data) {
+    if (!data || data.length < 3) return NaN;
+    if (typeof ss === 'undefined' || typeof ss.skewness === 'undefined') {
+        console.error("simple-statistics (ss) is not loaded or skewness function is missing.");
+        return NaN;
+    }
+    try { return ss.skewness(data); } catch (e) { console.error("Error calculating skewness:", e); return NaN; }
+}
+
+function calculateKurtosis(data) {
+    if (!data || data.length < 4) return NaN;
+    if (typeof ss === 'undefined' || typeof ss.kurtosis === 'undefined') {
+        console.error("simple-statistics (ss) is not loaded or kurtosis function is missing.");
+        return NaN;
+    }
+    try { return ss.kurtosis(data); } catch (e) { console.error("Error calculating kurtosis:", e); return NaN; }
+}
+
+function calculateCVaR(data, confidenceLevel = 5) {
+    if (!data || data.length === 0 || confidenceLevel <= 0 || confidenceLevel >= 100) return NaN;
+    const sortedData = [...data].sort((a, b) => a - b);
+    // VaR at confidenceLevel (e.g., 5%) means the value at the (100-confidenceLevel)th percentile.
+    // CVaR is the average of returns *below* (or equal to) VaR.
+    const varValue = calculatePercentile(data, confidenceLevel); // This is the VaR value (e.g., 5th percentile)
+
+    const tailReturns = sortedData.filter(r => r <= varValue); // Returns that are worse than or equal to VaR
+    if (tailReturns.length === 0) return NaN; // No returns in the tail
+    return calculateMean(tailReturns);
+}
+
+// --- CFA Metrics ---
+
+// Treynor Ratio: (Portfolio Return - Risk-Free Rate) / Beta
+function calculateTreynorRatio(portfolioReturnPerc, riskFreeRatePerc, beta) {
+    if (isNaN(portfolioReturnPerc) || isNaN(riskFreeRatePerc) || isNaN(beta) || beta === 0) return NaN;
+    const portfolioReturn_dec = portfolioReturnPerc / 100;
+    const riskFreeRate_dec = riskFreeRatePerc / 100;
+    const excessReturn = portfolioReturn_dec - riskFreeRate_dec;
+    return excessReturn / beta;
+}
+
+// Calmar Ratio: (Annualized Return) / |Max Drawdown|
+function calculateCalmarRatio(annualizedReturnPerc, maxDrawdownPerc) {
+    if (isNaN(annualizedReturnPerc) || isNaN(maxDrawdownPerc) || maxDrawdownPerc === 0) return NaN;
+    const annualizedReturn_dec = annualizedReturnPerc / 100;
+    const maxDrawdown_dec = maxDrawdownPerc / 100;
+    return annualizedReturn_dec / Math.abs(maxDrawdown_dec);
+}
+
+// Jensen's Alpha: Portfolio Return - [Risk-Free Rate + Beta * (Market Return - Risk-Free Rate)]
+function calculateJensenAlpha(portfolioReturnPerc, riskFreeRatePerc, marketReturnPerc, beta) {
+    if (isNaN(portfolioReturnPerc) || isNaN(riskFreeRatePerc) || isNaN(marketReturnPerc) || isNaN(beta)) return NaN;
+    const portfolioReturn_dec = portfolioReturnPerc / 100;
+    const riskFreeRate_dec = riskFreeRatePerc / 100;
+    const marketReturn_dec = marketReturnPerc / 100;
+    return portfolioReturn_dec - (riskFreeRate_dec + beta * (marketReturn_dec - riskFreeRate_dec));
+}
+
+// M2 Measure (Modigliani-Modigliani Measure): Risk-Free Rate + [(Portfolio Return - Risk-Free Rate) * (Market StdDev / Portfolio StdDev)]
+function calculateM2Measure(portfolioReturnPerc, portfolioStdDevPerc, marketStdDevPerc, riskFreeRatePerc) {
+    if (isNaN(portfolioReturnPerc) || isNaN(portfolioStdDevPerc) || isNaN(marketStdDevPerc) || isNaN(riskFreeRatePerc) || portfolioStdDevPerc === 0) return NaN;
+    const portfolioReturn_dec = portfolioReturnPerc / 100;
+    const portfolioStdDev_dec = portfolioStdDevPerc / 100;
+    const marketStdDev_dec = marketStdDevPerc / 100;
+    const riskFreeRate_dec = riskFreeRatePerc / 100;
+    return riskFreeRate_dec + ((portfolioReturn_dec - riskFreeRate_dec) * (marketStdDev_dec / portfolioStdDev_dec));
+}
+
+// Alpha T-Statistic: Alpha / (Tracking Error / sqrt(N))
+function calculateAlphaTStat(alpha, trackingError, n) {
+    if (isNaN(alpha) || isNaN(trackingError) || isNaN(n) || n <= 1 || trackingError === 0) return NaN;
+    return alpha / (trackingError / Math.sqrt(n));
+}
+
+// Sharpe Ratio: (Portfolio Return - Risk-Free Rate) / Portfolio Standard Deviation
+function calculateSharpeRatio(returns, riskFreeRatePerc) {
+    if (!returns || returns.length === 0) return NaN;
+    const rf_dec = riskFreeRatePerc / 100; // Convert RF to decimal for calculation
+    const excessReturns = returns.map(r => r / 100 - rf_dec); // Convert returns to decimal and subtract RF
+    const meanExcessReturn = calculateMean(excessReturns);
+    const stdDevExcessReturn = calculateStdDev(excessReturns);
+    if (stdDevExcessReturn === 0) return NaN;
+    return meanExcessReturn / stdDevExcessReturn;
+}
+
+// Sortino Ratio: (Portfolio Return - Risk-Free Rate) / Downside Deviation
+function calculateSortinoRatio(returns, riskFreeRatePerc, targetReturn = 0) {
+    if (!returns || returns.length === 0) return NaN;
+    const rf_dec = riskFreeRatePerc / 100; // Convert RF to decimal for calculation
+    const excessReturns = returns.map(r => r / 100 - rf_dec); // Convert returns to decimal and subtract RF
+    const downsideDeviation = calculateDownsideDeviation(returns.map(r => r / 100), targetReturn / 100); // Convert returns and target to decimal
+    if (downsideDeviation === 0) return NaN;
+    return calculateMean(excessReturns) / downsideDeviation;
+}
+
+// Omega Ratio: (Sum of (Returns - Threshold) for Returns > Threshold) / (Sum of (Threshold - Returns) for Returns <= Threshold)
+function calculateOmegaRatio(returns, thresholdPerc = 0) {
+    if (!returns || returns.length === 0) return NaN;
+    const threshold_dec = thresholdPerc / 100; // Convert threshold to decimal
+    const returns_dec = returns.map(r => r / 100); // Convert returns to decimal
+
+    let gains = 0;
+    let losses = 0;
+
+    for (const r of returns_dec) {
+        if (r > threshold_dec) {
+            gains += (r - threshold_dec);
+        } else {
+            losses += (threshold_dec - r);
+        }
+    }
+    return losses === 0 ? Infinity : gains / losses;
+}
